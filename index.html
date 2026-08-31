@@ -3916,13 +3916,18 @@
       if (state.call) return "steady";
       const mood = senseMood(userText);
       const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul;
+      const weather = ensureJoyWeather();
       const r = Math.random();
       if (heavy) {
-        if (r < 0.2) return "short";
-        if (r < 0.38) return "unsure";
-        if (r < 0.5) return "pause";
+        if (r < 0.22) return "short";
+        if (r < 0.4) return "unsure";
+        if (r < 0.52) return "pause";
         return "steady";
       }
+      if (weather === "tired" && r < 0.38) return "short";
+      if (weather === "quiet" && r < 0.32) return "short";
+      if (weather === "reflect" && r < 0.42) return "pause";
+      if (weather === "tender" && r < 0.22) return "unsure";
       if (r < 0.11) return "unsure";
       if (r < 0.22) return "ask";
       if (r < 0.32) return "pause";
