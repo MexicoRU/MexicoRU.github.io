@@ -2306,9 +2306,10 @@
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const store = typeof WeakMap === "function" ? new WeakMap() : null;
       const jobs = [];
-      let scroll = null;
       let raf = 0;
       let last = 0;
+      let scrollRaf = 0;
+      let userHold = false;
 
       function paint(j) {
         const bits = [];
@@ -2429,21 +2430,54 @@
         });
       }
 
+      function stopChatScroll() {
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
+        scrollRaf = 0;
+      }
+
       function chatScroll(force) {
         const el = chatEl;
         if (!el) return;
         const max = Math.max(0, el.scrollHeight - el.clientHeight);
-        const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
-        const msgs = el.querySelectorAll(".msg");
-        const last = msgs[msgs.length - 1];
-        const lastH = last ? last.offsetHeight + 12 : 0;
-        if (!force && gap - lastH > 72) return;
-        if (reduced) {
+        const gap = max - el.scrollTop;
+        if (userHold && !force) return;
+        if (!force && gap > 88) return;
+        stopChatScroll();
+        if (reduced || gap < 8 || gap > 280) {
           el.scrollTop = max;
           return;
         }
-        scroll = { el: el, x: el.scrollTop, v: 0, t: max };
-        kick();
+        const from = el.scrollTop;
+        const t0 = performance.now();
+        const dur = Math.min(220, 70 + gap * 0.45);
+        function step(now) {
+          if (userHold) {
+            scrollRaf = 0;
+            return;
+          }
+          const p = Math.min(1, (now - t0) / dur);
+          const e = 1 - (1 - p) * (1 - p);
+          const dest = Math.max(0, el.scrollHeight - el.clientHeight);
+          el.scrollTop = from + (dest - from) * e;
+          if (p < 1) scrollRaf = requestAnimationFrame(step);
+          else scrollRaf = 0;
+        }
+        scrollRaf = requestAnimationFrame(step);
+      }
+
+      if (chatEl) {
+        chatEl.addEventListener("pointerdown", function () {
+          userHold = true;
+          stopChatScroll();
+        }, { passive: true });
+        chatEl.addEventListener("wheel", function () {
+          userHold = true;
+          stopChatScroll();
+        }, { passive: true });
+        chatEl.addEventListener("scroll", function () {
+          const gap = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
+          if (gap < 40) userHold = false;
+        }, { passive: true });
       }
 
       return { to: to, wait: wait, chatScroll: chatScroll, reduced: reduced, kick: kick };
@@ -4559,9 +4593,6 @@
         });
         requestAnimationFrame(function () {
           motion.chatScroll(msg.role === "user");
-          requestAnimationFrame(function () {
-            motion.chatScroll(msg.role === "user");
-          });
         });
       } else {
         chatEl.scrollTop = chatEl.scrollHeight;
