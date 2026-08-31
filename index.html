@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="20">
+<html lang="ru" data-joy-build="21">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -4336,38 +4336,51 @@
       const synth = window.speechSynthesis;
       if (!synth) return null;
       const list = synth.getVoices() || [];
-      const ru = list.filter(function (v) { return /^ru/i.test(v.lang); });
       const wantMale = /zahar|ermil/i.test(state.yandexVoice || "");
-      if (wantMale) {
-        return ru.find(function (v) { return /yuri|юрий/i.test(v.name); }) || ru[0] || null;
+      let best = null;
+      let bestScore = -99;
+      for (let i = 0; i < list.length; i++) {
+        const v = list[i];
+        const n = ((v && v.name) || "") + " " + ((v && v.lang) || "");
+        if (/compact|dummy|eloquence|novelty/i.test(n)) continue;
+        let s = 0;
+        if (/^ru/i.test(v.lang || "")) s += 12;
+        if (/neural|premium|enhanced|natural|online|google|svetlana|milena|irina|katya/i.test(n)) s += 8;
+        if (wantMale && /yuri|dmitry|male|юрий|дмитр/i.test(n)) s += 4;
+        if (!wantMale && /milena|katya|svetlana|female|жен|oksana|jane/i.test(n)) s += 4;
+        if (s > bestScore) {
+          bestScore = s;
+          best = v;
+        }
       }
-      return ru.find(function (v) { return /milena|katya|ксан/i.test(v.name); }) || ru[0] || null;
+      return best;
     }
 
     function speakNative(text) {
       const synth = window.speechSynthesis;
       if (!synth) return Promise.resolve(false);
+      const parts = splitSpeakChunks(text, 90);
       return new Promise(function (resolve) {
         try { synth.cancel(); } catch (_) {}
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = "ru-RU";
-        u.rate = state.soul ? 0.92 : 1;
-        u.pitch = 1;
-        u.volume = 1;
-        const voice = nativeVoice();
-        if (voice) u.voice = voice;
-        let done = false;
-        const finish = function (ok) {
-          if (done) return;
-          done = true;
-          resolve(!!ok);
-        };
-        u.onend = function () { finish(true); };
-        u.onerror = function () { finish(false); };
-        synth.speak(u);
-        setTimeout(function () {
-          if (!done && synth.speaking) finish(true);
-        }, 1500);
+        let i = 0;
+        function next() {
+          if (i >= parts.length) {
+            resolve(true);
+            return;
+          }
+          const u = new SpeechSynthesisUtterance(parts[i]);
+          i += 1;
+          u.lang = "ru-RU";
+          u.rate = state.soul ? 0.86 : 0.92;
+          u.pitch = /zahar|ermil/i.test(state.yandexVoice || "") ? 0.95 : 1.08;
+          u.volume = 1;
+          const voice = nativeVoice();
+          if (voice) u.voice = voice;
+          u.onend = function () { setTimeout(next, 80); };
+          u.onerror = function () { resolve(i > 1); };
+          synth.speak(u);
+        }
+        next();
       });
     }
 
