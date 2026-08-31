@@ -2063,6 +2063,194 @@
     const soulBtn = document.getElementById("soulBtn");
     const sheet = document.getElementById("sheet");
 
+    const motion = (function () {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const store = typeof WeakMap === "function" ? new WeakMap() : null;
+      const jobs = [];
+      let scroll = null;
+      let raf = 0;
+      let last = 0;
+
+      function paint(j) {
+        const bits = [];
+        if (j.y) bits.push("translate3d(0," + j.y.toFixed(3) + "px,0)");
+        if (j.s != null && Math.abs(j.s - 1) > 0.0004) bits.push("scale(" + j.s.toFixed(4) + ")");
+        j.el.style.transform = bits.length ? bits.join(" ") : "translateZ(0)";
+        if (j.useO) j.el.style.opacity = String(Math.max(0, Math.min(1, j.o)));
+      }
+
+      function get(el) {
+        let j = store ? store.get(el) : null;
+        if (!j) {
+          j = { el: el, y: 0, s: 1, o: 1, vy: 0, vs: 0, vo: 0, useO: false };
+          if (store) store.set(el, j);
+        }
+        return j;
+      }
+
+      function integrate(j, dt) {
+        let live = false;
+        function one(pos, vel, tgt, k, d) {
+          if (tgt == null) return { pos: pos, vel: vel, live: false };
+          const v = vel + ((tgt - pos) * k - vel * d) * dt;
+          const p = pos + v * dt;
+          if (Math.abs(tgt - p) > 0.04 || Math.abs(v) > 0.08) return { pos: p, vel: v, live: true };
+          return { pos: tgt, vel: 0, live: false };
+        }
+        const y = one(j.y, j.vy, j.ty, j.kY, j.dY);
+        const s = one(j.s, j.vs, j.ts, j.kS, j.dS);
+        const o = one(j.o, j.vo, j.to, j.kO, j.dO);
+        j.y = y.pos; j.vy = y.vel;
+        j.s = s.pos; j.vs = s.vel;
+        j.o = o.pos; j.vo = o.vel;
+        if (y.live || s.live || o.live) live = true;
+        paint(j);
+        return live;
+      }
+
+      function tick(now) {
+        const raw = last ? (now - last) / 1000 : 1 / 120;
+        last = now;
+        const dt = Math.min(0.022, Math.max(0.0045, raw));
+        for (let i = jobs.length - 1; i >= 0; i--) {
+          const j = jobs[i];
+          if (!j.el || !j.el.isConnected) {
+            jobs.splice(i, 1);
+            continue;
+          }
+          const live = integrate(j, dt);
+          if (!live) {
+            jobs.splice(i, 1);
+            if (j.clear) {
+              j.el.style.transform = "";
+              if (j.useO) j.el.style.opacity = "";
+              j.el.style.willChange = "auto";
+            }
+            if (j.onDone) {
+              const fn = j.onDone;
+              j.onDone = null;
+              fn();
+            }
+          }
+        }
+        if (scroll && scroll.el) {
+          const max = Math.max(0, scroll.el.scrollHeight - scroll.el.clientHeight);
+          scroll.t = max;
+          const n = (max - scroll.x) * 14 - scroll.v * 18;
+          scroll.v += n * dt;
+          scroll.x += scroll.v * dt;
+          if (Math.abs(max - scroll.x) < 0.4 && Math.abs(scroll.v) < 8) {
+            scroll.el.scrollTop = max;
+            scroll = null;
+          } else {
+            scroll.el.scrollTop = scroll.x;
+          }
+        }
+        if (jobs.length || scroll) raf = requestAnimationFrame(tick);
+        else raf = 0;
+      }
+
+      function kick() {
+        if (!raf) {
+          last = 0;
+          raf = requestAnimationFrame(tick);
+        }
+      }
+
+      function to(el, target, opts) {
+        if (!el) return;
+        opts = opts || {};
+        const j = get(el);
+        if (reduced) {
+          if (target.y != null) j.y = target.y;
+          if (target.s != null) j.s = target.s;
+          if (target.o != null) { j.o = target.o; j.useO = true; }
+          paint(j);
+          if (opts.onDone) opts.onDone();
+          return;
+        }
+        if (opts.from) {
+          if (opts.from.y != null) j.y = opts.from.y;
+          if (opts.from.s != null) j.s = opts.from.s;
+          if (opts.from.o != null) { j.o = opts.from.o; j.useO = true; }
+        }
+        j.ty = target.y != null ? target.y : j.ty;
+        j.ts = target.s != null ? target.s : j.ts;
+        if (target.o != null) { j.to = target.o; j.useO = true; }
+        if (target.y == null && j.ty == null) j.ty = j.y;
+        if (target.s == null && j.ts == null) j.ts = j.s;
+        j.kY = opts.k || 240;
+        j.dY = opts.d || 22;
+        j.kS = (opts.k || 240) * 1.05;
+        j.dS = (opts.d || 22) * 0.95;
+        j.kO = 260;
+        j.dO = 24;
+        j.clear = !!opts.clear;
+        j.onDone = opts.onDone || null;
+        if (jobs.indexOf(j) < 0) jobs.push(j);
+        paint(j);
+        kick();
+      }
+
+      function wait(ms) {
+        return new Promise(function (resolve) {
+          const t0 = performance.now();
+          function loop(now) {
+            if (now - t0 >= ms) resolve();
+            else requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        });
+      }
+
+      function chatScroll() {
+        const el = chatEl;
+        if (!el) return;
+        const max = Math.max(0, el.scrollHeight - el.clientHeight);
+        const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
+        if (gap > 96 && el.scrollTop > 24) return;
+        if (reduced) {
+          el.scrollTop = max;
+          return;
+        }
+        scroll = { el: el, x: el.scrollTop, v: 0, t: max };
+        kick();
+      }
+
+      return { to: to, wait: wait, chatScroll: chatScroll, reduced: reduced, kick: kick };
+    })();
+
+    function morphChrome() {
+      const app = document.querySelector(".app");
+      if (!app || document.body.classList.contains("calling")) return;
+      motion.to(app, { s: 1 }, { from: { s: 1.01 }, k: 160, d: 18, clear: true });
+    }
+
+    function openSheet() {
+      const card = sheet.querySelector(".sheet-card");
+      sheet.classList.add("open");
+      const desk = document.documentElement.classList.contains("desk");
+      motion.to(card, { y: 0, s: 1 }, {
+        from: desk ? { y: 22, s: 0.97 } : { y: 52, s: 1 },
+        k: 230,
+        d: 21
+      });
+    }
+
+    function closeSheet() {
+      if (!sheet.classList.contains("open")) return;
+      const card = sheet.querySelector(".sheet-card");
+      const desk = document.documentElement.classList.contains("desk");
+      motion.to(card, desk ? { y: 16, s: 0.98 } : { y: 42, s: 1 }, {
+        k: 260,
+        d: 26,
+        onDone: function () {
+          sheet.classList.remove("open");
+          if (card) card.style.transform = "";
+        }
+      });
+    }
+
     const YANDEX_VOICES = {
       oksana: "female",
       jane: "female",
