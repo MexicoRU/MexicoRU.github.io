@@ -1057,30 +1057,37 @@
     }
 
     .set-block {
-      margin: 0 0 18px;
-      padding: 4px 0 2px;
+      margin: 0 0 4px;
+      padding: 2px 0 12px;
+      border-bottom: 1px solid var(--line);
     }
 
     .set-block:last-child {
       margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
     }
 
     .set-block h3 {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 650;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 0 0 4px;
+      margin: 12px 0 2px;
     }
 
     .set-block .row {
-      padding: 12px 0;
+      padding: 10px 0;
+    }
+
+    .set-block .row:last-of-type {
+      border-bottom: none;
     }
 
     .set-block .hint {
-      margin: 0 0 4px;
-      padding-bottom: 8px;
+      margin: -4px 0 8px;
+      padding-bottom: 0;
     }
 
     .sheet-card h2 {
