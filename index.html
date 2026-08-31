@@ -2087,6 +2087,7 @@
         <button class="icon-btn" id="photoBtn" title="Фото" aria-label="Прикрепить фото">
           <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="m21 16-4.8-4.8a2 2 0 0 0-2.8 0L7 18"/></svg>
         </button>
+        <input id="file" type="file" accept="image/*,image/jpeg,image/png,image/webp,image/heic,image/heif" hidden>
         <button class="icon-btn" id="emojiBtn" title="Эмодзи" aria-label="Эмодзи">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 14.2c.9 1.3 2.2 2 3.6 2s2.7-.7 3.6-2"/><circle cx="9" cy="10" r="0.9" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="0.9" fill="currentColor" stroke="none"/></svg>
         </button>
@@ -2179,6 +2180,7 @@
     </div>
 
     <div class="call-screen" id="callScreen" aria-hidden="true">
+      <div class="call-lava" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <p class="call-kicker">созвон</p>
       <div class="call-mid">
         <div class="call-face"><img class="joy-photo" src="./icons/joy-face.jpg?v=12" alt="Джой"></div>
@@ -2186,17 +2188,19 @@
         <p id="callLabel">на линии</p>
       </div>
       <button class="hang-round" id="hangBtn" type="button" aria-label="Сбросить">
-        <svg viewBox="0 0 24 24"><path d="M6.5 3.8c.6-.6 1.6-.6 2.1 0l1.6 1.6c.5.6.5 1.4 0 1.9L9 8.5c.8 1.6 2 2.8 3.6 3.6l1.2-1.2c.5-.5 1.3-.5 1.9 0l1.6 1.6c.6.5.6 1.5 0 2.1l-1 1.1c-.6.6-1.5.8-2.3.5C9.3 15 5 10.7 3.8 6.1c-.3-.8-.1-1.7.5-2.3z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M5 15.2c4.6-1.5 9.4-1.5 14 0"/><path d="M4.2 14.6c-.7.2-1.1 1-.8 1.7.2.6 1 .9 1.6.6l2-.7c.3-.1.5-.4.5-.8v-1.2c-1.1.1-2.2.3-3.3.4zM19.8 14.6c.7.2 1.1 1 .8 1.7-.2.6-1 .9-1.6.6l-2-.7a.9.9 0 0 1-.5-.8v-1.2c1.1.1 2.2.3 3.3.4z"/></svg>
       </button>
     </div>
 
     <div class="profile" id="profile" aria-hidden="true">
       <div class="profile-scroll">
-        <div class="profile-hero">
+        <div class="profile-head">
           <button class="icon-btn profile-back" id="profileBack" type="button" title="Назад" aria-label="Закрыть профиль">
             <svg viewBox="0 0 24 24"><path d="M15 6 9 12l6 6"/></svg>
           </button>
-          <img class="joy-photo" id="profileHero" src="./icons/joy-face.jpg?v=12" alt="Джой">
+          <button class="profile-face" id="profileFace" type="button" aria-label="Открыть фото">
+            <img class="joy-photo" id="profileHero" src="./icons/joy-face.jpg?v=12" alt="Джой">
+          </button>
         </div>
         <div class="profile-body">
           <h2>Джой</h2>
@@ -2206,14 +2210,11 @@
             <button class="primary" id="profileCall" type="button">Позвонить</button>
             <button id="profileWrite" type="button">Написать</button>
           </div>
-          <h3>Фото</h3>
-          <div class="profile-gallery">
-            <button type="button" data-pos="center 24%" aria-label="Фото 1"><img class="joy-photo gal-a" src="./icons/joy-face.jpg?v=12" alt=""></button>
-            <button type="button" data-pos="22% 38%" aria-label="Фото 2"><img class="joy-photo gal-b" src="./icons/joy-face.jpg?v=12" alt=""></button>
-            <button type="button" data-pos="78% 32%" aria-label="Фото 3"><img class="joy-photo gal-c" src="./icons/joy-face.jpg?v=12" alt=""></button>
-          </div>
         </div>
       </div>
+    </div>
+    <div class="photo-peek" id="photoPeek" aria-hidden="true">
+      <img class="joy-photo" id="photoPeekImg" src="./icons/joy-face.jpg?v=12" alt="Джой">
     </div>
     <div class="auth-gate login" id="authGate" aria-hidden="false">
       <div class="auth-card">
