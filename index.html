@@ -3847,7 +3847,7 @@
       clearRtdbChat();
       localStorage.removeItem("joy_chat");
       chatEl.innerHTML = "";
-      sheet.classList.remove("open");
+      closeSheet();
     }
 
     function renderMessage(msg, animate) {
@@ -5790,8 +5790,12 @@
       closeProfile();
       state.call = true;
       state.callSilentRounds = 0;
+      const screen = document.getElementById("callScreen");
       document.body.classList.add("calling");
-      document.getElementById("callScreen").setAttribute("aria-hidden", "false");
+      screen.setAttribute("aria-hidden", "false");
+      screen.style.visibility = "visible";
+      screen.style.pointerEvents = "auto";
+      motion.to(screen, { s: 1, o: 1 }, { from: { s: 1.055, o: 0 }, k: 170, d: 20 });
       callBtn.classList.add("active");
       callBtn.setAttribute("aria-pressed", "true");
       if (state.silenceTimer) clearTimeout(state.silenceTimer);
@@ -5818,10 +5822,21 @@
       state.call = false;
       stopCallListen();
       stopSpeech();
-      document.body.classList.remove("calling");
-      document.getElementById("callScreen").setAttribute("aria-hidden", "true");
+      const screen = document.getElementById("callScreen");
       callBtn.classList.remove("active");
       callBtn.setAttribute("aria-pressed", "false");
+      motion.to(screen, { s: 1.03, o: 0 }, {
+        k: 220,
+        d: 26,
+        onDone: function () {
+          document.body.classList.remove("calling");
+          screen.setAttribute("aria-hidden", "true");
+          screen.style.visibility = "";
+          screen.style.pointerEvents = "";
+          screen.style.transform = "";
+          screen.style.opacity = "";
+        }
+      });
       refreshStatus();
       if (!quiet) {
         postJoyBurst(pick(["Сбросила.|||Я всё равно рядом.", "Ладно. Пиши, когда захочешь."]));
