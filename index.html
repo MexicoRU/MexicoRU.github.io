@@ -4649,6 +4649,48 @@
       if (!played) throw new Error("html audio");
     }
 
+    function splitSpeakChunks(text, max) {
+      const words = String(text || "").split(" ");
+      const out = [];
+      let cur = "";
+      for (let i = 0; i < words.length; i++) {
+        const next = cur ? cur + " " + words[i] : words[i];
+        if (next.length > max && cur) {
+          out.push(cur);
+          cur = words[i];
+        } else cur = next;
+      }
+      if (cur) out.push(cur);
+      return out;
+    }
+
+    async function speakGoogleTranslate(text) {
+      const chunks = splitSpeakChunks(text, 160);
+      if (!chunks.length) throw new Error("gtts");
+      const el = getSpeechEl();
+      el.muted = false;
+      el.loop = false;
+      el.playsInline = true;
+      el.volume = 1;
+      for (let i = 0; i < chunks.length; i++) {
+        const ok = await new Promise(function (resolve) {
+          let settled = false;
+          const done = function (v) {
+            if (settled) return;
+            settled = true;
+            resolve(v);
+          };
+          el.onended = function () { done(true); };
+          el.onerror = function () { done(false); };
+          el.src = "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=ru&q=" + encodeURIComponent(chunks[i]);
+          const play = el.play();
+          if (play && play.catch) play.catch(function () { done(false); });
+          setTimeout(function () { done(!!(el.currentTime > 0.04 && !el.paused)); }, 5000);
+        });
+        if (!ok) throw new Error("gtts");
+      }
+    }
+
     async function speak(text) {
       const clean = cleanSpeakText(text);
       if (!clean) return;
@@ -4660,6 +4702,10 @@
       stopSpeech();
       try {
         await speakYandex(clean);
+        return;
+      } catch (_) {}
+      try {
+        await speakGoogleTranslate(clean);
         return;
       } catch (_) {}
       try { await speakNative(clean); } catch (_) {}
