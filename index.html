@@ -4539,32 +4539,58 @@
 
     function parseDateFromText(text) {
       const t = (text || "").toLowerCase().replace(/ё/g, "е");
-      const wantsSave = /день рожден|др\b|годовщин|важн\w* дн|запомни/.test(t);
+      const isEvent = /день рожден|\bдр\b|годовщин|юбиле|важн\w*\s+дн|свидан|собеседован|выписк|операц|\bсуд\b|поминки/;
+      const hasAbsDate = /(\d{1,2})[.\-/](\d{1,2})/.test(t) || new RegExp("\\d{1,2}\\s+" + MONTH_RE.source).test(t);
+      const wantsSave = isEvent.test(t) || (/запомни/.test(t) && (hasAbsDate || /завтра|послезавтра/.test(t)));
       if (!wantsSave) return null;
 
       let title = "Важный день";
-      if (/день рожден|др\b/.test(t)) title = "День рождения";
+      if (/день рожден|\bдр\b/.test(t)) title = "День рождения";
       else if (/годовщин/.test(t)) title = "Годовщина";
+      else if (/юбиле/.test(t)) title = "Юбилей";
+      else if (/свидан/.test(t)) title = "Свидание";
+      else if (/собеседован/.test(t)) title = "Собеседование";
+
+      if (/послезавтра/.test(t) && isEvent.test(t)) {
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
+      }
+      if (/\bзавтра\b/.test(t) && isEvent.test(t)) {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
+      }
 
       const dotted = t.match(/(\d{1,2})[.\-/](\d{1,2})(?:[.\-/](\d{2,4}))?/);
       if (dotted) {
         const day = +dotted[1];
         const month = +dotted[2];
-        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) return { title, day, month };
+        if (day >= 1 && day <= 31 && month >= 1 && month <= 12) return { title: title, day: day, month: month };
       }
 
       const named = t.match(new RegExp("(\\d{1,2})\\s+" + MONTH_RE.source));
       if (named) {
         const day = +named[1];
         const month = monthFromWord(named[2]);
-        if (day >= 1 && day <= 31 && month) return { title, day, month };
+        if (day >= 1 && day <= 31 && month) return { title: title, day: day, month: month };
       }
       return null;
     }
 
     function datesToday() {
       const now = new Date();
-      return state.dates.filter(d => d.day === now.getDate() && d.month === now.getMonth() + 1);
+      return (state.dates || []).filter(function (d) {
+        return d.day === now.getDate() && d.month === now.getMonth() + 1;
+      });
+    }
+
+    function datesTomorrow() {
+      const tmw = new Date();
+      tmw.setDate(tmw.getDate() + 1);
+      return (state.dates || []).filter(function (d) {
+        return d.day === tmw.getDate() && d.month === tmw.getMonth() + 1;
+      });
     }
 
     function canNotify() {
@@ -4661,6 +4687,11 @@
         "Сегодня твой день. Я помню. И я здесь.",
         "Эта дата у меня в руках. Не отдам.",
         "Важный день. Без фанфар — с объятием."
+      ],
+      eve: [
+        "У тебя же завтра день, который ты ждал. Я рядом.",
+        "Завтра тот самый день. Можно не собираться в броню заранее.",
+        "Накануне. Я помню, что завтра важно."
       ]
     };
 
@@ -4730,7 +4761,8 @@
         miss: "соскучилась. День. Коротко, без нытья и без «ты давно не заходил» слово в слово.",
         night: "вечер или ночь. Можно пожелать спокойной ночи своими словами, можно просто посидеть рядом.",
         because: "без повода. Зашла, потому что захотела.",
-        date: "сегодня важный день: " + (extra || "его дата") + ". Поздравь тепло, без открытки из магазина."
+        date: "сегодня важный день: " + (extra || "его дата") + ". Поздравь тепло, без открытки из магазина. Не говори «напоминаю» и не читай календарь.",
+        eve: "завтра важный день: " + (extra || "его дата") + ". Напомни тепло, своими словами, в духе «у тебя же завтра день, который ты ждал». Без канцелярита, без анкеты, без «я запомнила»."
       }[kind] || "";
       const used = (loadCare().usedLines || []).slice(-8).join(" | ");
       try {
