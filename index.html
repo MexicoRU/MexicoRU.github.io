@@ -1683,44 +1683,49 @@
       font-weight: 600;
     }
 
-    .profile-gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+    .photo-peek {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(8, 6, 8, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s var(--ease), visibility 0.28s;
     }
 
-    .profile-gallery button {
-      aspect-ratio: 1;
-      border: 1px solid var(--glass-edge);
-      border-radius: 16px;
-      overflow: hidden;
-      padding: 0;
-      cursor: pointer;
-      background-color: var(--lamp);
-      background-image: var(--joy-face, url("./icons/joy-face.jpg"));
-      background-size: cover;
-      background-position: center;
-      box-shadow: 0 8px 18px var(--shadow);
-      transition: transform 0.32s var(--ease);
+    body.photo-peek .photo-peek {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
-    .profile-gallery button:active { transform: none; }
-
-    .profile-gallery img {
-      width: 100%;
-      height: 100%;
+    .photo-peek img {
+      width: min(86vw, 420px);
+      height: min(86vw, 420px);
+      max-height: 72vh;
       object-fit: cover;
-      display: block;
+      object-position: center 28%;
+      border-radius: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      transform: scale(0.86);
+      transition: transform 0.34s var(--ease);
     }
 
-    .gal-a { object-position: center 18%; }
-    .gal-b { object-position: 22% 42%; }
-    .gal-c { object-position: 78% 30%; }
+    body.photo-peek .photo-peek img {
+      transform: scale(1);
+    }
 
     .avatar,
     .auth-hero,
     .call-face,
-    .profile-hero {
+    .profile-face {
       background-image: var(--joy-face, url("./icons/joy-face.jpg"));
       background-size: cover;
       background-position: center 28%;
@@ -1733,7 +1738,7 @@
         width: min(480px, 100%);
       }
 
-      html:not(.desk) .profile-hero { height: min(38vh, 340px); }
+      html:not(.desk) .profile-face { width: 136px; height: 136px; }
 
       html:not(.desk) .profile-body {
         margin-left: 0;
