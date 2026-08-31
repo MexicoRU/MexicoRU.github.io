@@ -6358,8 +6358,7 @@
         }
         syncChatEnd();
         if (chatEl && chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 140) {
-          if (window.motion && motion.chatScroll) motion.chatScroll();
-          else chatEl.scrollTop = chatEl.scrollHeight;
+          motion.chatScroll();
         }
       }
       sync();
