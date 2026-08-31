@@ -11,6 +11,12 @@
     "memory": {
       ".read": true,
       ".write": true
+    },
+    "learn": {
+      "$uid": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
