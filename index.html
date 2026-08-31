@@ -7228,11 +7228,17 @@
     micBtn.addEventListener("click", toggleMic);
     callBtn.addEventListener("click", () => startCall());
     hangBtn.addEventListener("click", () => endCall());
-    document.getElementById("brand").addEventListener("click", openProfile);
-    document.getElementById("brand").addEventListener("keydown", function (e) {
+    document.getElementById("headerAvatar").addEventListener("click", function (e) {
+      e.stopPropagation();
+      openMediaStory();
+    });
+    document.getElementById("brandMeta").addEventListener("click", function () {
+      openProfile("chat");
+    });
+    document.getElementById("brandMeta").addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        openProfile();
+        openProfile("chat");
       }
     });
     document.getElementById("emojiBtn").addEventListener("click", function (e) {
