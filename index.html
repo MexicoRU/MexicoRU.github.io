@@ -5309,9 +5309,6 @@
     document.getElementById("nightAuto").addEventListener("click", () => setNightPref("auto"));
     document.getElementById("nightOn").addEventListener("click", () => setNightPref("on"));
     document.getElementById("nightOff").addEventListener("click", () => setNightPref("off"));
-    document.getElementById("voiceFemale").addEventListener("click", () => setYandexVoice("oksana", true));
-    document.getElementById("voiceMale").addEventListener("click", () => setYandexVoice("ermil", true));
-    document.getElementById("voiceSelect").addEventListener("change", (e) => setYandexVoice(e.target.value, true));
     document.getElementById("settingsBtn").addEventListener("click", () => sheet.classList.add("open"));
     document.getElementById("notifyOn").addEventListener("click", () => enableNotify());
     document.getElementById("notifyOff").addEventListener("click", () => disableNotify());
@@ -5319,13 +5316,6 @@
     document.getElementById("refreshChat").addEventListener("click", () => refreshChat());
     document.getElementById("authSignOut").addEventListener("click", signOutAccount);
 
-    document.getElementById("soundUnlock").addEventListener("click", function (e) {
-      e.preventDefault();
-      unlockAudio();
-      setTimeout(function () {
-        if (state.audioCtx && state.audioCtx.state === "running") markAudioUnlocked();
-      }, 80);
-    });
     document.addEventListener("visibilitychange", function () {
       applyNight();
       if (!document.hidden && state.audioCtx) {
