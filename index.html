@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="21">
+<html lang="ru" data-joy-build="22">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -1016,9 +1016,76 @@
 
     .sheet.open .sheet-card { transform: translateY(0); }
 
+    .icon-btn.theme-sun svg {
+      width: 20px;
+      height: 20px;
+      overflow: visible;
+    }
+
+    .theme-sun .sun-core {
+      fill: var(--lamp);
+      stroke: none;
+      transition: fill 0.35s var(--ease), stroke 0.35s var(--ease), r 0.35s var(--ease);
+    }
+
+    .theme-sun .sun-rays {
+      stroke: var(--lamp);
+      fill: none;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      opacity: 1;
+      transform-origin: 12px 12px;
+      transition: opacity 0.35s var(--ease), stroke 0.35s var(--ease);
+    }
+
+    body.dark .theme-sun .sun-core {
+      fill: none;
+      stroke: var(--lamp);
+      stroke-width: 1.7;
+    }
+
+    body.dark .theme-sun .sun-rays {
+      opacity: 0.55;
+    }
+
+    body.night .theme-sun .sun-rays {
+      opacity: 0.32;
+    }
+
+    .sound-unlock {
+      display: none !important;
+    }
+
+    .set-block {
+      margin: 0 0 18px;
+      padding: 4px 0 2px;
+    }
+
+    .set-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .set-block h3 {
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 4px;
+    }
+
+    .set-block .row {
+      padding: 12px 0;
+    }
+
+    .set-block .hint {
+      margin: 0 0 4px;
+      padding-bottom: 8px;
+    }
+
     .sheet-card h2 {
-      font-size: 1.05rem;
-      margin-bottom: 14px;
+      font-size: 1.15rem;
+      margin-bottom: 8px;
     }
 
     .row {
