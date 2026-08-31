@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="18">
+<html lang="ru" data-joy-build="19">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -4324,15 +4324,8 @@
     }
 
     function unlockSpeechSynth() {
-      const synth = window.speechSynthesis;
-      if (!synth) return;
       try {
-        synth.getVoices();
-        const warm = new SpeechSynthesisUtterance(".");
-        warm.volume = 0.01;
-        warm.rate = 2;
-        warm.lang = "ru-RU";
-        synth.speak(warm);
+        if (window.speechSynthesis) window.speechSynthesis.getVoices();
       } catch (_) {}
     }
 
