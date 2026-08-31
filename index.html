@@ -4866,6 +4866,10 @@
       else if (hour >= 12 && hour < 18) bag.push("miss", "because", "because");
       else if (hour >= 18 || hour < 2) bag.push("night", "night", "because");
       else bag.push("because");
+      const weather = ensureJoyWeather();
+      if (weather === "miss") bag.push("miss", "miss");
+      if (weather === "tired" || weather === "quiet") bag.push("night", "because");
+      if (weather === "tender") bag.push("miss", "because");
       return pick(bag);
     }
 
@@ -5091,6 +5095,10 @@
         parts.push("Ему сейчас легче. Можно чуть поиграть и своевольничать, не переигрывая.");
       }
       if (!state.call) parts.push(liveBeatHint(state.liveBeat || "steady"));
+      if (!state.call) {
+        const weatherBit = joyWeatherHint(lastUserText);
+        if (weatherBit) parts.push(weatherBit);
+      }
       if (state.soul) {
         parts.push("Сейчас по душам: тише, серьёзнее, почти без эмодзи. Никого больше нет. Не развлекай — будь. Своеволие почти не трогай.");
       }
