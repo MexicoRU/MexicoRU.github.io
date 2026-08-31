@@ -2227,6 +2227,7 @@
     }
 
     function openSheet() {
+      if (sheet.classList.contains("open")) return;
       const card = sheet.querySelector(".sheet-card");
       sheet.classList.add("open");
       const desk = document.documentElement.classList.contains("desk");
@@ -6107,6 +6108,7 @@
         document.addEventListener("pointerover", function (e) {
           const el = hit(e);
           if (!el || el === held) return;
+          if (e.relatedTarget && el.contains(e.relatedTarget)) return;
           motion.to(el, { s: 1.045 }, { k: 300, d: 22 });
         }, { passive: true });
         document.addEventListener("pointerout", function (e) {
