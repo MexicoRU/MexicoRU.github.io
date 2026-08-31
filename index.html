@@ -2083,11 +2083,14 @@
       </div>
 
       <div class="composer">
+        <div class="emoji-panel" id="emojiPanel" hidden></div>
         <button class="icon-btn" id="photoBtn" title="Фото" aria-label="Прикрепить фото">
           <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="m21 16-4.8-4.8a2 2 0 0 0-2.8 0L7 18"/></svg>
         </button>
-        <input id="file" type="file" accept="image/*,image/jpeg,image/png,image/webp,image/heic,image/heif" hidden>
-        <input id="text" type="text" placeholder="Ну, расскажи..." autocomplete="off">
+        <button class="icon-btn" id="emojiBtn" title="Эмодзи" aria-label="Эмодзи">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 14.2c.9 1.3 2.2 2 3.6 2s2.7-.7 3.6-2"/><circle cx="9" cy="10" r="0.9" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="0.9" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <input id="text" type="text" placeholder="Ну, расскажи..." autocomplete="off" enterkeyhint="send" inputmode="text" maxlength="4000">
         <button class="icon-btn" id="micBtn" title="Голос" aria-label="Голосовой ввод">
           <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
         </button>
