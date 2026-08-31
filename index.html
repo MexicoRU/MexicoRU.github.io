@@ -3140,9 +3140,11 @@
 
     function applyNight() {
       const on = nightWanted();
+      const was = document.body.classList.contains("night");
       document.body.classList.toggle("night", on);
       syncNightPills();
       syncThemeColor();
+      if (was !== on) morphChrome();
     }
 
     function setNightPref(pref) {
