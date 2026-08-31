@@ -2853,9 +2853,6 @@
     function applyNight() {
       const on = nightWanted();
       document.body.classList.toggle("night", on);
-      nightBtn.classList.toggle("active", on);
-      nightBtn.setAttribute("aria-pressed", on ? "true" : "false");
-      nightBtn.title = on ? "Выключить ночной режим" : "Ночной режим";
       syncNightPills();
       syncThemeColor();
     }
@@ -2919,8 +2916,10 @@
     }
 
     function syncVoicePills() {
-      document.getElementById("voiceFemale").classList.toggle("on", state.voiceGender === "female");
-      document.getElementById("voiceMale").classList.toggle("on", state.voiceGender === "male");
+      const female = document.getElementById("voiceFemale");
+      const male = document.getElementById("voiceMale");
+      if (female) female.classList.toggle("on", state.voiceGender === "female");
+      if (male) male.classList.toggle("on", state.voiceGender === "male");
       const select = document.getElementById("voiceSelect");
       if (select && YANDEX_VOICES[state.yandexVoice]) select.value = state.yandexVoice;
       syncAvatar();
