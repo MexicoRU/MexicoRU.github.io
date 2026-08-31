@@ -4298,6 +4298,8 @@
         el.setAttribute("webkit-playsinline", "true");
         el.playsInline = true;
         el.preload = "auto";
+        el.referrerPolicy = "no-referrer";
+        el.setAttribute("referrerpolicy", "no-referrer");
         if (!el.parentNode) document.body.appendChild(el);
         state.audioEl = el;
       }
@@ -4691,6 +4693,150 @@
       }
     }
 
+    function ttsUuid() {
+      if (crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "").toUpperCase();
+      let s = "";
+      for (let i = 0; i < 32; i++) s += "0123456789ABCDEF".charAt(Math.floor(Math.random() * 16));
+      return s;
+    }
+
+    async function sha256Hex(text) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(function (b) {
+        return ("0" + b.toString(16)).slice(-2);
+      }).join("").toUpperCase();
+    }
+
+    async function edgeSecMsGec() {
+      const token = "6A5AA1D4EAFF4E9FB37E23D6840D1F63";
+      let ticks = Math.floor((Date.now() / 1000 + 11644473600) * 10000000);
+      ticks -= ticks % 3000000000;
+      return sha256Hex(String(ticks) + token);
+    }
+
+    function edgeVoiceName() {
+      return /zahar|ermil/i.test(state.yandexVoice || "") ? "ru-RU-DmitryNeural" : "ru-RU-SvetlanaNeural";
+    }
+
+    function escapeSsml(text) {
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function playAudioBuffer(arrayBuffer, mime, volume) {
+      return new Promise(function (resolve, reject) {
+        if (!arrayBuffer || arrayBuffer.byteLength < 80) {
+          reject(new Error("empty audio"));
+          return;
+        }
+        if (state.audioUrl) {
+          URL.revokeObjectURL(state.audioUrl);
+          state.audioUrl = "";
+        }
+        const url = URL.createObjectURL(new Blob([arrayBuffer], { type: mime || "audio/mpeg" }));
+        const el = getSpeechEl();
+        el.muted = false;
+        el.loop = false;
+        el.playsInline = true;
+        el.referrerPolicy = "no-referrer";
+        el.volume = volume == null ? 1 : volume;
+        el.src = url;
+        state.audioUrl = url;
+        let settled = false;
+        const done = function (ok) {
+          if (settled) return;
+          settled = true;
+          if (ok) resolve(true);
+          else reject(new Error("play"));
+        };
+        el.onended = function () { done(true); };
+        el.onerror = function () { done(false); };
+        const play = el.play();
+        if (play && play.catch) play.catch(function () { done(false); });
+        setTimeout(function () { done(!!(el.currentTime > 0.05 && !el.paused)); }, 8000);
+      });
+    }
+
+    async function speakEdge(text) {
+      const token = "6A5AA1D4EAFF4E9FB37E23D6840D1F63";
+      const requestId = ttsUuid();
+      const gec = await edgeSecMsGec();
+      const url = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1"
+        + "?TrustedClientToken=" + token
+        + "&ConnectionId=" + requestId
+        + "&Sec-MS-GEC=" + gec
+        + "&Sec-MS-GEC-Version=" + encodeURIComponent("1-130.0.2849.68");
+      const rate = state.soul ? "-12%" : "-4%";
+      const ssml = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"ru-RU\">"
+        + "<voice name=\"" + edgeVoiceName() + "\">"
+        + "<prosody rate=\"" + rate + "\">" + escapeSsml(text) + "</prosody>"
+        + "</voice></speak>";
+      const chunks = [];
+      await new Promise(function (resolve, reject) {
+        const ws = new WebSocket(url);
+        let opened = false;
+        const timer = setTimeout(function () {
+          try { ws.close(); } catch (_) {}
+          reject(new Error("edge timeout"));
+        }, 12000);
+        ws.binaryType = "arraybuffer";
+        ws.onerror = function () {
+          clearTimeout(timer);
+          reject(new Error("edge ws"));
+        };
+        ws.onopen = function () {
+          opened = true;
+          const stamp = new Date().toISOString();
+          ws.send(
+            "X-Timestamp:" + stamp + "\r\n"
+            + "Content-Type:application/json; charset=utf-8\r\n"
+            + "Path:speech.config\r\n\r\n"
+            + '{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":false,"wordBoundaryEnabled":false},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}'
+          );
+          ws.send(
+            "X-RequestId:" + requestId + "\r\n"
+            + "Content-Type:application/ssml+xml\r\n"
+            + "X-Timestamp:" + stamp + "Z\r\n"
+            + "Path:ssml\r\n\r\n"
+            + ssml
+          );
+        };
+        ws.onmessage = function (ev) {
+          if (typeof ev.data === "string") {
+            if (/Path:turn.end/i.test(ev.data)) {
+              clearTimeout(timer);
+              try { ws.close(); } catch (_) {}
+              resolve();
+            }
+            return;
+          }
+          const raw = ev.data instanceof ArrayBuffer ? new Uint8Array(ev.data) : new Uint8Array(ev.data);
+          if (raw.byteLength < 2) return;
+          const headerLen = (raw[0] << 8) | raw[1];
+          const audio = raw.subarray(2 + headerLen);
+          if (audio.byteLength) chunks.push(audio);
+        };
+        ws.onclose = function () {
+          clearTimeout(timer);
+          if (opened) resolve();
+          else reject(new Error("edge closed"));
+        };
+      });
+      let total = 0;
+      for (let i = 0; i < chunks.length; i++) total += chunks[i].byteLength;
+      const out = new Uint8Array(total);
+      let off = 0;
+      for (let i = 0; i < chunks.length; i++) {
+        out.set(chunks[i], off);
+        off += chunks[i].byteLength;
+      }
+      const volume = state.soul ? 0.72 : 1;
+      await playAudioBuffer(out.buffer, "audio/mpeg", volume);
+    }
+
     async function speak(text) {
       const clean = cleanSpeakText(text);
       if (!clean) return;
@@ -4700,14 +4846,17 @@
         return;
       }
       stopSpeech();
-      try {
-        await speakYandex(clean);
+      const github = /github\.io/i.test(location.hostname || "");
+      if (github) {
+        try { await speakEdge(clean); return; } catch (_) {}
+        try { await speakYandex(clean); return; } catch (_) {}
+        try { await speakGoogleTranslate(clean); return; } catch (_) {}
+        try { await speakNative(clean); } catch (_) {}
         return;
-      } catch (_) {}
-      try {
-        await speakGoogleTranslate(clean);
-        return;
-      } catch (_) {}
+      }
+      try { await speakYandex(clean); return; } catch (_) {}
+      try { await speakEdge(clean); return; } catch (_) {}
+      try { await speakGoogleTranslate(clean); return; } catch (_) {}
       try { await speakNative(clean); } catch (_) {}
     }
 
