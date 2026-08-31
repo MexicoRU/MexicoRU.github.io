@@ -2854,7 +2854,7 @@
     function signOutAccount() {
       if (state.accountBanned) return;
       clearAccountLocal();
-      sheet.classList.remove("open");
+      closeSheet();
       if (joyAuth) {
         joyAuth.signOut().catch(function () {}).then(function () {
           showLoginGate();
@@ -3210,6 +3210,7 @@
 
     function closeProfile() {
       const el = document.getElementById("profile");
+      if (!document.body.classList.contains("profile-open")) return;
       motion.to(el, { y: 28, s: 0.982, o: 0 }, {
         k: 250,
         d: 26,
