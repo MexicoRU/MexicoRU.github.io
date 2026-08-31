@@ -6976,7 +6976,8 @@
     async function startCall() {
       unlockAudio();
       closeEmojiPanel();
-      closePhotoPeek();
+      closeProfile(true);
+      closeMediaStory();
       if (state.call) {
         endCall();
         return;
