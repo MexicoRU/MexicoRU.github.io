@@ -701,7 +701,8 @@
     .icon-btn.active svg { fill: none; }
     body.calling .app,
     body.calling .sheet,
-    body.calling .profile {
+    body.calling .profile,
+    body.calling .photo-peek {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -2492,6 +2493,7 @@
     }
 
     function openSheet() {
+      closeEmojiPanel();
       if (sheet.classList.contains("open")) return;
       const card = sheet.querySelector(".sheet-card");
       sheet.classList.add("open");
