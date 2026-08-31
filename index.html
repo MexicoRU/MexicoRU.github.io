@@ -390,6 +390,16 @@
         );
     }
 
+    body.soul-mode:not(.dark) .chat-frost-tint {
+      background:
+        linear-gradient(
+          to bottom,
+          color-mix(in srgb, var(--card) 88%, transparent) 0%,
+          color-mix(in srgb, var(--card) 36%, transparent) 48%,
+          transparent 100%
+        );
+    }
+
     .brand {
       display: flex;
       align-items: center;
