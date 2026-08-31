@@ -2838,6 +2838,9 @@
     function hideAuthGates() {
       state.authBusy = false;
       document.body.classList.remove("needs-auth", "account-banned");
+      requestAnimationFrame(function () {
+        window.dispatchEvent(new Event("resize"));
+      });
       const gate = document.getElementById("authGate");
       const ban = document.getElementById("banGate");
       if (gate) {
@@ -6354,6 +6357,10 @@
           root.style.setProperty("--kb", kb + "px");
         }
         syncChatEnd();
+        if (chatEl && chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 140) {
+          if (window.motion && motion.chatScroll) motion.chatScroll();
+          else chatEl.scrollTop = chatEl.scrollHeight;
+        }
       }
       sync();
       requestAnimationFrame(sync);
