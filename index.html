@@ -678,7 +678,8 @@
         0 0 22px color-mix(in srgb, var(--lamp) 42%, transparent);
     }
 
-    .icon-btn.active {
+    .icon-btn.active,
+    .call-launch.active {
       background: color-mix(in srgb, var(--glass) 18%, transparent);
       color: var(--lamp);
       border-color: color-mix(in srgb, var(--lamp) 82%, white 10%);
@@ -1121,6 +1122,16 @@
       animation-delay: 0.7s;
       transition: box-shadow 0.45s var(--ease), border-color 0.45s var(--ease), color 0.45s var(--ease);
       touch-action: manipulation;
+    }
+
+    .send-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .emoji-panel {
