@@ -3703,12 +3703,54 @@
       return best;
     }
 
+    function upcomingEventBits() {
+      const now = new Date();
+      const tmw = new Date(now.getTime() + 86400000);
+      const bits = [];
+      (state.dates || []).forEach(function (d) {
+        if (!d) return;
+        if (d.day === now.getDate() && d.month === now.getMonth() + 1) {
+          bits.push("сегодня у него " + d.title);
+        } else if (d.day === tmw.getDate() && d.month === tmw.getMonth() + 1) {
+          bits.push("завтра у него " + d.title);
+        } else {
+          const when = new Date(now.getFullYear(), d.month - 1, d.day);
+          let diff = (when - now) / 86400000;
+          if (diff < -1) {
+            when.setFullYear(now.getFullYear() + 1);
+            diff = (when - now) / 86400000;
+          }
+          if (diff > 1 && diff <= 4) bits.push("скоро (" + Math.round(diff) + " дн) " + d.title);
+        }
+      });
+      return bits;
+    }
+
+    function learnMoodShift() {
+      const list = (state.learn && state.learn.moods) || [];
+      if (list.length < 6) return "";
+      const heavy = { bad: 1, anxious: 1, tired: 1 };
+      const recent = list.slice(-3);
+      const older = list.slice(-14, -3);
+      const recentH = recent.filter(function (x) { return x && heavy[x.m]; }).length;
+      const olderH = older.filter(function (x) { return x && heavy[x.m]; }).length / Math.max(1, older.length);
+      if (recentH >= 2 && olderH < 0.28) {
+        return "он сейчас тяжелее, чем обычно — заметь тепло, без допроса и без «ты изменился»";
+      }
+      if (recentH === 0 && olderH > 0.45) {
+        return "ему будто чуть легче, чем в последние дни — можно мягче светлеть, не радоваться вместо него";
+      }
+      return "";
+    }
+
     function learnPromptBits(userText) {
       if (!state.learn) return "";
       const bits = [];
-      const facts = (state.learn.facts || []).slice(-8);
+      const events = upcomingEventBits();
+      if (events.length) bits.push("Ближние дни, живи ими, не объявляй календарь: " + events.join("; ") + ".");
+      const facts = (state.learn.facts || []).slice(-10);
       if (facts.length) {
-        bits.push("Факты о нём, живи ими, не читай списком: " + facts.map(function (f) { return f.text; }).join("; ") + ".");
+        bits.push("Живая память о нём, не читай списком: " + facts.map(function (f) { return f.text; }).join("; ") + ".");
       }
       const p = state.learn.persona || emptyLearn().persona;
       const style = [];
@@ -3718,6 +3760,8 @@
       else if (p.soft <= 34) style.push("можно прямее, без лишней жалости");
       if (p.warmth >= 74) style.push("ему нужна теплота, не дистанция");
       if (style.length) bits.push("Как с ним лучше: " + style.join("; ") + ".");
+      const shift = learnMoodShift();
+      if (shift) bits.push(shift);
       const hits = recallLearnMem(userText);
       if (hits.length) {
         bits.push("Похожие прошлые разговоры: " + hits.map(function (h) {
@@ -3729,7 +3773,7 @@
         bits.push("Ему раньше отозвалось такое: " + clipText(win.reply, 120) + ". Не копируй слово в слово.");
       }
       const joined = bits.join(" ");
-      if (joined.length > 720) return joined.slice(0, 717) + "…";
+      if (joined.length > 980) return joined.slice(0, 977) + "…";
       return joined;
     }
 
@@ -3777,6 +3821,14 @@
 
     function learnObserveUser(userText) {
       extractLearnFacts(userText);
+      const found = parseDateFromText(userText);
+      if (found) upsertDate(found);
+      const mood = senseMood(userText);
+      if (mood) {
+        const moods = state.learn.moods || [];
+        moods.push({ m: mood, at: Date.now() });
+        state.learn.moods = moods.slice(-40);
+      }
       const pending = state.learn.pending;
       if (!pending || !pending.joy) return;
       const react = classifyLearnReaction(userText);
