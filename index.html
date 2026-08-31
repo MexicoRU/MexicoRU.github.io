@@ -6667,6 +6667,8 @@
 
     async function startCall() {
       unlockAudio();
+      closeEmojiPanel();
+      closePhotoPeek();
       if (state.call) {
         endCall();
         return;
@@ -6743,6 +6745,7 @@
 
     async function send(text) {
       unlockAudio();
+      closeEmojiPanel();
       const value = (text ?? inputEl.value).trim();
       if (!value) return;
       if (state.call && state.listening) {
