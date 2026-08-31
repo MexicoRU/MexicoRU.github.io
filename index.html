@@ -6043,7 +6043,7 @@
     document.getElementById("profileCall").addEventListener("click", () => startCall());
     document.getElementById("profileWrite").addEventListener("click", function () {
       closeProfile();
-      setTimeout(function () { inputEl.focus(); }, 280);
+      motion.wait(280).then(function () { inputEl.focus(); });
     });
     document.querySelectorAll(".profile-gallery button").forEach(function (btn) {
       btn.addEventListener("click", function () {
