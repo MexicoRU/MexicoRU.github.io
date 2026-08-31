@@ -3852,37 +3852,32 @@
       if (on) fillEmojiPanel(panel);
     }
 
-    function openProfile() {
+    function openProfile(from) {
       if (state.call) return;
+      closeEmojiPanel();
       syncAvatar();
+      renderJoyPosts();
+      state.profileFrom = from || "chat";
       const el = document.getElementById("profile");
-      document.body.classList.add("profile-open");
-      el.setAttribute("aria-hidden", "false");
-      el.style.visibility = "visible";
-      el.style.pointerEvents = "auto";
-      motion.to(el, { y: 0, s: 1, o: 1 }, {
-        from: { y: 42, s: 0.97, o: 0 },
-        k: 210,
-        d: 20
-      });
+      setProfileFaceOpen(false);
+      if (document.body.classList.contains("profile-open")) return;
+      showOverlay(el, "profile-open");
     }
 
-    function closeProfile() {
-      closePhotoPeek();
+    function closeProfile(silent) {
       const el = document.getElementById("profile");
       if (!document.body.classList.contains("profile-open")) return;
-      motion.to(el, { y: 28, s: 0.982, o: 0 }, {
-        k: 250,
-        d: 26,
-        onDone: function () {
-          document.body.classList.remove("profile-open");
-          el.setAttribute("aria-hidden", "true");
-          el.style.visibility = "";
-          el.style.pointerEvents = "";
-          el.style.transform = "";
-          el.style.opacity = "";
-        }
-      });
+      setProfileFaceOpen(false);
+      if (silent) {
+        document.body.classList.remove("profile-open");
+        el.setAttribute("aria-hidden", "true");
+        el.style.visibility = "";
+        el.style.pointerEvents = "";
+        el.style.transform = "";
+        el.style.opacity = "";
+        return;
+      }
+      hideOverlay(el, "profile-open");
     }
 
     function syncVoicePills() {
