@@ -7251,22 +7251,47 @@
       if (bar.contains(e.target)) return;
       closeEmojiPanel();
     });
-    document.getElementById("profileFace").addEventListener("click", openPhotoPeek);
-    document.getElementById("photoPeek").addEventListener("click", closePhotoPeek);
+    document.getElementById("profileFace").addEventListener("click", function () {
+      const el = document.getElementById("profile");
+      setProfileFaceOpen(!(el && el.classList.contains("face-open")));
+    });
     document.getElementById("profileBack").addEventListener("click", closeProfile);
+    document.getElementById("mediaBack").addEventListener("click", closeMediaStory);
+    document.getElementById("mediaAvatar").addEventListener("click", function () {
+      openProfile("media");
+    });
+    const profileScroll = document.querySelector(".profile-scroll");
+    if (profileScroll) {
+      profileScroll.addEventListener("scroll", function () {
+        const el = document.getElementById("profile");
+        if (el && el.classList.contains("face-open") && profileScroll.scrollTop > 28) {
+          setProfileFaceOpen(false);
+        }
+      }, { passive: true });
+    }
     document.getElementById("profileCall").addEventListener("click", () => startCall());
     document.getElementById("profileWrite").addEventListener("click", function () {
-      closeProfile();
+      closeProfile(true);
+      closeMediaStory();
       motion.wait(280).then(function () { inputEl.focus(); });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && document.body.classList.contains("photo-peek")) {
-        closePhotoPeek();
+      if (e.key !== "Escape") return;
+      const face = document.getElementById("profile");
+      if (face && face.classList.contains("face-open")) {
+        setProfileFaceOpen(false);
         return;
       }
-      if (e.key === "Escape" && document.body.classList.contains("profile-open") && !state.call) closeProfile();
-      if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet();
-      if (e.key === "Escape") closeEmojiPanel();
+      if (document.body.classList.contains("profile-open") && !state.call) {
+        closeProfile();
+        return;
+      }
+      if (document.body.classList.contains("media-open") && !state.call) {
+        closeMediaStory();
+        return;
+      }
+      if (sheet.classList.contains("open")) closeSheet();
+      closeEmojiPanel();
     });
     soulBtn.addEventListener("click", () => setSoul(!state.soul, true));
     themeBtn.addEventListener("click", () => {
