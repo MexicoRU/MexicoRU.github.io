@@ -3871,9 +3871,9 @@
       (state.dates || []).forEach(function (d) {
         if (!d) return;
         if (d.day === now.getDate() && d.month === now.getMonth() + 1) {
-          bits.push("сегодня у него " + d.title);
+          bits.push("сегодня " + himHer("у него ", "у неё ", "") + d.title);
         } else if (d.day === tmw.getDate() && d.month === tmw.getMonth() + 1) {
-          bits.push("завтра у него " + d.title);
+          bits.push("завтра " + himHer("у него ", "у неё ", "") + d.title);
         } else {
           const when = new Date(now.getFullYear(), d.month - 1, d.day);
           let diff = (when - now) / 86400000;
@@ -3896,7 +3896,7 @@
       const recentH = recent.filter(function (x) { return x && heavy[x.m]; }).length;
       const olderH = older.filter(function (x) { return x && heavy[x.m]; }).length / Math.max(1, older.length);
       if (recentH >= 2 && olderH < 0.28) {
-        return "он сейчас тяжелее, чем обычно — заметь тепло, без допроса и без «ты изменился»";
+        return himHer("он", "она", "собеседник") + " сейчас тяжелее, чем обычно — заметь тепло, без допроса и без «ты изменился»";
       }
       if (recentH === 0 && olderH > 0.45) {
         return "ему будто чуть легче, чем в последние дни — можно мягче светлеть, не радоваться вместо него";
