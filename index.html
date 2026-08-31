@@ -584,47 +584,32 @@
     }
 
     .call-launch {
-      width: 50px;
-      height: 50px;
+      width: 44px;
+      height: 44px;
       margin-left: 8px;
       flex-shrink: 0;
-      border: none;
+      border: 1px solid color-mix(in srgb, var(--lamp) 55%, var(--glass-edge));
       border-radius: 50%;
-      background: #2aae66;
-      color: #fff;
+      background: color-mix(in srgb, var(--glass) 22%, transparent);
+      backdrop-filter: blur(18px) saturate(1.45);
+      -webkit-backdrop-filter: blur(18px) saturate(1.45);
+      color: var(--text);
       cursor: pointer;
       display: grid;
       place-items: center;
-      box-shadow: 0 8px 18px rgba(42, 174, 102, 0.32);
-      transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), background 0.28s var(--ease);
+      box-shadow: inset 0 1px 0 var(--glass-hi);
+      transition: box-shadow 0.45s var(--ease), background 0.45s var(--ease), border-color 0.45s var(--ease), color 0.45s var(--ease);
       touch-action: manipulation;
     }
 
     .call-launch svg {
-      width: 22px;
-      height: 22px;
-      stroke: #fff;
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
       fill: none;
-      stroke-width: 1.85;
+      stroke-width: 1.7;
       stroke-linecap: round;
       stroke-linejoin: round;
-    }
-
-    .call-launch:active {
-      transform: scale(0.94);
-      background: #24965a;
-    }
-
-    .call-launch.active {
-      background: #2aae66;
-      box-shadow: 0 8px 18px rgba(42, 174, 102, 0.32);
-    }
-
-    @media (hover: hover) {
-      .call-launch:hover {
-        background: #32c074;
-        box-shadow: 0 10px 22px rgba(42, 174, 102, 0.42);
-      }
     }
 
     .icon-btn {
@@ -659,7 +644,8 @@
     }
 
     @media (hover: hover) {
-      .icon-btn:hover {
+      .icon-btn:hover,
+      .call-launch:hover {
         border-color: color-mix(in srgb, var(--lamp) 78%, white 10%);
         box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 16px color-mix(in srgb, var(--glow) 80%, transparent);
       }
@@ -681,6 +667,7 @@
     }
 
     .icon-btn:active,
+    .call-launch:active,
     .send-btn:active,
     .pill:active,
     .profile-actions button:active {
