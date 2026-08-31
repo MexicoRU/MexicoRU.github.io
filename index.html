@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="35">
+<html lang="ru" data-joy-build="36">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -2116,7 +2116,8 @@
       uid: "joy_uid",
       authProvider: "joy_auth_provider",
       banned: "joy_banned_ids",
-      primaryApple: "joy_primary_apple_id"
+      primaryApple: "joy_primary_apple_id",
+      userSex: "joy_user_sex"
     };
 
     const chatEl = document.getElementById("chat");
@@ -2374,7 +2375,9 @@
         pending: null,
         at: 0
       },
-      learnSaveTimer: 0
+      learnSaveTimer: 0,
+      liveBeat: "steady",
+      userSex: localStorage.getItem("joy_user_sex") || ""
     };
 
     let joyAuth = null;
