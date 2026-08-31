@@ -3193,13 +3193,32 @@
     function openProfile() {
       if (state.call) return;
       syncAvatar();
+      const el = document.getElementById("profile");
       document.body.classList.add("profile-open");
-      document.getElementById("profile").setAttribute("aria-hidden", "false");
+      el.setAttribute("aria-hidden", "false");
+      el.style.visibility = "visible";
+      el.style.pointerEvents = "auto";
+      motion.to(el, { y: 0, s: 1, o: 1 }, {
+        from: { y: 42, s: 0.97, o: 0 },
+        k: 210,
+        d: 20
+      });
     }
 
     function closeProfile() {
-      document.body.classList.remove("profile-open");
-      document.getElementById("profile").setAttribute("aria-hidden", "true");
+      const el = document.getElementById("profile");
+      motion.to(el, { y: 28, s: 0.982, o: 0 }, {
+        k: 250,
+        d: 26,
+        onDone: function () {
+          document.body.classList.remove("profile-open");
+          el.setAttribute("aria-hidden", "true");
+          el.style.visibility = "";
+          el.style.pointerEvents = "";
+          el.style.transform = "";
+          el.style.opacity = "";
+        }
+      });
     }
 
     function syncVoicePills() {
@@ -5005,7 +5024,9 @@
       pushMessage("joy", parts[0]);
       const voice = speak(parts.join(" "));
       parts.slice(1).forEach(function (line, i) {
-        setTimeout(function () { pushMessage("joy", line); }, (i + 1) * (state.soul ? 200 : 130));
+        motion.wait((i + 1) * (state.soul ? 210 : 150)).then(function () {
+          pushMessage("joy", line);
+        });
       });
       await voice;
     }
