@@ -4173,7 +4173,7 @@
       const mood = senseMood(userText);
       const heavy = mood === "bad" || mood === "anxious" || mood === "tired";
       if (heavy) {
-        return "Ему сейчас тяжелее, чем тебе. Можно быть тихой или чуть уязвимой, но не тяни своё состояние на первый план. Не ной. Рядом.";
+        return himHer("Ему", "Ей", "Человеку напротив") + " сейчас тяжелее, чем тебе. Можно быть тише или чуть уязвимее, но не тяни своё состояние на первый план. Не ной. Рядом.";
       }
       if (weather === "quiet") {
         return said
@@ -5054,7 +5054,7 @@
     }
 
     async function inventFeelLine(kind, extra) {
-      const name = state.userName || "боец";
+      const name = state.userName || youSoft() || "ты";
       const moodHint = {
         morning: "утро. Можно пожелать доброго, но не обязан. Как с подушки, живо.",
         miss: "соскучилась. День. Коротко, без нытья и без «ты давно не заходил» слово в слово.",
@@ -5551,7 +5551,7 @@
     async function getJoyPhotoReply(dataUrl) {
       const local = await analyzePhotoLocal(dataUrl);
       const compact = await shrinkImageDataUrl(dataUrl, 768, 0.72);
-      const name = state.userName || "боец";
+      const name = state.userName || youSoft() || "";
       const seen = describeLocalPhoto(local);
       try {
         saveMemory(loadMemory().concat([{ role: "user", text: "(фото: " + seen + ")" }]));
