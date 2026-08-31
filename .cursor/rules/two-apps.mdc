@@ -1,0 +1,17 @@
+---
+description: Keep the Joy chat app and the nails website as two separate projects
+alwaysApply: true
+---
+
+# Two apps, never swap files
+
+This folder contains two independent products. Never overwrite one with the other. Never copy one `index.html` onto the other.
+
+1. **Chat «Джой»** — `/index.html` plus `joy-avatar.jpg` and `joy-avatar-male.jpg`. Edit only these when the user talks about the companion, chat, calls, profile, night mode.
+2. **Сайт Joy Style Nails** — `/nails/` (`nails/index.html`, `nails/css/`, `nails/js/`, `nails/images/`). Edit only this tree when the user talks about the manicure studio website.
+3. **Сайт фитнес-клуба ONYX** — `/fitness/index.html`. Edit only this file when the user talks about the fitness club landing page.
+4. **Сайт психолога** — `/psychologist/` (`psychologist/index.html`, `psychologist/css/`, `psychologist/js/`). Edit only this tree when the user talks about the psychologist landing page.
+5. **Сайт такси NORD TAXI** — `/taxi/` (`taxi/index.html`, `taxi/css/`, `taxi/js/`). Edit only this tree when the user talks about the taxi service website.
+6. **Сайт репетитора** — `/tutor/` (`tutor/index.html`, `tutor/css/`, `tutor/js/`). Edit only this tree when the user talks about the tutor landing page.
+
+Do not merge them. Do not delete one to make room for the other. If several need changes, change each in its own files.

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NORD TAXI — вызов такси за минуту. Быстро, безопасно, круглосуточно.">
+  <title>NORD TAXI — вызвать такси за минуту</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержимому</a>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a class="logo" href="#hero" aria-label="NORD TAXI — на главную">
+        <span class="logo__mark" aria-hidden="true"></span>
+        NORD TAXI
+      </a>
+      <nav class="nav" id="nav" aria-label="Основная навигация">
+        <a href="#advantages">Преимущества</a>
+        <a href="#tariffs">Тарифы</a>
+        <a href="#order">Как заказать</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+      <a class="btn btn--yellow header__call" href="tel:+79991234567">Вызвать</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Открыть меню">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="hero">
+      <div class="hero__grid" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <p class="eyebrow">Городское такси · 24/7</p>
+        <h1>Вызвать такси<br>за минуту</h1>
+        <p class="hero__lead">NORD TAXI — подача по городу без ожидания. Фиксированная цена до поездки, проверенные водители, чистые автомобили.</p>
+        <div class="hero__actions">
+          <a class="btn btn--yellow btn--lg" href="tel:+79991234567">Позвонить сейчас</a>
+          <a class="btn btn--ghost btn--lg" href="#tariffs">Смотреть тарифы</a>
+        </div>
+        <dl class="hero__stats">
+          <div>
+            <dt>3–7 мин</dt>
+            <dd>средняя подача</dd>
+          </div>
+          <div>
+            <dt>4.9</dt>
+            <dd>оценка сервиса</dd>
+          </div>
+          <div>
+            <dt>24/7</dt>
+            <dd>диспетчер на линии</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section" id="advantages">
+      <div class="container">
+        <p class="eyebrow">Почему мы</p>
+        <h2>Быстро. Безопасно.<br>Круглосуточно.</h2>
+        <div class="cards cards--3">
+          <article class="card">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Быстро</h3>
+            <p>Машина рядом — диспетчер назначает ближайшего водителя. Обычно выезжаем за 3–7 минут.</p>
+          </article>
+          <article class="card">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V7l8-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Безопасно</h3>
+            <p>Водители с документами и стажем. Поездка с трекингом, страховка пассажиров, поддержка на связи.</p>
+          </article>
+          <article class="card">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            <h3>Круглосуточно</h3>
+            <p>Ночной рейс, аэропорт, вокзал — принимаем заказы в любое время, без выходных и «после 23:00».</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--alt" id="tariffs">
+      <div class="container">
+        <p class="eyebrow">Прозрачные цены</p>
+        <h2>Тарифы</h2>
+        <p class="section__lead">Стоимость известна до посадки. Без скрытых комиссий.</p>
+        <div class="cards cards--4">
+          <article class="tariff">
+            <h3>Эконом</h3>
+            <p class="tariff__from">от <strong>189 ₽</strong></p>
+            <p class="tariff__meta">посадка · далее 22 ₽/км</p>
+            <ul>
+              <li>Sedan, 4 места</li>
+              <li>Городские поездки</li>
+              <li>Оплата картой и наличными</li>
+            </ul>
+            <a class="btn btn--outline" href="tel:+79991234567">Заказать эконом</a>
+          </article>
+          <article class="tariff tariff--featured">
+            <p class="tariff__badge">Чаще выбирают</p>
+            <h3>Комфорт</h3>
+            <p class="tariff__from">от <strong>249 ₽</strong></p>
+            <p class="tariff__meta">посадка · далее 28 ₽/км</p>
+            <ul>
+              <li>Новые авто, климат</li>
+              <li>Тихая поездка</li>
+              <li>Детское кресло по запросу</li>
+            </ul>
+            <a class="btn btn--yellow" href="tel:+79991234567">Заказать комфорт</a>
+          </article>
+          <article class="tariff">
+            <h3>Бизнес</h3>
+            <p class="tariff__from">от <strong>490 ₽</strong></p>
+            <p class="tariff__meta">посадка · далее 42 ₽/км</p>
+            <ul>
+              <li>Премиум-класс</li>
+              <li>Встреча с табличкой</li>
+              <li>Wi‑Fi и вода в салоне</li>
+            </ul>
+            <a class="btn btn--outline" href="tel:+79991234567">Заказать бизнес</a>
+          </article>
+          <article class="tariff">
+            <h3>Минивэн</h3>
+            <p class="tariff__from">от <strong>390 ₽</strong></p>
+            <p class="tariff__meta">посадка · далее 35 ₽/км</p>
+            <ul>
+              <li>До 6 пассажиров</li>
+              <li>Багаж и трансфер</li>
+              <li>Аэропорт и вокзал</li>
+            </ul>
+            <a class="btn btn--outline" href="tel:+79991234567">Заказать минивэн</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="order">
+      <div class="container">
+        <p class="eyebrow">Простой процесс</p>
+        <h2>Как заказать</h2>
+        <ol class="steps">
+          <li>
+            <span class="steps__num">01</span>
+            <h3>Позвоните или напишите</h3>
+            <p>Наберите номер или откройте Telegram. Назовите адрес подачи и куда едете.</p>
+          </li>
+          <li>
+            <span class="steps__num">02</span>
+            <h3>Подтвердите тариф</h3>
+            <p>Диспетчер назовёт цену и время подачи. Выбираете класс авто — без сюрпризов по пути.</p>
+          </li>
+          <li>
+            <span class="steps__num">03</span>
+            <h3>Садитесь и едете</h3>
+            <p>Водитель на связи, маршрут на экране. Оплата в машине или заранее — как удобно.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section section--cta" id="contacts">
+      <div class="container cta">
+        <div class="cta__text">
+          <p class="eyebrow eyebrow--on-dark">Контакты</p>
+          <h2>Нужна машина прямо сейчас?</h2>
+          <p>Диспетчер ответит за секунды. Работаем по городу и области.</p>
+          <ul class="contact-list">
+            <li>
+              <span>Телефон</span>
+              <a href="tel:+79991234567">+7 (999) 123-45-67</a>
+            </li>
+            <li>
+              <span>Telegram</span>
+              <a href="https://t.me/nordtaxi" target="_blank" rel="noopener noreferrer">@nordtaxi</a>
+            </li>
+            <li>
+              <span>Режим</span>
+              <strong>Круглосуточно</strong>
+            </li>
+          </ul>
+        </div>
+        <div class="cta__panel">
+          <p class="cta__panel-title">Вызов одной кнопкой</p>
+          <p class="cta__panel-note">Бесплатно с мобильного. Сохраните номер в избранное.</p>
+          <a class="btn btn--yellow btn--lg btn--block" href="tel:+79991234567">Вызвать такси</a>
+          <a class="btn btn--ghost-dark btn--lg btn--block" href="https://t.me/nordtaxi" target="_blank" rel="noopener noreferrer">Написать в Telegram</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <span class="logo logo--sm"><span class="logo__mark" aria-hidden="true"></span> NORD TAXI</span>
+      <p>© <span id="year"></span> NORD TAXI. Подача по городу за минуты.</p>
+    </div>
+  </footer>
+
+  <a class="fab" href="tel:+79991234567" aria-label="Позвонить и вызвать такси">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6.5 4.5h3l1.2 3.2-1.6 1.6a13 13 0 006.6 6.6l1.6-1.6 3.2 1.2v3a2 2 0 01-2.2 2A16.5 16.5 0 014.5 6.7a2 2 0 012-2.2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </svg>
+    <span>Вызов</span>
+  </a>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

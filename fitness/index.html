@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONYX — премиум фитнес-клуб</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050506;
+      --bg-2: #0b0c10;
+      --bg-3: #11131a;
+      --ink: #f4f6fb;
+      --muted: #9aa3b5;
+      --line: rgba(255, 255, 255, 0.08);
+      --neon: #e8f4ff;
+      --glow: #7ec8ff;
+      --accent: #c9f0ff;
+      --radius: 28px;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Manrope", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 500px at 12% -10%, rgba(126, 200, 255, 0.14), transparent 55%),
+        radial-gradient(700px 480px at 90% 8%, rgba(255, 255, 255, 0.06), transparent 50%),
+        radial-gradient(800px 600px at 50% 110%, rgba(80, 140, 255, 0.08), transparent 55%);
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; position: relative; z-index: 1; }
+
+    header {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1180px, calc(100% - 28px));
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 12px 22px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(8, 9, 14, 0.72);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .logo {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      font-size: 14px;
+    }
+
+    nav { display: flex; gap: 22px; font-size: 13px; color: var(--muted); }
+    nav a { transition: color 0.2s; }
+    nav a:hover { color: var(--ink); }
+
+    .nav-cta {
+      background: linear-gradient(180deg, #fff, #d9e7ff);
+      color: #0a0c12;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 999px;
+      padding: 10px 16px;
+      box-shadow: 0 10px 24px rgba(180, 210, 255, 0.18);
+    }
+
+    .burger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding: 140px 0 80px;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: var(--glow);
+      box-shadow: 0 0 12px var(--glow);
+    }
+
+    h1 {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(56px, 8vw, 112px);
+      line-height: 0.86;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+      text-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    h1 span {
+      display: block;
+      background: linear-gradient(180deg, #fff 20%, #9fc7ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.7;
+      margin: 24px 0 34px;
+    }
+
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 22px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(180deg, #ffffff, #cfe0ff);
+      color: #0a0c12;
+      box-shadow: 0 16px 40px rgba(160, 200, 255, 0.2), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    }
+    .btn-ghost {
+      border-color: var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--ink);
+    }
+
+    .hero-card {
+      position: relative;
+      height: 560px;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: var(--shadow), 0 0 80px rgba(126, 200, 255, 0.08);
+      transform: perspective(1200px) rotateY(-8deg) rotateX(4deg);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hero-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.08) saturate(0.85);
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(5,5,8,0.82));
+    }
+
+    .hero-stat {
+      position: absolute;
+      z-index: 2;
+      left: 24px;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chip {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(8, 10, 16, 0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      min-width: 108px;
+    }
+    .chip b { display: block; font-family: "Syne", sans-serif; font-size: 22px; }
+    .chip span { color: var(--muted); font-size: 12px; }
+
+    section { padding: 92px 0; position: relative; z-index: 1; scroll-margin-top: 92px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 42px;
+    }
+
+    h2 {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      line-height: 0.95;
+    }
+
+    .section-head p { max-width: 380px; color: var(--muted); }
+
+    .programs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 320px;
+      padding: 26px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: linear-gradient(180deg, #151821, #0b0d13);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.4);
+      transform: translateY(28px);
+      opacity: 0;
+      transition: transform 0.7s ease, opacity 0.7s ease, box-shadow 0.3s;
+    }
+
+    .card.visible, .reveal.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .card:hover {
+      box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 40px rgba(126,200,255,0.08);
+      transform: translateY(-6px);
+    }
+
+    .card h3 {
+      font-family: "Syne", sans-serif;
+      font-size: 28px;
+      margin: 18px 0 10px;
+    }
+
+    .card p { color: var(--muted); line-height: 1.6; }
+    .num {
+      font-family: "Syne", sans-serif;
+      color: rgba(255,255,255,0.18);
+      font-size: 42px;
+    }
+
+    .glow-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 18px var(--glow);
+    }
+
+    .trainers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .person {
+      border-radius: 30px;
+      overflow: hidden;
+      background: #10131a;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(28px);
+      transition: 0.7s ease;
+    }
+    .person.visible { opacity: 1; transform: none; }
+    .person img { height: 280px; width: 100%; object-fit: cover; filter: grayscale(0.25) contrast(1.05); }
+    .person div { padding: 18px 18px 22px; }
+    .person h3 { font-family: "Syne", sans-serif; font-size: 22px; }
+    .person span { color: var(--muted); font-size: 14px; }
+
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .plan {
+      padding: 32px 28px;
+      border-radius: 32px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+      border: 1px solid var(--line);
+      box-shadow: 0 28px 60px rgba(0,0,0,0.45);
+      opacity: 0;
+      transform: translateY(28px);
+      transition: 0.7s ease;
+    }
+    .plan.visible { opacity: 1; transform: none; }
+    .plan.featured {
+      background: linear-gradient(180deg, rgba(180,210,255,0.12), rgba(10,12,18,0.95));
+      border-color: rgba(200, 230, 255, 0.28);
+      box-shadow: 0 30px 80px rgba(90, 160, 255, 0.12), inset 0 1px 0 rgba(255,255,255,0.12);
+      transform: translateY(-8px);
+    }
+    .plan.featured.visible { transform: translateY(-8px); }
+    .price {
+      font-family: "Syne", sans-serif;
+      font-size: 52px;
+      margin: 16px 0 8px;
+    }
+    .price small { font-size: 16px; color: var(--muted); }
+    .plan ul { list-style: none; margin: 22px 0 28px; color: var(--muted); }
+    .plan li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+
+    .contact {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      padding: 28px;
+      border-radius: 36px;
+      background: linear-gradient(145deg, #141821, #0a0d13);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow), 0 0 80px rgba(126,200,255,0.06);
+    }
+
+    .contact h2 { margin: 12px 0 16px; }
+    .contact p { color: var(--muted); margin-bottom: 22px; }
+    .meta { display: grid; gap: 10px; margin-bottom: 28px; }
+    .meta b { display: block; font-size: 18px; }
+
+    footer {
+      padding: 28px 0 50px;
+      color: var(--muted);
+      font-size: 13px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5,6,10,0.96);
+      z-index: 40;
+      padding: 110px 28px;
+    }
+    .mobile-nav a { display: block; font-family: "Syne", sans-serif; font-size: 32px; margin-bottom: 18px; }
+
+    @media (max-width: 980px) {
+      nav { display: none; }
+      .burger { display: grid; place-items: center; }
+      .hero-grid, .contact { grid-template-columns: 1fr; }
+      .hero-card { height: 420px; transform: none; }
+      .programs, .trainers, .plans { grid-template-columns: 1fr 1fr; }
+      .section-head { flex-direction: column; align-items: start; }
+    }
+
+    @media (max-width: 680px) {
+      .programs, .trainers, .plans { grid-template-columns: 1fr; }
+      header { padding-left: 16px; }
+      .hero { padding-top: 120px; }
+      h1 { font-size: 56px; }
+      .plan.featured { transform: none; }
+      .plan.featured.visible { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="#hero">ONYX</a>
+    <nav>
+      <a href="#programs">Программы</a>
+      <a href="#trainers">Тренеры</a>
+      <a href="#prices">Абонементы</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <a class="nav-cta" href="#contacts">Записаться</a>
+    <button class="burger" id="burger" aria-label="Меню">☰</button>
+  </header>
+
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#programs">Программы</a>
+    <a href="#trainers">Тренеры</a>
+    <a href="#prices">Абонементы</a>
+    <a href="#contacts">Контакты</a>
+  </div>
+
+  <section class="hero wrap" id="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">Private athletic club</div>
+        <h1>ONYX<span>перепиши своё тело</span></h1>
+        <p>Глубокий чёрный зал, холодный свет и точная нагрузка. Здесь тренируются те, кому нужна форма, а не шум.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#prices">Выбрать абонемент</a>
+          <a class="btn btn-ghost" href="#programs">Смотреть программы</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1400&q=80" alt="Тренировка в зале ONYX" />
+        <div class="hero-stat">
+          <div class="chip"><b>1 200+</b><span>м² пространства</span></div>
+          <div class="chip"><b>24/7</b><span>круглосуточно</span></div>
+          <div class="chip"><b>12</b><span>лет на рынке</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="programs">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Программы</h2>
+        <p>Четыре направления. Один стандарт — плотность, техника, результат.</p>
+      </div>
+      <div class="programs">
+        <article class="card reveal">
+          <div class="num">01</div>
+          <div class="glow-dot"></div>
+          <h3>Strength</h3>
+          <p>Силовая база, прогрессия и контроль. Работа с железом без лишнего шума.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">02</div>
+          <div class="glow-dot"></div>
+          <h3>HIIT</h3>
+          <p>Короткие интервалы, высокая плотность. Форма и выносливость за 40 минут.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">03</div>
+          <div class="glow-dot"></div>
+          <h3>Boxing</h3>
+          <p>Ударная техника, ритм и характер. Зал с рингом и персональной работой.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">04</div>
+          <div class="glow-dot"></div>
+          <h3>Mobility</h3>
+          <p>Мобильность, дыхание и восстановление. Чтобы сила держалась годами.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="trainers">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Тренеры</h2>
+        <p>Команда, которая ведёт без суеты и без случайных программ.</p>
+      </div>
+      <div class="trainers">
+        <article class="person reveal">
+          <img src="https://images.unsplash.com/photo-1594381898411-846e2d193a00?auto=format&fit=crop&w=800&q=80" alt="Артём Волков" />
+          <div>
+            <h3>Артём Волков</h3>
+            <span>Силовая подготовка</span>
+          </div>
+        </article>
+        <article class="person reveal">
+          <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80" alt="Мила Орлова" />
+          <div>
+            <h3>Мила Орлова</h3>
+            <span>HIIT / функционал</span>
+          </div>
+        </article>
+        <article class="person reveal">
+          <img src="https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=800&q=80" alt="Илья Ким" />
+          <div>
+            <h3>Илья Ким</h3>
+            <span>Бокс</span>
+          </div>
+        </article>
+        <article class="person reveal">
+          <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80" alt="София Рева" />
+          <div>
+            <h3>София Рева</h3>
+            <span>Mobility / recovery</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="prices">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Абонементы</h2>
+        <p>Прозрачные тарифы. Без скрытых доплат и сезонного шума.</p>
+      </div>
+      <div class="plans">
+        <article class="plan reveal">
+          <div class="eyebrow">Start</div>
+          <div class="price">4 900<small> ₽ / мес</small></div>
+          <ul>
+            <li>Зал и зона кардио</li>
+            <li>2 групповые тренировки</li>
+            <li>Вводный чек-ап</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contacts">Оставить заявку</a>
+        </article>
+        <article class="plan featured reveal">
+          <div class="eyebrow">Pro</div>
+          <div class="price">8 900<small> ₽ / мес</small></div>
+          <ul>
+            <li>Безлимитный зал 24/7</li>
+            <li>Все групповые программы</li>
+            <li>4 персональные сессии</li>
+          </ul>
+          <a class="btn btn-primary" href="#contacts">Выбрать Pro</a>
+        </article>
+        <article class="plan reveal">
+          <div class="eyebrow">Elite</div>
+          <div class="price">14 900<small> ₽ / мес</small></div>
+          <ul>
+            <li>Персональный куратор</li>
+            <li>Восстановление и сауна</li>
+            <li>Приоритетная запись</li>
+          </ul>
+          <a class="btn btn-ghost" href="#contacts">Оставить заявку</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="contacts">
+    <div class="wrap">
+      <div class="contact reveal">
+        <div>
+          <div class="eyebrow">Контакты</div>
+          <h2>Приходи. Начнём с точной программы.</h2>
+          <p>Оставь заявку — администратор подберёт время и тренера под твою цель.</p>
+          <div class="meta">
+            <div><span>Адрес</span><b>Москва, Пресненская наб., 8с1</b></div>
+            <div><span>Телефон</span><b>+7 495 120-40-40</b></div>
+            <div><span>Часы</span><b>Открыто круглосуточно</b></div>
+          </div>
+          <a class="btn btn-primary" href="tel:+74951204040">Позвонить в клуб</a>
+        </div>
+        <div class="hero-card" style="height:100%; min-height:360px; transform:none;">
+          <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=1400&q=80" alt="Интерьер клуба ONYX" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">© 2026 ONYX Athletic Club. Все права защищены.</footer>
+
+  <script>
+    const reveals = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add("visible");
+      });
+    }, { threshold: 0.18 });
+    reveals.forEach((el) => io.observe(el));
+
+    const burger = document.getElementById("burger");
+    const mobileNav = document.getElementById("mobileNav");
+    burger.addEventListener("click", () => {
+      const open = mobileNav.style.display === "block";
+      mobileNav.style.display = open ? "none" : "block";
+    });
+    mobileNav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => { mobileNav.style.display = "none"; });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "chats": {
+      "$uid": {
+        "messages": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    },
+    "memory": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
