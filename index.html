@@ -6993,7 +6993,6 @@
         await postJoyBurst("Не сейчас.|||Я ещё обижена. Напиши сначала, если хочешь.");
         return;
       }
-      closeProfile();
       state.call = true;
       state.callSilentRounds = 0;
       const screen = document.getElementById("callScreen");
@@ -7317,7 +7316,7 @@
 
     (function bindPressFeel() {
       if (motion.reduced) return;
-      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .call-launch, .profile-actions button, .logout-btn, .auth-btn, .profile-face";
+      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .call-launch, .profile-actions button, .logout-btn, .auth-btn, .profile-face, .media-avatar, #headerAvatar";
       const canHover = window.matchMedia("(hover: hover)").matches;
       let held = null;
       function hit(e) {
