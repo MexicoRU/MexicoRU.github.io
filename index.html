@@ -3951,7 +3951,7 @@
 
     function humanize(text) {
       if (!text) return "";
-      return text
+      const cleaned = text
         .replace(/^\s*[-*•]\s+/gm, "")
         .replace(/\*\*(.*?)\*\*/g, "$1")
         .replace(/^конечно[,!]?\s*/i, "")
@@ -3961,6 +3961,15 @@
         .replace(/^важно понимать[,:]?\s*/i, "")
         .replace(/^давай разбер(ём|ем)ся[,]?\s*/i, "")
         .trim();
+      return cleaned.split(/\s*\|\|\|\s*/).map(function (part) {
+        let s = part.trim();
+        if (!s || s.length > 88) return s;
+        if (/[?!…)]$/.test(s) || /\u2026$/.test(s)) return s;
+        if (/\.\.\.$/.test(s) || /\d\.$/.test(s)) return s;
+        if ((s.match(/[.!?]/g) || []).length > 1) return s;
+        if (/\.$/.test(s)) s = s.replace(/\.$/, "");
+        return s;
+      }).join("|||");
     }
 
     function pick(list) {
