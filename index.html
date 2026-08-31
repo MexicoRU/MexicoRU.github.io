@@ -3654,7 +3654,7 @@
       if (wantsPastMemory(userText)) return true;
       if (t.length < 16) return false;
       if (isSmallTalk(userText)) return false;
-      if (/люблю|нравится|ненавижу|работа|живу|устал|птср|сон|мама|папа|жена|друг|боюсь|мечта|хочу|важно|запомни/.test(t)) return true;
+      if (/люблю|нравится|ненавижу|работа|живу|устал|птср|сон|мама|папа|жена|друг|боюсь|мечта|хочу|важно|запомни|привычк|тревож|радует|обычно|день рожден|\bдр\b|годовщин/.test(t)) return true;
       const mood = senseMood(userText);
       if (mood && mood !== "calm") return true;
       if (t.length >= 70) return true;
