@@ -4949,26 +4949,8 @@
       await playAudioBuffer(out.buffer, "audio/mpeg", volume);
     }
 
-    async function speak(text) {
-      const clean = cleanSpeakText(text);
-      if (!clean) return;
-      if (!state.audioUnlocked) {
-        state.queuedSpeak = clean;
-        unlockAudio();
-        return;
-      }
-      stopSpeech();
-      const github = /github\.io/i.test(location.hostname || "");
-      if (github) {
-        try { await speakGoogleTranslate(clean); return; } catch (_) {}
-        try { await speakEdge(clean); return; } catch (_) {}
-        try { await speakNative(clean); } catch (_) {}
-        return;
-      }
-      try { await speakYandex(clean); return; } catch (_) {}
-      try { await speakGoogleTranslate(clean); return; } catch (_) {}
-      try { await speakEdge(clean); return; } catch (_) {}
-      try { await speakNative(clean); } catch (_) {}
+    async function speak(_text) {
+      return;
     }
 
     function armSilenceNudge() {
@@ -5316,7 +5298,9 @@
       if (e.key === "Escape" && document.body.classList.contains("profile-open") && !state.call) closeProfile();
     });
     soulBtn.addEventListener("click", () => setSoul(!state.soul, true));
-    nightBtn.addEventListener("click", () => toggleNightButton());
+    themeBtn.addEventListener("click", () => {
+      setTheme(document.body.classList.contains("dark") ? "light" : "dark");
+    });
     sheet.addEventListener("click", (e) => {
       if (e.target === sheet) sheet.classList.remove("open");
     });
