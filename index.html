@@ -3512,20 +3512,76 @@
       } catch (_) {}
     }
 
+    function mergeCloudEvents(val) {
+      const events = firebaseList(val).filter(function (d) {
+        return d && d.title && d.day >= 1 && d.day <= 31 && d.month >= 1 && d.month <= 12;
+      });
+      if (!events.length) return;
+      const byTitle = {};
+      (state.dates || []).forEach(function (d) {
+        byTitle[String(d.title || "").toLowerCase()] = d;
+      });
+      events.forEach(function (e) {
+        const key = String(e.title || "").toLowerCase();
+        if (!key) return;
+        const cur = byTitle[key];
+        if (!cur) {
+          byTitle[key] = {
+            id: e.id || String(Date.now()) + key,
+            title: String(e.title).trim(),
+            day: e.day,
+            month: e.month
+          };
+        } else {
+          cur.day = e.day;
+          cur.month = e.month;
+        }
+      });
+      state.dates = Object.keys(byTitle).map(function (k) { return byTitle[k]; });
+      try {
+        localStorage.setItem(STORAGE.dates, JSON.stringify(state.dates));
+      } catch (_) {}
+      renderDateList();
+    }
+
     async function loadLearn() {
       const local = mergeLearn(readLearnLocal());
       state.learn = local;
       const api = rtdbApi();
       if (!api) return;
       try {
-        const snap = await api.get(api.ref(api.db, learnPath() + "/profile"));
-        if (snap && snap.exists()) {
-          const cloud = mergeLearn(snap.val());
-          if ((cloud.at || 0) >= (local.at || 0)) state.learn = cloud;
-          else persistLearnCloud();
-        } else if ((local.facts && local.facts.length) || (local.mem && local.mem.length)) {
+        const root = learnPath();
+        const profRef = api.ref(api.db, root + "/profile");
+        const evRef = api.ref(api.db, root + "/events");
+        const prRef = api.ref(api.db, root + "/prefs");
+        const hiRef = api.ref(api.db, root + "/history");
+        const snap = await api.get(profRef);
+        let evSnap = null;
+        let prSnap = null;
+        let hiSnap = null;
+        try { evSnap = await api.get(evRef); } catch (_) {}
+        try { prSnap = await api.get(prRef); } catch (_) {}
+        try { hiSnap = await api.get(hiRef); } catch (_) {}
+        let cloud = emptyLearn();
+        if (snap && snap.exists()) cloud = mergeLearn(snap.val());
+        if (prSnap && prSnap.exists()) {
+          const prefs = firebaseList(prSnap.val());
+          if (prefs.length) cloud.facts = prefs.slice(-LEARN_FACT_MAX);
+        }
+        if (hiSnap && hiSnap.exists()) {
+          const hist = hiSnap.val() || {};
+          const mem = firebaseList(hist.mem);
+          const wins = firebaseList(hist.wins);
+          if (mem.length) cloud.mem = mem.slice(-LEARN_MEM_MAX);
+          if (wins.length) cloud.wins = wins.slice(-LEARN_WIN_MAX);
+          if (hist.at) cloud.at = Math.max(cloud.at || 0, Number(hist.at) || 0);
+        }
+        const hasCloud = (cloud.facts && cloud.facts.length) || (cloud.mem && cloud.mem.length) || (cloud.at && snap && snap.exists());
+        if (hasCloud && (cloud.at || 0) >= (local.at || 0)) state.learn = mergeLearn(cloud);
+        else if ((local.facts && local.facts.length) || (local.mem && local.mem.length) || (state.dates && state.dates.length)) {
           persistLearnCloud();
         }
+        if (evSnap && evSnap.exists()) mergeCloudEvents(evSnap.val());
       } catch (_) {}
       cacheLearnLocal();
     }
@@ -3577,9 +3633,19 @@
       take(/я учусь\s+(.{3,80})/i, "work");
       take(/я боюсь\s+(.{3,80})/i, "fear");
       take(/для меня важно\s+(.{3,90})/i, "value");
+      take(/каждое утро я\s+(.{3,80})/i, "habit");
+      take(/я обычно\s+(.{3,90})/i, "habit");
+      take(/по привычке\s+(.{3,80})/i, "habit");
+      take(/меня (?:очень\s+)?радует\s+(.{3,90})/i, "joy");
+      take(/мне приятно(?:\s+когда)?\s+(.{3,90})/i, "joy");
+      take(/меня (?:это\s+)?(?:радует|греет)\s+(.{3,90})/i, "joy");
+      take(/меня тревожит\s+(.{3,90})/i, "worry");
+      take(/я волнуюсь(?:\s+(?:из-за|про|о))?\s+(.{3,90})/i, "worry");
       take(/запомни(?:шь)?(?: пожалуйста)?,?\s+(?:что\s+)?(.{6,140})/i, "note");
       if (/коротко|без воды|не расписывай/.test(low)) learnAddFact("style", "Любит короткие ответы");
       if (/можешь подлиннее|расскажи подробн/.test(low)) learnAddFact("style", "Любит более развёрнутые ответы");
+      if (/не сплю|бессонниц|кошмар|не могу уснуть/.test(low)) learnAddFact("worry", "Тяжело со сном");
+      if (/кофе|чай\b/.test(low) && /люблю|пью|утром/.test(low)) learnAddFact("habit", "Любит тёплый напиток по утрам");
     }
 
     function learnWorthRemembering(userText) {
