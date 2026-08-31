@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="30">
+<html lang="ru" data-joy-build="31">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -2269,12 +2269,12 @@
         });
       }
 
-      function chatScroll() {
+      function chatScroll(force) {
         const el = chatEl;
         if (!el) return;
         const max = Math.max(0, el.scrollHeight - el.clientHeight);
         const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
-        if (gap > 96 && el.scrollTop > 24) return;
+        if (!force && gap > 80) return;
         if (reduced) {
           el.scrollTop = max;
           return;
@@ -3956,7 +3956,12 @@
             el.classList.remove("msg-enter");
           }
         });
-        requestAnimationFrame(function () { motion.chatScroll(); });
+        requestAnimationFrame(function () {
+          motion.chatScroll(msg.role === "user");
+          requestAnimationFrame(function () {
+            motion.chatScroll(msg.role === "user");
+          });
+        });
       } else {
         chatEl.scrollTop = chatEl.scrollHeight;
       }
