@@ -4560,7 +4560,7 @@
         d.setDate(d.getDate() + 2);
         return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
       }
-      if (/\bзавтра\b/.test(t) && isEvent) {
+      if (/(^|[^а-яa-z])завтра([^а-яa-z]|$)/.test(t) && isEvent) {
         const d = new Date();
         d.setDate(d.getDate() + 1);
         return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
