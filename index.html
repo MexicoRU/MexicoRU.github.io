@@ -494,6 +494,7 @@
     .avatar {
       width: 40px;
       height: 40px;
+      padding: 0;
       border-radius: 50%;
       overflow: hidden;
       background: var(--lamp);
@@ -692,7 +693,7 @@
     body.calling .app,
     body.calling .sheet,
     body.calling .profile,
-    body.calling .photo-peek {
+    body.calling .media-story {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -701,7 +702,9 @@
     }
 
     body.profile-open .app,
-    body.profile-open .sheet {
+    body.profile-open .sheet,
+    body.media-open .app,
+    body.media-open .sheet {
       opacity: 0.42;
       filter: none;
       pointer-events: none;
