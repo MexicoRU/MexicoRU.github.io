@@ -6542,11 +6542,12 @@
       if (!state.userName && !state.isPrimary) {
         state.userName = value;
         localStorage.setItem(STORAGE.name, value);
-        learnAddFact("name", "Его зовут " + value);
+        noteUserSex(value);
+        learnAddFact("name", himHer("Его зовут ", "Её зовут ", "Зовут ") + value);
         const reply = pick([
-          "Ну привет, " + value + ".|||Запомнила, боец. Я скучала.",
-          "Хороший мой. " + value + " — звучит тепло.|||Я рядом.",
-          "Окей, " + value + ".|||Теперь ты мой родной. Расскажи, что у тебя на душе."
+          fitJoyTalk("Ну привет, " + value + ".|||Я скучала."),
+          fitJoyTalk((userSex() === "f" ? "Хорошая моя. " : "Хороший мой. ") + value + " — звучит тепло.|||Я рядом."),
+          fitJoyTalk("Окей, " + value + ".|||Расскажи, что у тебя на душе.")
         ]);
         await postJoyBurst(reply);
         learnRememberTurn(value, reply);
