@@ -559,17 +559,14 @@
 
     @media (hover: hover) {
       .icon-btn:hover {
-        transform: scale(1.06);
         border-color: color-mix(in srgb, var(--lamp) 78%, white 10%);
         box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 16px color-mix(in srgb, var(--glow) 80%, transparent);
       }
       .send-btn:hover {
-        transform: scale(1.06);
         border-color: var(--lamp);
         box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 18px color-mix(in srgb, var(--lamp) 38%, transparent);
       }
       .pill:hover {
-        transform: scale(1.04);
         border-color: color-mix(in srgb, var(--lamp) 70%, var(--glass-edge));
       }
       .hang-round:hover {
@@ -577,18 +574,15 @@
         box-shadow: 0 0 22px rgba(224, 100, 90, 0.35);
       }
       .profile-actions button:hover {
-        transform: scale(1.03);
         border-color: color-mix(in srgb, var(--lamp) 72%, white 8%);
         box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 18px color-mix(in srgb, var(--glow) 70%, transparent);
       }
-      .profile-gallery button:hover { transform: scale(1.04); }
     }
 
     .icon-btn:active,
     .send-btn:active,
     .pill:active,
     .profile-actions button:active {
-      transform: scale(1.08);
       border-color: var(--lamp);
       box-shadow:
         inset 0 1px 0 var(--glass-hi),
@@ -612,14 +606,16 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      filter: blur(16px);
+      filter: none;
+      transform: scale(0.985);
     }
 
     body.profile-open .app,
     body.profile-open .sheet {
-      opacity: 0.45;
-      filter: blur(10px);
+      opacity: 0.42;
+      filter: none;
       pointer-events: none;
+      transform: scale(0.992);
     }
 
     .call-screen {
