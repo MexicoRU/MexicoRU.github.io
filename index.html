@@ -5001,11 +5001,9 @@
       const pool = FEEL_LINES[kind] || FEEL_LINES.because;
       const fresh = pool.filter(line => used.indexOf(line) === -1);
       const line = pick(fresh.length ? fresh : pool);
-      return fitJoyTalk(line);
-      const nextUsed = used.concat([line]).slice(-24);
-      care.usedLines = nextUsed;
+      care.usedLines = used.concat([line]).slice(-24);
       saveCare(care);
-      return line;
+      return fitJoyTalk(line);
     }
 
     function lastUserAgeMs() {
