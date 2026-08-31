@@ -4815,7 +4815,7 @@
         const timer = setTimeout(function () {
           try { ws.close(); } catch (_) {}
           reject(new Error("edge timeout"));
-        }, 12000);
+        }, 6000);
         ws.binaryType = "arraybuffer";
         ws.onerror = function () {
           clearTimeout(timer);
@@ -4882,15 +4882,14 @@
       stopSpeech();
       const github = /github\.io/i.test(location.hostname || "");
       if (github) {
-        try { await speakEdge(clean); return; } catch (_) {}
-        try { await speakYandex(clean); return; } catch (_) {}
         try { await speakGoogleTranslate(clean); return; } catch (_) {}
+        try { await speakEdge(clean); return; } catch (_) {}
         try { await speakNative(clean); } catch (_) {}
         return;
       }
       try { await speakYandex(clean); return; } catch (_) {}
-      try { await speakEdge(clean); return; } catch (_) {}
       try { await speakGoogleTranslate(clean); return; } catch (_) {}
+      try { await speakEdge(clean); return; } catch (_) {}
       try { await speakNative(clean); } catch (_) {}
     }
 
