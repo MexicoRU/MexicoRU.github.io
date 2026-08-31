@@ -3143,7 +3143,9 @@
     function syncThemeColor() {
       const meta = document.querySelector('meta[name="theme-color"]');
       if (!meta) return;
-      if (document.body.classList.contains("soul-mode")) meta.content = "#110d0a";
+      if (document.body.classList.contains("soul-mode")) {
+        meta.content = document.body.classList.contains("dark") ? "#5c3a46" : "#e8d0da";
+      }
       else if (document.body.classList.contains("night")) meta.content = "#0a0705";
       else if (document.body.classList.contains("dark")) meta.content = "#1a1410";
       else meta.content = "#efe6d8";
