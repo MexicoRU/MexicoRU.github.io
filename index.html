@@ -1731,57 +1731,158 @@
     }
 
     .profile-body h3 {
-      margin: 22px 0 10px;
+      margin: 28px 0 10px;
       font-size: 0.82rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
       font-weight: 600;
+      text-align: left;
     }
 
-    .photo-peek {
+    .joy-posts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .joy-post,
+    .joy-post-slot {
+      aspect-ratio: 1;
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--glass-edge);
+      border-radius: 14px;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--glass) 55%, transparent);
+      box-shadow: inset 0 1px 0 var(--glass-hi);
+    }
+
+    .joy-post {
+      cursor: zoom-in;
+    }
+
+    .joy-post img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .joy-posts-hint {
+      grid-column: 1 / -1;
+      margin-top: 6px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .media-story {
       position: absolute;
       inset: 0;
-      z-index: 40;
+      z-index: 24;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-      background: rgba(8, 6, 8, 0.72);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      flex-direction: column;
+      overflow: hidden;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.28s var(--ease), visibility 0.28s;
+      transform: translateY(36px) scale(0.975);
+      will-change: transform, opacity;
+      background:
+        radial-gradient(ellipse 90% 40% at 50% 0%, var(--glow), transparent 55%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg) 80%, transparent), var(--bg-deep));
     }
 
-    body.photo-peek .photo-peek {
-      opacity: 1;
+    body.media-open .media-story {
       visibility: visible;
       pointer-events: auto;
     }
 
-    .photo-peek img {
-      width: min(86vw, 420px);
-      height: min(86vw, 420px);
-      max-height: 72vh;
-      object-fit: cover;
-      object-position: center 28%;
-      border-radius: 28px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-      transform: scale(0.86);
-      transition: transform 0.34s var(--ease);
+    .media-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 14px;
+      flex-shrink: 0;
     }
 
-    body.photo-peek .photo-peek img {
-      transform: scale(1);
+    .media-top h2 {
+      font-size: 1.12rem;
+      font-weight: 650;
+    }
+
+    .media-top p {
+      margin-top: 2px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .media-avatar {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--glass-edge);
+      background: var(--lamp);
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px var(--glow);
+    }
+
+    .media-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 28%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .media-grid {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      padding: 0 3px calc(20px + var(--safe-bottom));
+      align-content: start;
+    }
+
+    .media-grid button {
+      aspect-ratio: 1;
+      padding: 0;
+      border: none;
+      background: color-mix(in srgb, var(--glass) 50%, transparent);
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .media-grid img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .media-empty {
+      grid-column: 1 / -1;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
     }
 
     .avatar,
     .auth-hero,
     .call-face,
-    .profile-face {
+    .profile-face,
+    .media-avatar {
       background-image: var(--joy-face, url("./icons/joy-face.jpg"));
       background-size: cover;
       background-position: center 28%;
