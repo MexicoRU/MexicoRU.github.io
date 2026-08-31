@@ -2101,7 +2101,16 @@
       primaryAppleId: localStorage.getItem("joy_primary_apple_id") || "",
       archiveDigest: "",
       memoryPairs: [],
-      joyStarted: false
+      joyStarted: false,
+      learn: {
+        persona: { humor: 40, soft: 55, warmth: 68 },
+        facts: [],
+        mem: [],
+        wins: [],
+        pending: null,
+        at: 0
+      },
+      learnSaveTimer: 0
     };
 
     let joyAuth = null;
@@ -2641,6 +2650,7 @@
       state.userEmail = "";
       state.isPrimary = false;
       state.memoryPairs = [];
+      state.learn = emptyLearn();
       state.joyStarted = false;
       state.archiveDigest = "";
       state.authBusy = false;
