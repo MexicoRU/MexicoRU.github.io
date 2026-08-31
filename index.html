@@ -4681,29 +4681,49 @@
     }
 
     async function speakGoogleTranslate(text) {
-      const chunks = splitSpeakChunks(text, 160);
+      const chunks = splitSpeakChunks(text, 92);
       if (!chunks.length) throw new Error("gtts");
       const el = getSpeechEl();
       el.muted = false;
       el.loop = false;
       el.playsInline = true;
+      el.referrerPolicy = "no-referrer";
+      el.setAttribute("referrerpolicy", "no-referrer");
       el.volume = 1;
-      for (let i = 0; i < chunks.length; i++) {
-        const ok = await new Promise(function (resolve) {
+      function urlsFor(chunk) {
+        const q = encodeURIComponent(chunk);
+        return [
+          "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ru&q=" + q,
+          "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=ru&q=" + q
+        ];
+      }
+      function playUrl(url) {
+        return new Promise(function (resolve) {
           let settled = false;
-          const done = function (v) {
+          let started = false;
+          const done = function (ok) {
             if (settled) return;
             settled = true;
-            resolve(v);
+            resolve(ok);
           };
+          el.onplaying = function () { started = true; };
           el.onended = function () { done(true); };
           el.onerror = function () { done(false); };
-          el.src = "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=ru&q=" + encodeURIComponent(chunks[i]);
+          el.src = url;
           const play = el.play();
           if (play && play.catch) play.catch(function () { done(false); });
-          setTimeout(function () { done(!!(el.currentTime > 0.04 && !el.paused)); }, 5000);
+          setTimeout(function () {
+            if (started || el.currentTime > 0.05) return;
+            done(false);
+          }, 3500);
         });
+      }
+      for (let i = 0; i < chunks.length; i++) {
+        const urls = urlsFor(chunks[i]);
+        let ok = false;
+        for (let u = 0; u < urls.length && !ok; u++) ok = await playUrl(urls[u]);
         if (!ok) throw new Error("gtts");
+        await new Promise(function (r) { setTimeout(r, 90); });
       }
     }
 
