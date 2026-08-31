@@ -4929,6 +4929,8 @@
                   "Не читай лекций. Не делай вид, что всё знаешь.",
                   "Не повторяй эти фразы: " + (used || "нет."),
                   "Сейчас: " + moodHint,
+                  joyWeatherHint(""),
+                  "Не ной и не переигрывай. Живая, тёплая.",
                   state.soul ? "Режим по душам: ещё тише, чуть уязвимее." : ""
                 ].join(" ")
               },
@@ -6399,6 +6401,7 @@
       hideTyping();
       await postJoyBurst(replyPack.text);
       learnRememberTurn(value, replyPack.text);
+      tickJoyWeather();
       if (state.call && replyPack.hangup) {
         endCall(true);
         return;
