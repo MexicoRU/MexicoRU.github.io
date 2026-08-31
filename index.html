@@ -4036,7 +4036,12 @@
         el.innerHTML = '<span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
       }
       chatEl.appendChild(el);
-      chatEl.scrollTop = chatEl.scrollHeight;
+      motion.to(el, { y: 0, s: 1, o: 1 }, {
+        from: { y: 14, s: 0.98, o: 0 },
+        k: 260,
+        d: 22
+      });
+      requestAnimationFrame(function () { motion.chatScroll(); });
     }
 
     function hideTyping() {
@@ -6074,6 +6079,45 @@
     document.getElementById("dateAdd").addEventListener("click", () => addDateFromForm());
     document.getElementById("refreshChat").addEventListener("click", () => refreshChat());
     document.getElementById("authSignOut").addEventListener("click", signOutAccount);
+
+    (function bindPressFeel() {
+      if (motion.reduced) return;
+      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .profile-actions button, .logout-btn, .auth-btn, .profile-gallery button";
+      const canHover = window.matchMedia("(hover: hover)").matches;
+      let held = null;
+      function hit(e) {
+        return e.target && e.target.closest ? e.target.closest(sel) : null;
+      }
+      document.addEventListener("pointerdown", function (e) {
+        const el = hit(e);
+        if (!el) return;
+        held = el;
+        motion.to(el, { s: 0.92 }, { k: 520, d: 34 });
+      }, { capture: true, passive: true });
+      function release() {
+        if (!held) return;
+        const el = held;
+        held = null;
+        const hoverOn = canHover && el.matches && el.matches(":hover");
+        motion.to(el, { s: hoverOn ? 1.04 : 1 }, { k: 300, d: 16, clear: !hoverOn });
+      }
+      document.addEventListener("pointerup", release, { capture: true, passive: true });
+      document.addEventListener("pointercancel", release, { capture: true, passive: true });
+      if (canHover) {
+        document.addEventListener("pointerover", function (e) {
+          const el = hit(e);
+          if (!el || el === held) return;
+          motion.to(el, { s: 1.045 }, { k: 300, d: 22 });
+        }, { passive: true });
+        document.addEventListener("pointerout", function (e) {
+          const el = hit(e);
+          if (!el || el === held) return;
+          const next = e.relatedTarget;
+          if (next && el.contains(next)) return;
+          motion.to(el, { s: 1 }, { k: 280, d: 20, clear: true });
+        }, { passive: true });
+      }
+    })();
 
     document.addEventListener("visibilitychange", function () {
       applyNight();
