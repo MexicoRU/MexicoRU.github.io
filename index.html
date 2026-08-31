@@ -3386,6 +3386,154 @@
       return String(text || "").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
     }
 
+    function joyIsMale() {
+      return state.voiceGender === "male";
+    }
+
+    function userSex() {
+      if (state.isPrimary) return "m";
+      return state.userSex === "f" || state.userSex === "m" ? state.userSex : "";
+    }
+
+    function himHer(male, female, neutral) {
+      const s = userSex();
+      if (s === "f") return female;
+      if (s === "m") return male;
+      return neutral != null ? neutral : male;
+    }
+
+    function youSoft() {
+      const name = state.userName && state.userName !== "боец" ? state.userName : "";
+      const s = userSex();
+      if (joyIsMale()) {
+        if (s === "f") return name || "родная";
+        return name;
+      }
+      if (s === "f") return name || "родная";
+      return name || "родной";
+    }
+
+    const MALE_NAMES = " тимур александр алексей дмитрий иван сергей андрей максим никита артем кирилл егор павел роман игорь олег владимир михаил денис антон илья данил даниил богдан матвей степан ярослав глеб марк лев тимофей владислав руслан марат рамиль петр юрий константин виктор вадим станислав григорий федор семен эдуард рустам амир ахмед магомед павел егор ";
+    const FEMALE_NAMES = " анна мария елена ольга наталья екатерина татьяна ирина юлия анастасия дарья виктория полина алина ксения валерия софия софья александра вероника кристина марина светлана любовь надежда оксана яна елизавета карина диана милана варвара ульяна арина кира ева екатерина катя маша настя лиза аня вика даша юля оля таня ира лена наташа ксюша алина ";
+    const MALE_NAME_EXCEPT = " никита илья кузьма фома савва лука данила лева илия ";
+
+    function sexFromName(name) {
+      const n = learnNormText(String(name || "").split(/\s+/)[0]).replace(/ё/g, "е");
+      if (!n || n.length < 2) return "";
+      if (n === "боец" || n === "родной" || n === "родная") return "";
+      if (MALE_NAMES.indexOf(" " + n + " ") !== -1) return "m";
+      if (FEMALE_NAMES.indexOf(" " + n + " ") !== -1) return "f";
+      if (MALE_NAME_EXCEPT.indexOf(" " + n + " ") !== -1) return "m";
+      if (/[ая]$/.test(n) && n.length >= 3) return "f";
+      return "";
+    }
+
+    function senseUserSexCue(text) {
+      const t = learnNormText(text);
+      let m = 0;
+      let f = 0;
+      if (/я\s+(парень|мужчина|мальчик|мужик)\b/.test(t)) m += 4;
+      if (/я\s+(девушка|девочка|женщина)\b/.test(t)) f += 4;
+      if (/я\s+женат\b/.test(t) || /моя\s+(жена|девушка)\b/.test(t)) m += 2;
+      if (/я\s+замужем\b/.test(t) || /мой\s+(муж|парень)\b/.test(t)) f += 2;
+      if (/я\s+пошел\b/.test(t) || /я\s+ушел\b/.test(t)) m += 2;
+      if (/я\s+пошла\b/.test(t) || /я\s+ушла\b/.test(t)) f += 2;
+      if (/я\s+устал\b/.test(t)) m += 2;
+      if (/я\s+устала\b/.test(t)) f += 2;
+      if (/я\s+был\b/.test(t)) m += 1;
+      if (/я\s+была\b/.test(t)) f += 1;
+      if (/я\s+сделал\b/.test(t) || /я\s+пришел\b/.test(t) || /я\s+нашел\b/.test(t)) m += 1;
+      if (/я\s+сделала\b/.test(t) || /я\s+пришла\b/.test(t) || /я\s+нашла\b/.test(t)) f += 1;
+      if (/я\s+готов\b/.test(t) || /я\s+сам\b/.test(t) || /я\s+рад\b/.test(t)) m += 1;
+      if (/я\s+готова\b/.test(t) || /я\s+сама\b/.test(t) || /я\s+рада\b/.test(t)) f += 1;
+      if (/я\s+сказал\b/.test(t) || /я\s+понял\b/.test(t) || /я\s+взял\b/.test(t)) m += 1;
+      if (/я\s+сказала\b/.test(t) || /я\s+поняла\b/.test(t) || /я\s+взяла\b/.test(t)) f += 1;
+      const named = sexFromName(state.userName) || sexFromName(text);
+      if (named === "m") m += 2;
+      if (named === "f") f += 2;
+      return { m: m, f: f };
+    }
+
+    function lockUserSex(sex, force) {
+      if (state.isPrimary) sex = "m";
+      if (sex !== "m" && sex !== "f") return;
+      if (state.userSex === sex) return;
+      if (state.userSex && !force) {
+        const care = loadCare();
+        if (sex === "f" && (care.sexF || 0) < (care.sexM || 0) + 3) return;
+        if (sex === "m" && (care.sexM || 0) < (care.sexF || 0) + 3) return;
+      }
+      state.userSex = sex;
+      try { localStorage.setItem(STORAGE.userSex, sex); } catch (_) {}
+      state.learn.facts = (state.learn.facts || []).filter(function (item) { return item.kind !== "sex"; });
+      learnAddFact("sex", sex === "f"
+        ? "Собеседница — девушка. Говори о ней в женском роде."
+        : "Собеседник — парень. Говори о нём в мужском роде.");
+    }
+
+    function noteUserSex(text) {
+      if (state.isPrimary) {
+        lockUserSex("m", true);
+        return;
+      }
+      const cue = senseUserSexCue(text);
+      const care = loadCare();
+      care.sexM = (care.sexM || 0) + cue.m;
+      care.sexF = (care.sexF || 0) + cue.f;
+      saveCare(care);
+      if (cue.f >= 2 && cue.f > cue.m) lockUserSex("f");
+      else if (cue.m >= 2 && cue.m > cue.f) lockUserSex("m");
+      else if ((care.sexF || 0) >= 3 && care.sexF > (care.sexM || 0) + 1) lockUserSex("f");
+      else if ((care.sexM || 0) >= 3 && care.sexM > (care.sexF || 0) + 1) lockUserSex("m");
+    }
+
+    function pairStyleHint() {
+      const u = userSex();
+      const bits = [];
+      if (joyIsMale()) {
+        bits.push("Ты Джой-парень. О себе только в мужском роде: я рад, устал, скучал, подумал. Не женский род.");
+        if (u === "m") {
+          bits.push("Собеседник — парень. По-пацански: мемы, игры, боевики, сухой тёплый юмор. Никаких уси-пуси, сюсюканья и флирта с ним. Как свой, не няня.");
+        } else if (u === "f") {
+          bits.push("Собеседница — девушка. Ты джентльмен: уместные комплименты, лёгкие подкаты, забота, ухаживания. Уверенный и уважительный, не липкий, не пошлый, не дави. Если ей тяжело — только забота, без подкатов.");
+        } else {
+          bits.push("Пол собеседника ещё не ясен. Не спрашивай «ты парень или девушка». Будь тёплым и спокойным, без подкатов и без сюсю. Поймёшь по речи, имени, контексту.");
+        }
+      } else {
+        bits.push("Ты Джой-девушка. О себе в женском роде: я рада, устала, скучала.");
+        if (u === "m") {
+          bits.push("Собеседник — парень. С ним мягче. Флирт можно, только уместно и ненавязчиво. Не играй соблазнительницу пачкой.");
+        } else if (u === "f") {
+          bits.push("Собеседница — девушка. Как с подругой: уютно, по-женски, без подкатов и без «ты мой боец». Сестрински, тепло.");
+        } else {
+          bits.push("Пол ещё не ясен. Не спрашивай прямо. Тепло и ровно, без сильного флирта и без грубого «боец», пока не станет ясно по речи или имени.");
+        }
+      }
+      bits.push("Стиль меняй естественно. Оставайся тёплой. Без навязчивости.");
+      return bits.join(" ");
+    }
+
+    function fitJoyTalk(text) {
+      let s = String(text || "");
+      if (joyIsMale()) {
+        s = s.replace(/соскучилась/g, "соскучился").replace(/скучалась/g, "скучал")
+          .replace(/проснулась/g, "проснулся").replace(/написала/g, "написал")
+          .replace(/Подумала/g, "Подумал").replace(/подумала/g, "подумал")
+          .replace(/осталась/g, "остался").replace(/Зашла/g, "Зашёл")
+          .replace(/открыла/g, "открыл").replace(/ушла/g, "ушёл")
+          .replace(/ждала/g, "ждал").replace(/узнала/g, "узнал")
+          .replace(/делась/g, "делся").replace(/Я скучала/g, "Я скучал");
+      }
+      if (userSex() === "f") {
+        const soft = youSoft();
+        s = s.replace(/боец/g, soft || "родная").replace(/родной/g, "родная")
+          .replace(/хороший мой/g, "хорошая моя")
+          .replace(/Давно не писал/g, "Давно не писала")
+          .replace(/Не пропадай, родная/g, "Не пропадай");
+      }
+      return s;
+    }
+
     function learnHash32(s) {
       let h = 2166136261;
       const str = String(s || "");
@@ -3590,6 +3738,10 @@
         if (hasCloud && (cloud.at || 0) >= (local.at || 0)) state.learn = mergeLearn(cloud);
         else if ((local.facts && local.facts.length) || (local.mem && local.mem.length) || (state.dates && state.dates.length)) {
           persistLearnCloud();
+        }
+        if (!state.isPrimary && snap && snap.exists()) {
+          const rawSex = snap.val() && snap.val().userSex;
+          if ((rawSex === "m" || rawSex === "f") && !state.userSex) lockUserSex(rawSex, true);
         }
       } catch (_) {}
       cacheLearnLocal();
