@@ -771,6 +771,7 @@
     body:not(.dark) .msg {
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+      font-weight: 500;
     }
 
     body:not(.dark) .msg.joy {
@@ -1073,7 +1074,11 @@
       transition: transform 0.5s var(--ease);
     }
 
-    .sheet.open .sheet-card { transform: translateY(0); }
+    body:not(.dark) .sheet-card {
+      background: var(--card);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
 
     .icon-btn.theme-sun svg {
       width: 20px;
