@@ -3576,12 +3576,15 @@
           if (wins.length) cloud.wins = wins.slice(-LEARN_WIN_MAX);
           if (hist.at) cloud.at = Math.max(cloud.at || 0, Number(hist.at) || 0);
         }
+        if (!(cloud.facts && cloud.facts.length) && local.facts && local.facts.length) cloud.facts = local.facts;
+        if (!(cloud.mem && cloud.mem.length) && local.mem && local.mem.length) cloud.mem = local.mem;
+        if (!(cloud.wins && cloud.wins.length) && local.wins && local.wins.length) cloud.wins = local.wins;
+        if (evSnap && evSnap.exists()) mergeCloudEvents(evSnap.val());
         const hasCloud = (cloud.facts && cloud.facts.length) || (cloud.mem && cloud.mem.length) || (cloud.at && snap && snap.exists());
         if (hasCloud && (cloud.at || 0) >= (local.at || 0)) state.learn = mergeLearn(cloud);
         else if ((local.facts && local.facts.length) || (local.mem && local.mem.length) || (state.dates && state.dates.length)) {
           persistLearnCloud();
         }
-        if (evSnap && evSnap.exists()) mergeCloudEvents(evSnap.val());
       } catch (_) {}
       cacheLearnLocal();
     }
