@@ -1794,6 +1794,7 @@
     html.desk .brand p { font-size: 0.78rem; }
 
     html.desk .header-actions { gap: 8px; }
+    html.desk .call-launch { width: 52px; height: 52px; margin-left: 12px; }
 
     html.desk .chat-frost { height: 112px; }
 
@@ -1850,24 +1851,22 @@
       overflow-y: auto;
     }
 
-    html.desk .profile-hero {
-      height: min(42vh, 360px);
-      flex: 0 0 auto;
+    html.desk .profile-head {
+      padding-top: calc(48px + env(safe-area-inset-top, 0px));
     }
 
-    html.desk .profile-hero::after {
-      height: 88px;
-      background: linear-gradient(to top, var(--bg-deep), transparent);
+    html.desk .profile-face {
+      width: 168px;
+      height: 168px;
     }
 
     html.desk .profile-body {
-      margin: -36px 0 0;
-      border-radius: 28px 28px 0 0;
+      margin: 0;
+      border-radius: 0;
       overflow: visible;
       flex: 1;
+      text-align: center;
     }
-
-    html.desk .profile-gallery { max-width: 420px; }
 
     html.desk .auth-hero {
       width: 144px;
