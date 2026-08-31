@@ -3055,6 +3055,414 @@
       return ensureRtdb() || window.JOY_RTDB || null;
     }
 
+    const LEARN_DIM = 64;
+    const LEARN_MEM_MAX = 48;
+    const LEARN_FACT_MAX = 28;
+    const LEARN_WIN_MAX = 14;
+
+    function emptyLearn() {
+      return {
+        persona: { humor: 40, soft: 55, warmth: 68 },
+        facts: [],
+        mem: [],
+        wins: [],
+        pending: null,
+        at: 0
+      };
+    }
+
+    function learnClamp(n, a, b) {
+      return Math.max(a, Math.min(b, n));
+    }
+
+    function learnNormText(text) {
+      return String(text || "").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
+    }
+
+    function learnHash32(s) {
+      let h = 2166136261;
+      const str = String(s || "");
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function embedText(text) {
+      const v = [];
+      for (let i = 0; i < LEARN_DIM; i++) v[i] = 0;
+      const raw = learnNormText(text);
+      if (!raw) return v;
+      const toks = memoryTokens(raw);
+      function add(token, w) {
+        const h = learnHash32(token);
+        const idx = h % LEARN_DIM;
+        v[idx] += ((h & 1) ? 1 : -1) * w;
+      }
+      for (let i = 0; i < toks.length; i++) add("w:" + toks[i], 1.5);
+      const compact = raw.replace(/[^a-zа-я0-9]+/g, "");
+      for (let i = 0; i < compact.length - 2; i += 1) add("g:" + compact.slice(i, i + 3), 0.28);
+      let sum = 0;
+      for (let i = 0; i < LEARN_DIM; i++) sum += v[i] * v[i];
+      const n = Math.sqrt(sum) || 1;
+      for (let i = 0; i < LEARN_DIM; i++) v[i] = Math.round(v[i] / n * 1000) / 1000;
+      return v;
+    }
+
+    function cosineVec(a, b) {
+      if (!a || !b || a.length !== b.length) return 0;
+      let s = 0;
+      for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+      return s;
+    }
+
+    function learnPath() {
+      return "learn/" + rtdbChatKey();
+    }
+
+    function cacheLearnLocal() {
+      try {
+        localStorage.setItem(STORAGE.learn + "_" + rtdbChatKey(), JSON.stringify({
+          persona: state.learn.persona,
+          facts: state.learn.facts,
+          mem: state.learn.mem,
+          wins: state.learn.wins,
+          at: state.learn.at
+        }));
+      } catch (_) {}
+    }
+
+    function readLearnLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE.learn + "_" + rtdbChatKey());
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return null;
+        return parsed;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function mergeLearn(src) {
+      const base = emptyLearn();
+      if (!src || typeof src !== "object") return base;
+      if (src.persona) {
+        base.persona.humor = learnClamp(Number(src.persona.humor) || 40, 8, 92);
+        base.persona.soft = learnClamp(Number(src.persona.soft) || 55, 8, 92);
+        base.persona.warmth = learnClamp(Number(src.persona.warmth) || 68, 8, 92);
+      }
+      if (Array.isArray(src.facts)) base.facts = src.facts.slice(-LEARN_FACT_MAX);
+      if (Array.isArray(src.mem)) base.mem = src.mem.slice(-LEARN_MEM_MAX);
+      if (Array.isArray(src.wins)) base.wins = src.wins.slice(-LEARN_WIN_MAX);
+      base.pending = src.pending || null;
+      base.at = Number(src.at) || 0;
+      return base;
+    }
+
+    function scheduleLearnSave() {
+      state.learn.at = Date.now();
+      cacheLearnLocal();
+      if (state.learnSaveTimer) clearTimeout(state.learnSaveTimer);
+      state.learnSaveTimer = setTimeout(function () {
+        persistLearnCloud();
+      }, 700);
+    }
+
+    function persistLearnCloud() {
+      const api = rtdbApi();
+      if (!api) return;
+      const payload = {
+        persona: state.learn.persona,
+        facts: state.learn.facts,
+        mem: state.learn.mem,
+        wins: state.learn.wins,
+        at: state.learn.at,
+        v: 1
+      };
+      try {
+        api.set(api.ref(api.db, learnPath() + "/profile"), payload);
+      } catch (_) {}
+    }
+
+    async function loadLearn() {
+      const local = mergeLearn(readLearnLocal());
+      state.learn = local;
+      const api = rtdbApi();
+      if (!api) return;
+      try {
+        const snap = await api.get(api.ref(api.db, learnPath() + "/profile"));
+        if (snap && snap.exists()) {
+          const cloud = mergeLearn(snap.val());
+          if ((cloud.at || 0) >= (local.at || 0)) state.learn = cloud;
+          else persistLearnCloud();
+        } else if ((local.facts && local.facts.length) || (local.mem && local.mem.length)) {
+          persistLearnCloud();
+        }
+      } catch (_) {}
+      cacheLearnLocal();
+    }
+
+    function learnFactKey(item) {
+      return String(item.kind || "") + ":" + learnNormText(item.text).slice(0, 42);
+    }
+
+    function learnAddFact(kind, text) {
+      const clean = clipText(String(text || "").replace(/^[-–—]\s*/, ""), 140);
+      if (!clean || clean.length < 3) return false;
+      const item = { kind: kind || "note", text: clean, at: Date.now() };
+      const key = learnFactKey(item);
+      const list = state.learn.facts || [];
+      for (let i = 0; i < list.length; i++) {
+        if (learnFactKey(list[i]) === key) {
+          list[i].at = item.at;
+          list[i].text = item.text;
+          scheduleLearnSave();
+          return false;
+        }
+      }
+      list.push(item);
+      state.learn.facts = list.slice(-LEARN_FACT_MAX);
+      scheduleLearnSave();
+      return true;
+    }
+
+    function extractLearnFacts(text) {
+      const t = String(text || "").replace(/\s+/g, " ").trim();
+      if (t.length < 8) return;
+      const low = learnNormText(t);
+      function take(re, kind) {
+        const m = t.match(re) || String(text || "").match(re);
+        if (!m || !m[1]) return;
+        let val = m[1].replace(/[.,;!?]+$/, "").trim();
+        val = val.split(/[,.]/)[0].trim();
+        if (val.length >= 3) learnAddFact(kind, val);
+      }
+      take(/меня зовут\s+([а-яa-zё-]{2,32})/i, "name");
+      take(/зови меня\s+([а-яa-zё-]{2,32})/i, "name");
+      take(/я\s+(?:очень\s+)?(?:люблю|обожаю)\s+(.{3,90})/i, "like");
+      take(/мне\s+(?:очень\s+)?нравится\s+(.{3,90})/i, "like");
+      take(/я\s+не\s+люблю\s+(.{3,90})/i, "dislike");
+      take(/я\s+ненавижу\s+(.{3,80})/i, "dislike");
+      take(/меня бесит\s+(.{3,80})/i, "dislike");
+      take(/я живу\s+(?:в\s+)?(.{3,60})/i, "live");
+      take(/я работаю\s+(.{3,80})/i, "work");
+      take(/я учусь\s+(.{3,80})/i, "work");
+      take(/я боюсь\s+(.{3,80})/i, "fear");
+      take(/для меня важно\s+(.{3,90})/i, "value");
+      take(/запомни(?:шь)?(?: пожалуйста)?,?\s+(?:что\s+)?(.{6,140})/i, "note");
+      if (/коротко|без воды|не расписывай/.test(low)) learnAddFact("style", "Любит короткие ответы");
+      if (/можешь подлиннее|расскажи подробн/.test(low)) learnAddFact("style", "Любит более развёрнутые ответы");
+    }
+
+    function learnWorthRemembering(userText) {
+      const t = learnNormText(userText);
+      if (!t) return false;
+      if (wantsPastMemory(userText)) return true;
+      if (t.length < 16) return false;
+      if (isSmallTalk(userText)) return false;
+      if (/люблю|нравится|ненавижу|работа|живу|устал|птср|сон|мама|папа|жена|друг|боюсь|мечта|хочу|важно|запомни/.test(t)) return true;
+      const mood = senseMood(userText);
+      if (mood && mood !== "calm") return true;
+      if (t.length >= 70) return true;
+      return false;
+    }
+
+    function recallLearnMem(text) {
+      const list = (state.learn && state.learn.mem) || [];
+      if (!list.length) return [];
+      if (isSmallTalk(text) && !wantsPastMemory(text)) return [];
+      const q = embedText(text);
+      const scored = [];
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i];
+        if (!item || !item.v) continue;
+        const s = cosineVec(q, item.v) * (0.7 + 0.3 * learnClamp(Number(item.w) || 1, 0.4, 2.2) / 2.2);
+        if (s >= 0.22) scored.push({ s: s, item: item });
+      }
+      scored.sort(function (a, b) { return b.s - a.s; });
+      const out = [];
+      const seen = {};
+      for (let i = 0; i < scored.length && out.length < 2; i++) {
+        const key = String(scored[i].item.q || "").slice(0, 40);
+        if (seen[key]) continue;
+        seen[key] = true;
+        out.push(scored[i].item);
+      }
+      return out;
+    }
+
+    function recallLearnWin(text) {
+      const list = (state.learn && state.learn.wins) || [];
+      if (!list.length) return null;
+      const q = embedText(text);
+      let best = null;
+      let bestS = 0.28;
+      for (let i = 0; i < list.length; i++) {
+        const item = list[i];
+        if (!item || !item.v) continue;
+        const s = cosineVec(q, item.v) * (0.8 + 0.2 * learnClamp(Number(item.score) || 1, 0.5, 3));
+        if (s > bestS) {
+          bestS = s;
+          best = item;
+        }
+      }
+      return best;
+    }
+
+    function learnPromptBits(userText) {
+      if (!state.learn) return "";
+      const bits = [];
+      const facts = (state.learn.facts || []).slice(-8);
+      if (facts.length) {
+        bits.push("Факты о нём, живи ими, не читай списком: " + facts.map(function (f) { return f.text; }).join("; ") + ".");
+      }
+      const p = state.learn.persona || emptyLearn().persona;
+      const style = [];
+      if (p.humor >= 62) style.push("ему заходят шутки — можно чуть больше юмора");
+      else if (p.humor <= 32) style.push("шутки ему мало заходят — почти без подколов");
+      if (p.soft >= 68) style.push("говори мягче и короче, без давления");
+      else if (p.soft <= 34) style.push("можно прямее, без лишней жалости");
+      if (p.warmth >= 74) style.push("ему нужна теплота, не дистанция");
+      if (style.length) bits.push("Как с ним лучше: " + style.join("; ") + ".");
+      const hits = recallLearnMem(userText);
+      if (hits.length) {
+        bits.push("Похожие прошлые разговоры: " + hits.map(function (h) {
+          return "он: " + clipText(h.q, 110) + " ты: " + clipText(h.a, 110);
+        }).join(" / ") + ". Не копируй. Просто помни.");
+      }
+      const win = recallLearnWin(userText);
+      if (win && win.reply) {
+        bits.push("Ему раньше отозвалось такое: " + clipText(win.reply, 120) + ". Не копируй слово в слово.");
+      }
+      const joined = bits.join(" ");
+      if (joined.length > 720) return joined.slice(0, 717) + "…";
+      return joined;
+    }
+
+    function learnNudgePersona(key, delta) {
+      if (!state.learn.persona) state.learn.persona = emptyLearn().persona;
+      state.learn.persona[key] = learnClamp((Number(state.learn.persona[key]) || 50) + delta, 8, 92);
+    }
+
+    function classifyLearnReaction(text) {
+      const t = learnNormText(text);
+      const out = { pos: 0, humor: 0, soft: 0, warmth: 0, vibe: "plain" };
+      if (!t) return out;
+      if (/хаха|ахах|ахаха|лол|смешно|ржу|угар|кек|😂|😄|😅/.test(t)) {
+        out.pos = 1;
+        out.humor = 1.1;
+        out.vibe = "humor";
+      }
+      if (/спасибо|благодар|ты лучш|хорошо сказал[а]?|именно так|обнял|люблю тебя|мне тепло|как ты вовремя/.test(t)) {
+        out.pos = Math.max(out.pos, 0.9);
+        out.warmth = 0.7;
+        out.vibe = out.vibe === "humor" ? "humor" : "warm";
+      }
+      if (/не смешно|не надо шутить|хватит шутить|это не смешно|без юмора/.test(t)) {
+        out.pos = -0.8;
+        out.humor = -1.5;
+        out.vibe = "serious";
+      }
+      if (/грубо|жестко|жёстко|слишком прямо|не так/.test(t)) {
+        out.pos = Math.min(out.pos, -0.3);
+        out.soft = 0.9;
+      }
+      const mood = senseMood(text);
+      if (mood === "bad" || mood === "anxious" || mood === "tired") {
+        out.soft += 1.1;
+        out.humor -= 0.45;
+        out.vibe = "soft";
+      }
+      if (mood === "joy" || mood === "good") {
+        out.humor += 0.3;
+        out.warmth += 0.2;
+      }
+      if (t.length > 50 && out.pos === 0) out.pos = 0.2;
+      return out;
+    }
+
+    function learnObserveUser(userText) {
+      extractLearnFacts(userText);
+      const pending = state.learn.pending;
+      if (!pending || !pending.joy) return;
+      const react = classifyLearnReaction(userText);
+      if (react.humor) learnNudgePersona("humor", react.humor * 1.6);
+      if (react.soft) learnNudgePersona("soft", react.soft * 1.5);
+      if (react.warmth) learnNudgePersona("warmth", react.warmth * 1.4);
+      if (react.pos > 0.55 && pending.user && pending.joy) {
+        const win = {
+          cue: clipText(pending.user, 90),
+          reply: clipText(String(pending.joy).replace(/\s*\|\|\|\s*/g, " "), 140),
+          vibe: react.vibe,
+          v: embedText(pending.user),
+          score: learnClamp((react.pos || 1), 0.5, 3),
+          at: Date.now()
+        };
+        const wins = state.learn.wins || [];
+        wins.push(win);
+        state.learn.wins = wins.slice(-LEARN_WIN_MAX);
+        const mem = state.learn.mem || [];
+        for (let i = mem.length - 1; i >= 0; i--) {
+          if (mem[i] && mem[i].q === pending.user) {
+            mem[i].w = learnClamp((Number(mem[i].w) || 1) + 0.35, 0.4, 2.4);
+            break;
+          }
+        }
+      }
+      if (react.pos < -0.4) {
+        const mem = state.learn.mem || [];
+        for (let i = mem.length - 1; i >= 0; i--) {
+          if (mem[i] && pending.user && mem[i].q === pending.user) {
+            mem[i].w = learnClamp((Number(mem[i].w) || 1) - 0.25, 0.4, 2.4);
+            break;
+          }
+        }
+      }
+      state.learn.pending = null;
+      scheduleLearnSave();
+    }
+
+    function learnRememberTurn(userText, joyText) {
+      const user = clipText(userText, 400);
+      const joy = clipText(String(joyText || "").replace(/\s*\|\|\|\s*/g, " "), 400);
+      if (!user) return;
+      state.learn.pending = { user: user, joy: joy, at: Date.now() };
+      if (state.call) {
+        scheduleLearnSave();
+        return;
+      }
+      if (!learnWorthRemembering(userText)) {
+        scheduleLearnSave();
+        return;
+      }
+      const item = {
+        q: user,
+        a: joy,
+        v: embedText(user + " " + joy),
+        w: 1,
+        at: Date.now()
+      };
+      const mem = state.learn.mem || [];
+      mem.push(item);
+      if (mem.length > LEARN_MEM_MAX) {
+        mem.sort(function (a, b) {
+          return ((Number(b.w) || 1) * 0.4 + (b.at || 0) / 1e12) - ((Number(a.w) || 1) * 0.4 + (a.at || 0) / 1e12);
+        });
+        state.learn.mem = mem.slice(0, LEARN_MEM_MAX);
+      } else {
+        state.learn.mem = mem;
+      }
+      scheduleLearnSave();
+    }
+
+    function learnTemp() {
+      const h = (state.learn && state.learn.persona && state.learn.persona.humor) || 40;
+      const base = state.soul ? 0.98 : 1.02;
+      return learnClamp(base + (h - 40) * 0.002, 0.82, 1.12);
+    }
+
     function waitForRtdb(ms) {
       if (rtdbApi()) return Promise.resolve();
       return new Promise(function (resolve) {
