@@ -550,9 +550,13 @@
       .brand {
         flex: 1 1 auto;
         min-width: 0;
-        max-width: 100%;
+        max-width: calc(100% - 58px);
+      }
+      .call-launch {
+        order: 2;
       }
       .header-actions {
+        order: 3;
         width: 100%;
         justify-content: flex-end;
         gap: 4px;
@@ -574,6 +578,51 @@
       display: flex;
       gap: 6px;
       flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .call-launch {
+      width: 50px;
+      height: 50px;
+      margin-left: 8px;
+      flex-shrink: 0;
+      border: none;
+      border-radius: 50%;
+      background: #2aae66;
+      color: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 18px rgba(42, 174, 102, 0.32);
+      transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), background 0.28s var(--ease);
+      touch-action: manipulation;
+    }
+
+    .call-launch svg {
+      width: 22px;
+      height: 22px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.85;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .call-launch:active {
+      transform: scale(0.94);
+      background: #24965a;
+    }
+
+    .call-launch.active {
+      background: #2aae66;
+      box-shadow: 0 8px 18px rgba(42, 174, 102, 0.32);
+    }
+
+    @media (hover: hover) {
+      .call-launch:hover {
+        background: #32c074;
+        box-shadow: 0 10px 22px rgba(42, 174, 102, 0.42);
+      }
     }
 
     .icon-btn {
