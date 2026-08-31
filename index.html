@@ -6336,22 +6336,36 @@
 
     (function fitMobileKeyboard() {
       const root = document.documentElement;
+      function syncChatEnd() {
+        const bar = document.querySelector(".composer");
+        const app = document.querySelector(".app");
+        if (!bar || !app) return;
+        const appBox = app.getBoundingClientRect();
+        const barBox = bar.getBoundingClientRect();
+        const fade = Math.max(64, Math.ceil(appBox.bottom - barBox.top));
+        root.style.setProperty("--chat-fade", fade + "px");
+        root.style.setProperty("--chat-end", (fade + 22) + "px");
+      }
       function sync() {
         const vv = window.visualViewport;
         if (!vv) {
           root.style.setProperty("--kb", "0px");
-          return;
+        } else {
+          const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+          root.style.setProperty("--kb", kb + "px");
         }
-        const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-        root.style.setProperty("--kb", kb + "px");
+        syncChatEnd();
       }
       sync();
+      requestAnimationFrame(sync);
       if (window.visualViewport) {
         window.visualViewport.addEventListener("resize", sync);
         window.visualViewport.addEventListener("scroll", sync);
       }
+      window.addEventListener("resize", sync);
       window.addEventListener("orientationchange", function () {
         setTimeout(sync, 200);
+      });
       });
     })();
   </script>
