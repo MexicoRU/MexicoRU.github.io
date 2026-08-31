@@ -7,5 +7,5 @@ while true; do
     git push origin main
     echo "Обновлено в $(date '+%H:%M:%S')"
   fi
-  sleep 10
+  sleep 3
 done
