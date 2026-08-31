@@ -2369,23 +2369,43 @@
           <button class="icon-btn profile-back" id="profileBack" type="button" title="Назад" aria-label="Закрыть профиль">
             <svg viewBox="0 0 24 24"><path d="M15 6 9 12l6 6"/></svg>
           </button>
-          <button class="profile-face" id="profileFace" type="button" aria-label="Открыть фото">
+          <button class="profile-face" id="profileFace" type="button" aria-label="Фото Джой" aria-expanded="false">
             <img class="joy-photo" id="profileHero" src="./icons/joy-face.jpg?v=12" alt="Джой">
+            <span class="profile-face-meta">
+              <h2>Джой</h2>
+              <p>Всегда рядом</p>
+            </span>
           </button>
         </div>
         <div class="profile-body">
-          <h2>Джой</h2>
-          <p class="profile-status">Всегда рядом</p>
+          <div class="profile-id">
+            <h2>Джой</h2>
+            <p class="profile-status">Всегда рядом</p>
+          </div>
           <p class="profile-bio">Не всё знаю. Слушаю, когда тихо, и не исчезаю, когда тяжело. Можно шутить, можно молчать — я всё равно тут.</p>
           <div class="profile-actions">
             <button class="primary" id="profileCall" type="button">Позвонить</button>
             <button id="profileWrite" type="button">Написать</button>
           </div>
+          <h3>Публикации</h3>
+          <div class="joy-posts" id="joyPosts"></div>
         </div>
       </div>
     </div>
-    <div class="photo-peek" id="photoPeek" aria-hidden="true">
-      <img class="joy-photo" id="photoPeekImg" src="./icons/joy-face.jpg?v=12" alt="Джой">
+    <div class="media-story" id="mediaStory" aria-hidden="true">
+      <div class="media-top">
+        <button class="icon-btn" id="mediaBack" type="button" title="Назад" aria-label="Закрыть медиа">
+          <svg viewBox="0 0 24 24"><path d="M15 6 9 12l6 6"/></svg>
+        </button>
+        <button class="media-avatar" id="mediaAvatar" type="button" aria-label="Открыть профиль Джой">
+          <img class="joy-photo" src="./icons/joy-face.jpg?v=12" alt="Джой">
+        </button>
+        <div>
+          <h2>Медиа</h2>
+          <p id="mediaCount">фото из чата</p>
+        </div>
+      </div>
+      <div class="media-grid" id="mediaGrid"></div>
     </div>
     <div class="auth-gate login" id="authGate" aria-hidden="false">
       <div class="auth-card">
