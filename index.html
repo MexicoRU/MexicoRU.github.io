@@ -6053,20 +6053,21 @@
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && document.body.classList.contains("profile-open") && !state.call) closeProfile();
+      if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet();
     });
     soulBtn.addEventListener("click", () => setSoul(!state.soul, true));
     themeBtn.addEventListener("click", () => {
       setTheme(document.body.classList.contains("dark") ? "light" : "dark");
     });
     sheet.addEventListener("click", (e) => {
-      if (e.target === sheet) sheet.classList.remove("open");
+      if (e.target === sheet) closeSheet();
     });
     document.getElementById("themeLight").addEventListener("click", () => setTheme("light"));
     document.getElementById("themeDark").addEventListener("click", () => setTheme("dark"));
     document.getElementById("nightAuto").addEventListener("click", () => setNightPref("auto"));
     document.getElementById("nightOn").addEventListener("click", () => setNightPref("on"));
     document.getElementById("nightOff").addEventListener("click", () => setNightPref("off"));
-    document.getElementById("settingsBtn").addEventListener("click", () => sheet.classList.add("open"));
+    document.getElementById("settingsBtn").addEventListener("click", () => openSheet());
     document.getElementById("notifyOn").addEventListener("click", () => enableNotify());
     document.getElementById("notifyOff").addEventListener("click", () => disableNotify());
     document.getElementById("dateAdd").addEventListener("click", () => addDateFromForm());
