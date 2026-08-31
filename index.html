@@ -4542,13 +4542,14 @@
 
     function parseDateFromText(text) {
       const t = (text || "").toLowerCase().replace(/ё/g, "е");
-      const isEvent = /день рожден|\bдр\b|годовщин|юбиле|важн\w*\s+дн|свидан|собеседован|выписк|операц|\bсуд\b|поминки/;
+      const isDr = /(^|[^а-яa-z])др([^а-яa-z]|$)/.test(t);
+      const isEvent = /день рожден|годовщин|юбиле|важн\w*\s+дн|свидан|собеседован|выписк|операц|\bсуд\b|поминки/.test(t) || isDr;
       const hasAbsDate = /(\d{1,2})[.\-/](\d{1,2})/.test(t) || new RegExp("\\d{1,2}\\s+" + MONTH_RE.source).test(t);
-      const wantsSave = isEvent.test(t) || (/запомни/.test(t) && (hasAbsDate || /завтра|послезавтра/.test(t)));
+      const wantsSave = isEvent || (/запомни/.test(t) && (hasAbsDate || /завтра|послезавтра/.test(t)));
       if (!wantsSave) return null;
 
       let title = "Важный день";
-      if (/день рожден|\bдр\b/.test(t)) title = "День рождения";
+      if (/день рожден/.test(t) || isDr) title = "День рождения";
       else if (/годовщин/.test(t)) title = "Годовщина";
       else if (/юбиле/.test(t)) title = "Юбилей";
       else if (/свидан/.test(t)) title = "Свидание";
