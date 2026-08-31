@@ -3448,6 +3448,15 @@
       }
     }
 
+    function firebaseList(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val.filter(Boolean);
+      if (typeof val === "object") {
+        return Object.keys(val).map(function (k) { return val[k]; }).filter(Boolean);
+      }
+      return [];
+    }
+
     function mergeLearn(src) {
       const base = emptyLearn();
       if (!src || typeof src !== "object") return base;
@@ -3456,10 +3465,10 @@
         base.persona.soft = learnClamp(Number(src.persona.soft) || 55, 8, 92);
         base.persona.warmth = learnClamp(Number(src.persona.warmth) || 68, 8, 92);
       }
-      if (Array.isArray(src.facts)) base.facts = src.facts.slice(-LEARN_FACT_MAX);
-      if (Array.isArray(src.mem)) base.mem = src.mem.slice(-LEARN_MEM_MAX);
-      if (Array.isArray(src.wins)) base.wins = src.wins.slice(-LEARN_WIN_MAX);
-      if (Array.isArray(src.moods)) base.moods = src.moods.slice(-40);
+      if (src.facts) base.facts = firebaseList(src.facts).slice(-LEARN_FACT_MAX);
+      if (src.mem) base.mem = firebaseList(src.mem).slice(-LEARN_MEM_MAX);
+      if (src.wins) base.wins = firebaseList(src.wins).slice(-LEARN_WIN_MAX);
+      if (src.moods) base.moods = firebaseList(src.moods).slice(-40);
       base.pending = src.pending || null;
       base.at = Number(src.at) || 0;
       return base;
