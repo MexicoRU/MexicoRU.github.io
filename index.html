@@ -3472,9 +3472,72 @@
       });
     }
 
-    function openProfile() {
-      if (state.call) return;
-      syncAvatar();
+    function openPhotoPeek() {
+      const peek = document.getElementById("photoPeek");
+      const img = document.getElementById("photoPeekImg");
+      const hero = document.getElementById("profileHero");
+      if (!peek) return;
+      if (img && hero) img.src = hero.getAttribute("src") || img.src;
+      document.body.classList.add("photo-peek");
+      peek.setAttribute("aria-hidden", "false");
+    }
+
+    function closePhotoPeek() {
+      const peek = document.getElementById("photoPeek");
+      document.body.classList.remove("photo-peek");
+      if (peek) peek.setAttribute("aria-hidden", "true");
+    }
+
+    function closeEmojiPanel() {
+      const bar = document.querySelector(".composer");
+      const btn = document.getElementById("emojiBtn");
+      if (bar) bar.classList.remove("emoji-open");
+      if (btn) {
+        btn.classList.remove("emoji-on");
+        btn.setAttribute("aria-pressed", "false");
+      }
+    }
+
+    function fillEmojiPanel(panel) {
+      if (!panel || panel.dataset.ready === "1") return;
+      const list = ["😊","😂","❤️","💜","😌","✨","😄","😏","😭","🥺","🔥","👍","👋","🤗","🥰","😍","😉","😅","🤔","😎","🙌","💪","🌸","🌙","⭐","☕","🎮","🎵","💬","😘","😜","😢","😮","😴","😇","🙃","😁","🤣","💯","🙏","💫","🌈","☀️","🤝","👌","👀","🫶","🙂"];
+      list.forEach(function (ch) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = ch;
+        b.setAttribute("aria-label", ch);
+        b.addEventListener("click", function (e) {
+          e.preventDefault();
+          insertEmoji(ch);
+        });
+        panel.appendChild(b);
+      });
+      panel.dataset.ready = "1";
+    }
+
+    function insertEmoji(ch) {
+      if (!inputEl) return;
+      const start = inputEl.selectionStart == null ? inputEl.value.length : inputEl.selectionStart;
+      const end = inputEl.selectionEnd == null ? start : inputEl.selectionEnd;
+      inputEl.value = inputEl.value.slice(0, start) + ch + inputEl.value.slice(end);
+      const pos = start + String(ch).length;
+      try { inputEl.setSelectionRange(pos, pos); } catch (_) {}
+      inputEl.focus();
+    }
+
+    function toggleEmojiPanel() {
+      const bar = document.querySelector(".composer");
+      const btn = document.getElementById("emojiBtn");
+      const panel = document.getElementById("emojiPanel");
+      if (!bar || !panel) return;
+      const on = !bar.classList.contains("emoji-open");
+      bar.classList.toggle("emoji-open", on);
+      if (btn) {
+        btn.classList.toggle("emoji-on", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+      if (on) fillEmojiPanel(panel);
+    }
       const el = document.getElementById("profile");
       document.body.classList.add("profile-open");
       el.setAttribute("aria-hidden", "false");
@@ -3488,6 +3551,7 @@
     }
 
     function closeProfile() {
+      closePhotoPeek();
       const el = document.getElementById("profile");
       if (!document.body.classList.contains("profile-open")) return;
       motion.to(el, { y: 28, s: 0.982, o: 0 }, {
