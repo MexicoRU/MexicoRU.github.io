@@ -797,12 +797,7 @@
     }
 
     .msg-enter {
-      animation: msgRise 0.5s var(--ease) both;
-    }
-
-    @keyframes msgRise {
-      from { opacity: 0; transform: translateY(18px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      will-change: transform, opacity;
     }
 
     .msg img {
@@ -923,7 +918,7 @@
         0 12px 28px var(--shadow);
       animation: none;
       animation-delay: 0.15s;
-      transition: box-shadow 0.32s var(--ease), transform 0.32s var(--ease);
+      transition: box-shadow 0.45s var(--ease), border-color 0.45s var(--ease);
     }
 
     .composer input[type="text"]:focus {
