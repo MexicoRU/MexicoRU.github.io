@@ -4805,7 +4805,7 @@
           return line;
         }
       } catch (_) {}
-      return pickFresh(kind === "date" ? "date" : kind);
+      return pickFresh(kind === "date" || kind === "eve" ? kind : kind);
     }
 
     function deliverFeel(line, tag) {
@@ -4833,6 +4833,19 @@
         care.lastVisit = Date.now();
         saveCare(care);
         deliverFeel(line, "joy-date");
+        return;
+      }
+
+      const eveDates = datesTomorrow();
+      if (eveDates.length && care.eveOn !== today) {
+        const names = eveDates.map(function (d) { return d.title; }).join(" и ");
+        const line = await inventFeelLine("eve", names);
+        care = loadCare();
+        care.eveOn = today;
+        care.lastFeelAt = Date.now();
+        care.lastVisit = Date.now();
+        saveCare(care);
+        deliverFeel(line, "joy-eve");
         return;
       }
 
