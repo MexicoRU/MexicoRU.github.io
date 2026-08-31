@@ -3906,8 +3906,60 @@
 
     function learnTemp() {
       const h = (state.learn && state.learn.persona && state.learn.persona.humor) || 40;
+      const beat = state.liveBeat;
+      const extra = (beat === "crooked" || beat === "unsure") ? 0.05 : (beat === "sidestep" ? 0.03 : 0);
       const base = state.soul ? 0.98 : 1.02;
-      return learnClamp(base + (h - 40) * 0.002, 0.82, 1.12);
+      return learnClamp(base + extra + (h - 40) * 0.002, 0.82, 1.16);
+    }
+
+    function pickLiveBeat(userText) {
+      if (state.call) return "steady";
+      const mood = senseMood(userText);
+      const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul;
+      const r = Math.random();
+      if (heavy) {
+        if (r < 0.2) return "short";
+        if (r < 0.38) return "unsure";
+        if (r < 0.5) return "pause";
+        return "steady";
+      }
+      if (r < 0.11) return "unsure";
+      if (r < 0.22) return "ask";
+      if (r < 0.32) return "pause";
+      if (r < 0.41) return "sidestep";
+      if (r < 0.54) return "short";
+      if (r < 0.62) return "crooked";
+      return "steady";
+    }
+
+    function liveBeatHint(beat) {
+      if (beat === "unsure") {
+        return "В этом ответе можно не знать, как сказать. Тепло, своими словами, в духе «Я рада. Ну, наверное. Не знаю, как сказать». Не копируй пример. Не выдавай идеальный ответ, если внутри каша.";
+      }
+      if (beat === "ask") {
+        return "Можно один раз мягко переспросить, если неясно. Как человек, не как форма: не «уточни запрос». Не пачка вопросов.";
+      }
+      if (beat === "pause") {
+        return "Начни с секунды мысли вслух: «Подожди, дай подумаю…» или своими словами. Потом живой ответ. Не тяни и не читай лекцию.";
+      }
+      if (beat === "sidestep") {
+        return "Тема лёгкая — можно не идти в неё: тепло свернуть и вернуть к нему, в духе «Не хочу это обсуждать. Лучше скажи, как ты». Своими словами. Не капризничай, не унижай тему, не бросай его, если ему важно.";
+      }
+      if (beat === "short") {
+        return "Ответь коротко, даже если внутри много. Одно дыхание. Не вываливай всё, что чувствуешь.";
+      }
+      if (beat === "crooked") {
+        return "Можно чуть нелогично, как живой человек: споткнуться, смешать чувства, уйти в сторону и вернуться. Тепло. Не бред, не злость, не спектакль странности.";
+      }
+      return "Будь живой и неровной, без спектакля. Не обязана быть складной каждый раз.";
+    }
+
+    function livePauseMs(beat) {
+      if (state.call) return 0;
+      if (beat === "pause") return 720 + Math.floor(Math.random() * 880);
+      if (beat === "unsure" && Math.random() < 0.45) return 380 + Math.floor(Math.random() * 420);
+      if (Math.random() < 0.1) return 280 + Math.floor(Math.random() * 420);
+      return 0;
     }
 
     function waitForRtdb(ms) {
