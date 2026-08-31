@@ -3253,6 +3253,7 @@
       soulBtn.setAttribute("aria-pressed", on ? "true" : "false");
       localStorage.setItem(STORAGE.soul, on ? "1" : "0");
       inputEl.placeholder = on ? "Что у тебя на душе?" : "Ну, расскажи...";
+      morphChrome();
       refreshStatus();
       if (announce) {
         const line = on
