@@ -90,13 +90,14 @@
     }
 
     body.soul-mode:not(.dark) {
-      --bg: #e8cba8;
-      --bg-deep: #d4b089;
-      --card: #edd4b0;
-      --header: rgba(236, 214, 180, 0.92);
-      --joy: #e6cba8;
-      --user: #d4b08a;
-      --text: #3a2a1c;
+      --bg: #f1ebe2;
+      --bg-deep: #e6ddd0;
+      --card: #faf6f0;
+      --header: rgba(250, 246, 240, 0.94);
+      --joy: #fffaf4;
+      --user: #e4d5c4;
+      --text: #1a120e;
+      --muted: #534338;
     }
 
     body.soul-mode.dark {
@@ -1025,7 +1026,13 @@
     .theme-sun .sun-core {
       fill: var(--lamp);
       stroke: none;
-      transition: fill 0.35s var(--ease), stroke 0.35s var(--ease), r 0.35s var(--ease);
+      transition: fill 0.35s var(--ease), stroke 0.35s var(--ease);
+    }
+
+    .theme-sun .sun-half {
+      fill: none;
+      stroke: none;
+      transition: fill 0.35s var(--ease);
     }
 
     .theme-sun .sun-rays {
@@ -1044,12 +1051,16 @@
       stroke-width: 1.7;
     }
 
+    body.dark .theme-sun .sun-half {
+      fill: var(--lamp);
+    }
+
     body.dark .theme-sun .sun-rays {
-      opacity: 0.55;
+      opacity: 0.7;
     }
 
     body.night .theme-sun .sun-rays {
-      opacity: 0.32;
+      opacity: 0.4;
     }
 
     .sound-unlock {
