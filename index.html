@@ -3312,13 +3312,19 @@
       document.body.classList.toggle("soul-mode", on);
       soulBtn.classList.toggle("active", on);
       soulBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      soulBtn.title = on ? "Только мы. Никого больше нет" : "По душам";
       localStorage.setItem(STORAGE.soul, on ? "1" : "0");
-      inputEl.placeholder = on ? "Что у тебя на душе?" : "Ну, расскажи...";
+      inputEl.placeholder = on ? "Здесь можно всё. Никто не слышит." : "Ну, расскажи...";
       morphChrome();
+      syncThemeColor();
       refreshStatus();
       if (announce) {
         const line = on
-          ? pick(["Тихо. Теперь только мы. Что у тебя на душе?", "Ну. О чём думаешь? Я слушаю.", "Я тут. Можно не спешить."])
+          ? pick([
+              "Тихо. Теперь только мы.|||Здесь никого больше нет.",
+              "Я закрыла дверь.|||Говори как есть — это останется между нами.",
+              "Ну. Теперь глубже.|||Я слушаю. Больше никто."
+            ])
           : "Хорошо. Я всё равно рядом.";
         if (on) pushMessage("joy", line);
         speak(line);
@@ -4068,11 +4074,11 @@
       }
       const moodLabel = (MOOD_GUIDE[state.mood] || MOOD_GUIDE.calm).label;
       if (state.soul && moodLabel) {
-        statusEl.textContent = "по душам · " + moodLabel;
+        statusEl.textContent = "только мы · " + moodLabel;
         return;
       }
       if (state.soul) {
-        statusEl.textContent = "по душам, не спеша";
+        statusEl.textContent = "только мы";
         return;
       }
       if (state.isPrimary) {
