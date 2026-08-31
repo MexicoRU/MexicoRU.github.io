@@ -636,15 +636,13 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transform: scale(1.04);
-      transition: opacity 0.55s var(--ease), transform 0.55s var(--ease), visibility 0.55s;
+      transform: scale(1.045);
+      will-change: transform, opacity;
     }
 
     body.calling .call-screen {
-      opacity: 1;
       visibility: visible;
       pointer-events: auto;
-      transform: scale(1);
     }
 
     .call-kicker {
