@@ -2465,6 +2465,8 @@
       if (state.isPrimary) {
         state.userName = "Тимур";
         localStorage.setItem(STORAGE.name, "Тимур");
+        state.userSex = "m";
+        localStorage.setItem(STORAGE.userSex, "m");
       }
       document.body.classList.toggle("primary-bond", state.isPrimary);
     }
@@ -3506,6 +3508,7 @@
         api.set(api.ref(api.db, root + "/profile"), {
           persona: state.learn.persona,
           moods: (state.learn.moods || []).slice(-40),
+          userSex: userSex() || "",
           at: state.learn.at,
           v: 2
         });
