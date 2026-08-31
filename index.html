@@ -7248,17 +7248,13 @@
     micBtn.addEventListener("click", toggleMic);
     callBtn.addEventListener("click", () => startCall());
     hangBtn.addEventListener("click", () => endCall());
-    document.getElementById("headerAvatar").addEventListener("click", function (e) {
-      e.stopPropagation();
+    document.getElementById("brandIsland").addEventListener("click", function () {
       openMediaStory();
     });
-    document.getElementById("brandMeta").addEventListener("click", function () {
-      openProfile("chat");
-    });
-    document.getElementById("brandMeta").addEventListener("keydown", function (e) {
+    document.getElementById("brandIsland").addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        openProfile("chat");
+        openMediaStory();
       }
     });
     document.getElementById("emojiBtn").addEventListener("click", function (e) {
@@ -7334,7 +7330,7 @@
 
     (function bindPressFeel() {
       if (motion.reduced) return;
-      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .call-launch, .profile-actions button, .logout-btn, .auth-btn, .profile-face, .media-avatar, #headerAvatar";
+      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .call-launch, .profile-actions button, .logout-btn, .auth-btn, .profile-face, .media-avatar, .brand";
       const canHover = window.matchMedia("(hover: hover)").matches;
       let held = null;
       function hit(e) {
