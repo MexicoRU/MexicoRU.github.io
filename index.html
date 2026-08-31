@@ -3538,6 +3538,10 @@
       }
       if (on) fillEmojiPanel(panel);
     }
+
+    function openProfile() {
+      if (state.call) return;
+      syncAvatar();
       const el = document.getElementById("profile");
       document.body.classList.add("profile-open");
       el.setAttribute("aria-hidden", "false");
