@@ -2274,7 +2274,10 @@
         if (!el) return;
         const max = Math.max(0, el.scrollHeight - el.clientHeight);
         const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
-        if (!force && gap > 80) return;
+        const msgs = el.querySelectorAll(".msg");
+        const last = msgs[msgs.length - 1];
+        const lastH = last ? last.offsetHeight + 12 : 0;
+        if (!force && gap - lastH > 72) return;
         if (reduced) {
           el.scrollTop = max;
           return;
