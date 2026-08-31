@@ -1967,7 +1967,7 @@
     const chatEl = document.getElementById("chat");
     const inputEl = document.getElementById("text");
     const statusEl = document.getElementById("status");
-    const nightBtn = document.getElementById("nightBtn");
+    const themeBtn = document.getElementById("themeBtn");
     const callBtn = document.getElementById("callBtn");
     const hangBtn = document.getElementById("hangBtn");
     const micBtn = document.getElementById("micBtn");
@@ -2804,6 +2804,7 @@
       const theme = localStorage.getItem(STORAGE.theme) || "dark";
       document.body.classList.toggle("dark", theme === "dark");
       syncThemePills();
+      syncThemeBtn();
       syncThemeColor();
     }
 
@@ -2811,7 +2812,17 @@
       document.body.classList.toggle("dark", theme === "dark");
       localStorage.setItem(STORAGE.theme, theme);
       syncThemePills();
+      syncThemeBtn();
       syncThemeColor();
+    }
+
+    function syncThemeBtn() {
+      if (!themeBtn) return;
+      const dark = document.body.classList.contains("dark");
+      themeBtn.classList.toggle("active", !dark);
+      themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+      themeBtn.title = dark ? "Светлая тема" : "Тёмная тема";
+      themeBtn.setAttribute("aria-label", dark ? "Включить светлую тему" : "Включить тёмную тему");
     }
 
     function syncThemePills() {
