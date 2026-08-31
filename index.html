@@ -2764,7 +2764,8 @@
       },
       learnSaveTimer: 0,
       liveBeat: "steady",
-      userSex: localStorage.getItem("joy_user_sex") || ""
+      userSex: localStorage.getItem("joy_user_sex") || "",
+      profileFrom: "chat"
     };
 
     let joyAuth = null;
@@ -3662,20 +3663,142 @@
       });
     }
 
-    function openPhotoPeek() {
-      const peek = document.getElementById("photoPeek");
-      const img = document.getElementById("photoPeekImg");
-      const hero = document.getElementById("profileHero");
-      if (!peek) return;
-      if (img && hero) img.src = hero.getAttribute("src") || img.src;
-      document.body.classList.add("photo-peek");
-      peek.setAttribute("aria-hidden", "false");
+    function renderJoyPosts() {
+      const box = document.getElementById("joyPosts");
+      if (!box) return;
+      box.innerHTML = "";
+      const posts = JOY_POSTS.filter(function (p) { return p && p.src; });
+      if (!posts.length) {
+        for (let i = 0; i < 3; i++) {
+          const slot = document.createElement("div");
+          slot.className = "joy-post-slot";
+          slot.setAttribute("aria-hidden", "true");
+          box.appendChild(slot);
+        }
+        const hint = document.createElement("p");
+        hint.className = "joy-posts-hint";
+        hint.textContent = "Здесь появятся публикации Джой — фото, которые она захочет показать.";
+        box.appendChild(hint);
+        return;
+      }
+      posts.forEach(function (post) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "joy-post";
+        const img = document.createElement("img");
+        img.src = post.src;
+        img.alt = post.alt || "";
+        btn.appendChild(img);
+        btn.addEventListener("click", function () {
+          setProfileFaceOpen(true);
+        });
+        box.appendChild(btn);
+      });
     }
 
-    function closePhotoPeek() {
-      const peek = document.getElementById("photoPeek");
-      document.body.classList.remove("photo-peek");
-      if (peek) peek.setAttribute("aria-hidden", "true");
+    function collectChatMedia() {
+      const out = [];
+      const seen = {};
+      function add(src) {
+        if (!src || seen[src]) return;
+        seen[src] = true;
+        out.push(src);
+      }
+      (state.messages || []).forEach(function (m) {
+        if (m && m.image) add(m.image);
+      });
+      try {
+        (loadMemory() || []).forEach(function (m) {
+          if (m && m.image) add(m.image);
+        });
+      } catch (_) {}
+      return out;
+    }
+
+    function renderMediaGrid() {
+      const grid = document.getElementById("mediaGrid");
+      const count = document.getElementById("mediaCount");
+      if (!grid) return;
+      grid.innerHTML = "";
+      const list = collectChatMedia();
+      if (count) count.textContent = list.length ? (list.length + " фото") : "пока пусто";
+      if (!list.length) {
+        const empty = document.createElement("p");
+        empty.className = "media-empty";
+        empty.textContent = "Пока нет фото в этом чате. Когда пришлёте снимок — он появится здесь.";
+        grid.appendChild(empty);
+        return;
+      }
+      list.forEach(function (src) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "";
+        btn.appendChild(img);
+        btn.addEventListener("click", function () {
+          img.style.objectFit = img.style.objectFit === "contain" ? "cover" : "contain";
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function showOverlay(el, bodyClass) {
+      if (!el) return;
+      document.body.classList.add(bodyClass);
+      el.setAttribute("aria-hidden", "false");
+      el.style.visibility = "visible";
+      el.style.pointerEvents = "auto";
+      motion.to(el, { y: 0, s: 1, o: 1 }, {
+        from: { y: 42, s: 0.97, o: 0 },
+        k: 210,
+        d: 20
+      });
+    }
+
+    function hideOverlay(el, bodyClass) {
+      if (!el) return;
+      motion.to(el, { y: 28, s: 0.982, o: 0 }, {
+        k: 250,
+        d: 26,
+        onDone: function () {
+          document.body.classList.remove(bodyClass);
+          el.setAttribute("aria-hidden", "true");
+          el.style.visibility = "";
+          el.style.pointerEvents = "";
+          el.style.transform = "";
+          el.style.opacity = "";
+        }
+      });
+    }
+
+    function setProfileFaceOpen(on) {
+      const el = document.getElementById("profile");
+      const btn = document.getElementById("profileFace");
+      if (!el) return;
+      el.classList.toggle("face-open", !!on);
+      if (btn) btn.setAttribute("aria-expanded", on ? "true" : "false");
+      if (on) {
+        const sc = el.querySelector(".profile-scroll");
+        if (sc) sc.scrollTop = 0;
+      }
+    }
+
+    function openMediaStory() {
+      if (state.call) return;
+      closeEmojiPanel();
+      syncAvatar();
+      renderMediaGrid();
+      const el = document.getElementById("mediaStory");
+      if (document.body.classList.contains("media-open")) return;
+      showOverlay(el, "media-open");
+    }
+
+    function closeMediaStory() {
+      const el = document.getElementById("mediaStory");
+      if (!document.body.classList.contains("media-open")) return;
+      if (document.body.classList.contains("profile-open")) closeProfile(true);
+      hideOverlay(el, "media-open");
     }
 
     function closeEmojiPanel() {
