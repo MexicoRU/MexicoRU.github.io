@@ -4486,7 +4486,7 @@
         } catch (err) {
           fail(err);
         }
-        setTimeout(function () { fail(new Error("decode timeout")); }, 2500);
+        setTimeout(function () { fail(new Error("decode timeout")); }, 8000);
       });
     }
 
@@ -4519,6 +4519,17 @@
       return true;
     }
 
+    function yandexTtsUrls() {
+      const origin = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize";
+      const host = (location.hostname || "").toLowerCase();
+      const urls = [];
+      if (/localhost|127\.0\.0\.1|netlify\.app$/.test(host)) urls.push("/api/yandex-tts");
+      urls.push(origin);
+      urls.push("https://corsproxy.io/?" + encodeURIComponent(origin));
+      urls.push("https://corsproxy.org/?" + encodeURIComponent(origin));
+      return urls;
+    }
+
     async function fetchYandexBuf(text, format, extra) {
       const mood = state.mood || "calm";
       const soft = state.soul || mood === "anxious" || mood === "bad" || mood === "tired";
@@ -4534,14 +4545,11 @@
       if (extra) {
         Object.keys(extra).forEach(function (k) { params[k] = extra[k]; });
       }
-      const endpoints = [
-        "/api/yandex-tts",
-        "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize"
-      ];
+      const endpoints = yandexTtsUrls();
       let lastErr = new Error("yandex tts");
       for (let i = 0; i < endpoints.length; i++) {
         const ac = new AbortController();
-        const timer = setTimeout(function () { ac.abort(); }, 6000);
+        const timer = setTimeout(function () { ac.abort(); }, 8000);
         try {
           const res = await fetch(endpoints[i], {
             method: "POST",
@@ -4562,7 +4570,7 @@
             continue;
           }
           const kind = (res.headers.get("content-type") || "").toLowerCase();
-          if (kind.indexOf("text/html") !== -1 || kind.indexOf("text/plain") !== -1) {
+          if (kind.indexOf("text/html") !== -1 || kind.indexOf("text/plain") !== -1 || kind.indexOf("application/json") !== -1) {
             lastErr = new Error("yandex tts");
             continue;
           }
@@ -4580,19 +4588,31 @@
       const mood = state.mood || "calm";
       const soft = state.soul || mood === "anxious" || mood === "bad" || mood === "tired";
       const volume = state.soul ? 0.62 : (soft ? 0.74 : 1);
+      const github = /github\.io/i.test(location.hostname || "");
 
       let wavBuf = null;
-      try {
-        const pcm = await fetchYandexBuf(text, "lpcm", { sampleRateHertz: "16000" });
-        wavBuf = pcmToWav(pcm, 16000);
-        if (await playTtsContext(wavBuf, volume)) return;
-      } catch (_) {}
-
       let mp3 = null;
+
+      if (!github) {
+        try {
+          const pcm = await fetchYandexBuf(text, "lpcm", { sampleRateHertz: "16000" });
+          wavBuf = pcmToWav(pcm, 16000);
+          if (await playTtsContext(wavBuf, volume)) return;
+        } catch (_) {}
+      }
+
       try {
         mp3 = await fetchYandexBuf(text, "mp3");
         if (await playTtsContext(mp3, volume)) return;
       } catch (_) {}
+
+      if (github && !wavBuf) {
+        try {
+          const pcm = await fetchYandexBuf(text, "lpcm", { sampleRateHertz: "16000" });
+          wavBuf = pcmToWav(pcm, 16000);
+          if (await playTtsContext(wavBuf, volume)) return;
+        } catch (_) {}
+      }
 
       const raw = wavBuf || mp3;
       if (!raw) throw new Error("yandex tts");
