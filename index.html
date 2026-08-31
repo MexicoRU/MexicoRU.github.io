@@ -3657,7 +3657,7 @@
       if (wantsPastMemory(userText)) return true;
       if (t.length < 16) return false;
       if (isSmallTalk(userText)) return false;
-      if (/люблю|нравится|ненавижу|работа|живу|устал|птср|сон|мама|папа|жена|друг|боюсь|мечта|хочу|важно|запомни|привычк|тревож|радует|обычно|день рожден|\bдр\b|годовщин/.test(t)) return true;
+      if (/люблю|нравится|ненавижу|работа|живу|устал|птср|сон|мама|папа|жена|друг|боюсь|мечта|хочу|важно|запомни|привычк|тревож|радует|обычно|день рожден|(^|[^а-яa-z])др([^а-яa-z]|$)|годовщин/.test(t)) return true;
       const mood = senseMood(userText);
       if (mood && mood !== "calm") return true;
       if (t.length >= 70) return true;
@@ -4555,12 +4555,12 @@
       else if (/свидан/.test(t)) title = "Свидание";
       else if (/собеседован/.test(t)) title = "Собеседование";
 
-      if (/послезавтра/.test(t) && isEvent.test(t)) {
+      if (/послезавтра/.test(t) && isEvent) {
         const d = new Date();
         d.setDate(d.getDate() + 2);
         return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
       }
-      if (/\bзавтра\b/.test(t) && isEvent.test(t)) {
+      if (/\bзавтра\b/.test(t) && isEvent) {
         const d = new Date();
         d.setDate(d.getDate() + 1);
         return { title: title, day: d.getDate(), month: d.getMonth() + 1 };
