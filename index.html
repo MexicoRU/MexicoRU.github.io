@@ -4056,6 +4056,7 @@
         });
       }
       saveDates();
+      learnAddFact("date", title + " — " + formatDayMonth(item.day, item.month));
     }
 
     function parseDateFromText(text) {
@@ -5670,6 +5671,7 @@
           "Окей, " + value + ".|||Теперь ты мой родной. Расскажи, что у тебя на душе."
         ]);
         await postJoyBurst(reply);
+        learnRememberTurn(value, reply);
         afterJoySpoke();
         return;
       }
@@ -5684,6 +5686,7 @@
         upsertDate(found);
         if (value.length < 90) {
           await postJoyBurst("Запомнила. " + found.title + " — " + formatDayMonth(found.day, found.month) + ".|||Напомню в этот день, родной.");
+          learnRememberTurn(value, "Запомнила. " + found.title);
           afterJoySpoke();
           return;
         }
@@ -5693,6 +5696,7 @@
       const replyPack = extractCallHangup(await getJoyReply(value));
       hideTyping();
       await postJoyBurst(replyPack.text);
+      learnRememberTurn(value, replyPack.text);
       if (state.call && replyPack.hangup) {
         endCall(true);
         return;
