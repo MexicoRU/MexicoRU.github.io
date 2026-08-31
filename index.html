@@ -4485,6 +4485,7 @@
     function saveDates() {
       localStorage.setItem(STORAGE.dates, JSON.stringify(state.dates));
       renderDateList();
+      scheduleLearnSave();
     }
 
     function renderDateList() {
