@@ -6926,6 +6926,18 @@
         openProfile();
       }
     });
+    document.getElementById("emojiBtn").addEventListener("click", function (e) {
+      e.preventDefault();
+      toggleEmojiPanel();
+    });
+    document.addEventListener("pointerdown", function (e) {
+      const bar = document.querySelector(".composer");
+      if (!bar || !bar.classList.contains("emoji-open")) return;
+      if (bar.contains(e.target)) return;
+      closeEmojiPanel();
+    });
+    document.getElementById("profileFace").addEventListener("click", openPhotoPeek);
+    document.getElementById("photoPeek").addEventListener("click", closePhotoPeek);
     document.getElementById("profileBack").addEventListener("click", closeProfile);
     document.getElementById("profileCall").addEventListener("click", () => startCall());
     document.getElementById("profileWrite").addEventListener("click", function () {
