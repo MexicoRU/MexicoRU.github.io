@@ -3459,6 +3459,7 @@
       if (Array.isArray(src.facts)) base.facts = src.facts.slice(-LEARN_FACT_MAX);
       if (Array.isArray(src.mem)) base.mem = src.mem.slice(-LEARN_MEM_MAX);
       if (Array.isArray(src.wins)) base.wins = src.wins.slice(-LEARN_WIN_MAX);
+      if (Array.isArray(src.moods)) base.moods = src.moods.slice(-40);
       base.pending = src.pending || null;
       base.at = Number(src.at) || 0;
       return base;
@@ -3476,16 +3477,29 @@
     function persistLearnCloud() {
       const api = rtdbApi();
       if (!api) return;
-      const payload = {
-        persona: state.learn.persona,
-        facts: state.learn.facts,
-        mem: state.learn.mem,
-        wins: state.learn.wins,
-        at: state.learn.at,
-        v: 1
-      };
+      const root = learnPath();
+      const slimMem = (state.learn.mem || []).map(function (m) {
+        return { q: m.q, a: m.a, v: m.v, w: m.w, at: m.at };
+      });
+      const slimWins = (state.learn.wins || []).map(function (w) {
+        return { cue: w.cue, reply: w.reply, vibe: w.vibe, v: w.v, score: w.score, at: w.at };
+      });
+      const events = (state.dates || []).map(function (d) {
+        return { id: d.id, title: d.title, day: d.day, month: d.month };
+      });
+      const prefs = (state.learn.facts || []).map(function (f) {
+        return { kind: f.kind, text: f.text, at: f.at };
+      });
       try {
-        api.set(api.ref(api.db, learnPath() + "/profile"), payload);
+        api.set(api.ref(api.db, root + "/profile"), {
+          persona: state.learn.persona,
+          moods: (state.learn.moods || []).slice(-40),
+          at: state.learn.at,
+          v: 2
+        });
+        api.set(api.ref(api.db, root + "/events"), events);
+        api.set(api.ref(api.db, root + "/prefs"), prefs);
+        api.set(api.ref(api.db, root + "/history"), { mem: slimMem, wins: slimWins, at: state.learn.at });
       } catch (_) {}
     }
 
