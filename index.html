@@ -2073,7 +2073,7 @@
 
       function paint(j) {
         const bits = [];
-        if (j.y) bits.push("translate3d(0," + j.y.toFixed(3) + "px,0)");
+        if (Math.abs(j.y) > 0.015) bits.push("translate3d(0," + j.y.toFixed(3) + "px,0)");
         if (j.s != null && Math.abs(j.s - 1) > 0.0004) bits.push("scale(" + j.s.toFixed(4) + ")");
         j.el.style.transform = bits.length ? bits.join(" ") : "translateZ(0)";
         if (j.useO) j.el.style.opacity = String(Math.max(0, Math.min(1, j.o)));
@@ -3842,7 +3842,21 @@
         el.appendChild(img);
       }
       chatEl.appendChild(el);
-      chatEl.scrollTop = chatEl.scrollHeight;
+      if (animate) {
+        const fromY = msg.role === "user" ? 12 : 20;
+        motion.to(el, { y: 0, s: 1, o: 1 }, {
+          from: { y: fromY, s: 0.972, o: 0 },
+          k: 250,
+          d: 21,
+          clear: true,
+          onDone: function () {
+            el.classList.remove("msg-enter");
+          }
+        });
+        requestAnimationFrame(function () { motion.chatScroll(); });
+      } else {
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
       return el;
     }
 
