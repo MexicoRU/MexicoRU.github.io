@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="25">
+<html lang="ru" data-joy-build="26">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -84,31 +84,54 @@
     }
 
     body.soul-mode {
-      --btn: #c4844c;
-      --glow: rgba(210, 120, 48, 0.22);
-      --lamp: #d48942;
-      --muted: #a08068;
+      --btn: #a56a3c;
+      --btn-text: #f6eadc;
+      --glow: rgba(128, 72, 28, 0.12);
+      --lamp: #c07840;
+      --muted: #8d7a68;
+      --shadow: rgba(0, 0, 0, 0.52);
+      --line: rgba(230, 200, 170, 0.07);
+      --glass: rgba(12, 9, 7, 0.72);
+      --glass-edge: rgba(255, 210, 170, 0.1);
+      --glass-hi: rgba(255, 228, 200, 0.05);
     }
 
     body.soul-mode:not(.dark) {
-      --bg: #f1ebe2;
-      --bg-deep: #e6ddd0;
-      --card: #faf6f0;
-      --header: rgba(250, 246, 240, 0.94);
-      --joy: #fffaf4;
-      --user: #e4d5c4;
-      --text: #1a120e;
-      --muted: #534338;
+      --bg: #261e18;
+      --bg-deep: #110d0a;
+      --card: #1c1612;
+      --header: rgba(16, 12, 10, 0.95);
+      --joy: #2c241e;
+      --user: #352a22;
+      --text: #f1e6d8;
+      --muted: #a09080;
+      --input: #1a1511;
     }
 
     body.soul-mode.dark {
-      --bg: #16100a;
-      --bg-deep: #0a0705;
-      --card: #1c140e;
-      --header: rgba(24, 16, 10, 0.94);
-      --joy: #2a1c12;
-      --user: #3a2818;
-      --text: #ead6c0;
+      --bg: #0f0c0a;
+      --bg-deep: #050302;
+      --card: #14110e;
+      --header: rgba(8, 6, 5, 0.96);
+      --joy: #1a1512;
+      --user: #231c17;
+      --text: #e6d6c4;
+      --muted: #8a7666;
+      --input: #100c0a;
+      --lamp: #b46c36;
+      --glow: rgba(110, 58, 24, 0.1);
+    }
+
+    body.night.soul-mode {
+      --bg: #080604;
+      --bg-deep: #020101;
+      --card: #0e0b09;
+      --joy: #12100c;
+      --user: #16120e;
+      --text: #d4c4b0;
+      --muted: #7a6858;
+      --glow: rgba(80, 42, 16, 0.08);
+      --lamp: #8a542c;
     }
 
     body.night {
@@ -187,8 +210,8 @@
       touch-action: manipulation;
     }
 
-    body:not(.dark) {
-      -webkit-font-smoothing: auto;
+    body.soul-mode:not(.dark) {
+      -webkit-font-smoothing: antialiased;
     }
 
     .stage {
