@@ -5663,6 +5663,7 @@
       if (!state.userName && !state.isPrimary) {
         state.userName = value;
         localStorage.setItem(STORAGE.name, value);
+        learnAddFact("name", "Его зовут " + value);
         const reply = pick([
           "Ну привет, " + value + ".|||Запомнила, боец. Я скучала.",
           "Хороший мой. " + value + " — звучит тепло.|||Я рядом.",
@@ -5854,6 +5855,7 @@
       else persistSession(currentUid(), state.authProvider || localStorage.getItem(STORAGE.authProvider) || "");
       if (state.isPrimary) await bindFighterMemory();
       await waitForRtdb(2200);
+      await loadLearn();
       await ensureLongMemory();
       state.joyStarted = true;
       syncVoicePills();
