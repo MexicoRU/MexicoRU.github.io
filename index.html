@@ -4914,7 +4914,10 @@
       const parts = value.split("-");
       upsertDate({ title: title || "Важный день", month: +parts[1], day: +parts[2] });
       document.getElementById("dateTitle").value = "";
-      const line = "Запомнила. " + (title || "Важный день") + " — " + formatDayMonth(+parts[2], +parts[1]) + ". Напомню, когда придёт день.";
+      const line = pick([
+        "Хорошо. " + (title || "Этот день") + " — " + formatDayMonth(+parts[2], +parts[1]) + ". Я буду рядом.",
+        "Я с тобой в этот день. " + formatDayMonth(+parts[2], +parts[1]) + "."
+      ]);
       pushMessage("joy", line);
       speak(line);
     }
@@ -6443,13 +6446,13 @@
       else persistSession(currentUid(), state.authProvider || localStorage.getItem(STORAGE.authProvider) || "");
       if (state.isPrimary) await bindFighterMemory();
       await waitForRtdb(2200);
+      state.dates = loadDates();
       await loadLearn();
       await ensureLongMemory();
       state.joyStarted = true;
       syncVoicePills();
       syncBondUI();
       setSoul(state.soul);
-      state.dates = loadDates();
       renderDateList();
       syncNotifyPills();
       const restored = await loadMessages();
