@@ -3911,27 +3911,27 @@
       if (events.length) bits.push("Ближние дни, живи ими, не объявляй календарь: " + events.join("; ") + ".");
       const facts = (state.learn.facts || []).slice(-10);
       if (facts.length) {
-        bits.push("Живая память о нём, не читай списком: " + facts.map(function (f) { return f.text; }).join("; ") + ".");
+        bits.push("Живая память " + himHer("о нём", "о ней", "о собеседнике") + ", не читай списком: " + facts.map(function (f) { return f.text; }).join("; ") + ".");
       }
       const p = state.learn.persona || emptyLearn().persona;
       const style = [];
-      if (p.humor >= 62) style.push("ему заходят шутки — можно чуть больше юмора");
-      else if (p.humor <= 32) style.push("шутки ему мало заходят — почти без подколов");
+      if (p.humor >= 62) style.push(himHer("ему", "ей", "собеседнику") + " заходят шутки — можно чуть больше юмора");
+      else if (p.humor <= 32) style.push("шутки " + himHer("ему", "ей", "") + " мало заходят — почти без подколов");
       if (p.soft >= 68) style.push("говори мягче и короче, без давления");
       else if (p.soft <= 34) style.push("можно прямее, без лишней жалости");
-      if (p.warmth >= 74) style.push("ему нужна теплота, не дистанция");
-      if (style.length) bits.push("Как с ним лучше: " + style.join("; ") + ".");
+      if (p.warmth >= 74) style.push(himHer("ему", "ей", "") + " нужна теплота, не дистанция");
+      if (style.length) bits.push("Как " + himHer("с ним", "с ней", "с этим человеком") + " лучше: " + style.join("; ") + ".");
       const shift = learnMoodShift();
       if (shift) bits.push(shift);
       const hits = recallLearnMem(userText);
       if (hits.length) {
         bits.push("Похожие прошлые разговоры: " + hits.map(function (h) {
-          return "он: " + clipText(h.q, 110) + " ты: " + clipText(h.a, 110);
+          return himHer("он", "она", "человек") + ": " + clipText(h.q, 110) + " ты: " + clipText(h.a, 110);
         }).join(" / ") + ". Не копируй. Просто помни.");
       }
       const win = recallLearnWin(userText);
       if (win && win.reply) {
-        bits.push("Ему раньше отозвалось такое: " + clipText(win.reply, 120) + ". Не копируй слово в слово.");
+        bits.push(himHer("Ему", "Ей", "Раньше") + " раньше отозвалось такое: " + clipText(win.reply, 120) + ". Не копируй слово в слово.");
       }
       const joined = bits.join(" ");
       if (joined.length > 980) return joined.slice(0, 977) + "…";
@@ -3981,6 +3981,7 @@
     }
 
     function learnObserveUser(userText) {
+      noteUserSex(userText);
       extractLearnFacts(userText);
       const found = parseDateFromText(userText);
       if (found) upsertDate(found);
