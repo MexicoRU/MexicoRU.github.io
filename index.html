@@ -1905,9 +1905,11 @@
     body.needs-auth .app,
     body.needs-auth .sheet,
     body.needs-auth .profile,
+    body.needs-auth .photo-peek,
     body.needs-auth .call-screen,
     body.account-banned .app,
     body.account-banned .profile,
+    body.account-banned .photo-peek,
     body.account-banned .call-screen,
     body.account-banned .sheet {
       display: none !important;
@@ -2370,20 +2372,7 @@
             }
           }
         }
-        if (scroll && scroll.el) {
-          const max = Math.max(0, scroll.el.scrollHeight - scroll.el.clientHeight);
-          scroll.t = max;
-          const n = (max - scroll.x) * 14 - scroll.v * 18;
-          scroll.v += n * dt;
-          scroll.x += scroll.v * dt;
-          if (Math.abs(max - scroll.x) < 0.4 && Math.abs(scroll.v) < 8) {
-            scroll.el.scrollTop = max;
-            scroll = null;
-          } else {
-            scroll.el.scrollTop = scroll.x;
-          }
-        }
-        if (jobs.length || scroll) raf = requestAnimationFrame(tick);
+        if (jobs.length) raf = requestAnimationFrame(tick);
         else raf = 0;
       }
 
