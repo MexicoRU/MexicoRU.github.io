@@ -6944,15 +6944,14 @@
       closeProfile();
       motion.wait(280).then(function () { inputEl.focus(); });
     });
-    document.querySelectorAll(".profile-gallery button").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const hero = document.getElementById("profileHero");
-        hero.style.objectPosition = btn.getAttribute("data-pos") || "center 24%";
-      });
-    });
     document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && document.body.classList.contains("photo-peek")) {
+        closePhotoPeek();
+        return;
+      }
       if (e.key === "Escape" && document.body.classList.contains("profile-open") && !state.call) closeProfile();
       if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet();
+      if (e.key === "Escape") closeEmojiPanel();
     });
     soulBtn.addEventListener("click", () => setSoul(!state.soul, true));
     themeBtn.addEventListener("click", () => {
@@ -6975,7 +6974,7 @@
 
     (function bindPressFeel() {
       if (motion.reduced) return;
-      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .profile-actions button, .logout-btn, .auth-btn, .profile-gallery button";
+      const sel = ".icon-btn, .send-btn, .pill, .hang-round, .call-launch, .profile-actions button, .logout-btn, .auth-btn, .profile-face";
       const canHover = window.matchMedia("(hover: hover)").matches;
       let held = null;
       function hit(e) {
