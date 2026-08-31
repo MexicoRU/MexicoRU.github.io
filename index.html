@@ -941,7 +941,8 @@
       box-shadow: inset 0 1px 0 var(--glass-hi);
       animation: none;
       animation-delay: 0.7s;
-      transition: transform 0.32s var(--ease), box-shadow 0.32s var(--ease), border-color 0.32s var(--ease), color 0.32s var(--ease);
+      transition: box-shadow 0.45s var(--ease), border-color 0.45s var(--ease), color 0.45s var(--ease);
+      touch-action: manipulation;
     }
 
     .send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -1058,7 +1059,7 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.4s var(--ease), visibility 0.4s;
+      transition: opacity 0.55s var(--ease), visibility 0.55s;
     }
 
     .sheet.open {
@@ -1211,7 +1212,8 @@
       font-size: 0.85rem;
       box-shadow: inset 0 1px 0 var(--glass-hi);
       animation: none;
-      transition: transform 0.32s var(--ease), background 0.32s var(--ease), border-color 0.32s var(--ease), box-shadow 0.32s var(--ease), color 0.32s var(--ease);
+      transition: background 0.45s var(--ease), border-color 0.45s var(--ease), box-shadow 0.45s var(--ease), color 0.45s var(--ease);
+      touch-action: manipulation;
     }
 
     .pills .pill:nth-child(1) { animation-delay: 0.1s; }
