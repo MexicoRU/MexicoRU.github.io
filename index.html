@@ -1776,8 +1776,6 @@
         </button>
       </div>
 
-      <button class="sound-unlock" id="soundUnlock" type="button">Нажми, чтобы услышать меня</button>
-
       <div class="install-hint" id="installHint">
         <img src="icons/apple-touch-icon.png" alt="">
         <div>
@@ -1792,70 +1790,68 @@
     <div class="sheet" id="sheet">
       <div class="sheet-card">
         <h2>Настройки</h2>
-        <div class="row">
-          <span>Тема</span>
-          <div class="pills">
-            <button class="pill" id="themeLight">Светлая</button>
-            <button class="pill" id="themeDark">Тёмная</button>
+
+        <section class="set-block">
+          <h3>Внешний вид</h3>
+          <div class="row">
+            <span>Тема</span>
+            <div class="pills">
+              <button class="pill" id="themeLight" type="button">Светлая</button>
+              <button class="pill" id="themeDark" type="button">Тёмная</button>
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <span>Ночь</span>
-          <div class="pills">
-            <button class="pill" id="nightAuto" type="button">Авто</button>
-            <button class="pill" id="nightOn" type="button">Вкл</button>
-            <button class="pill" id="nightOff" type="button">Выкл</button>
+          <div class="row">
+            <span>Ночной свет</span>
+            <div class="pills">
+              <button class="pill" id="nightAuto" type="button">Авто</button>
+              <button class="pill" id="nightOn" type="button">Вкл</button>
+              <button class="pill" id="nightOff" type="button">Выкл</button>
+            </div>
           </div>
-        </div>
-        <p class="hint">После 20:00 свет сам становится тише и теплее. Луна в шапке включает ночь сразу.</p>
-        <div class="row">
-          <span>Голос</span>
-          <div class="pills">
-            <button class="pill" id="voiceFemale">Женский</button>
-            <button class="pill" id="voiceMale">Мужской</button>
+          <p class="hint">Авто — после 20:00 экран становится тише и теплее. Солнце в шапке меняет светлую и тёмную тему.</p>
+        </section>
+
+        <section class="set-block">
+          <h3>Чат</h3>
+          <div class="row">
+            <span>Уведомления</span>
+            <div class="pills">
+              <button class="pill" id="notifyOn" type="button">Вкл</button>
+              <button class="pill" id="notifyOff" type="button">Выкл</button>
+            </div>
           </div>
-        </div>
-        <div class="row row-stack">
-          <span>Тембр</span>
-          <select id="voiceSelect" class="voice-select" aria-label="Голос">
-            <option value="oksana">Оксана — женский</option>
-            <option value="jane">Джейн — женский</option>
-            <option value="ermil">Ермил — мужской</option>
-            <option value="zahar">Захар — мужской</option>
-          </select>
-        </div>
-        <p class="hint" id="voiceHint">Один голос на всё приложение — Яндекс SpeechKit. Оксана, Джейн, Ермил или Захар.</p>
-        <div class="row">
-          <span>Уведомления</span>
-          <div class="pills">
-            <button class="pill" id="notifyOn">Включить</button>
-            <button class="pill" id="notifyOff">Выкл</button>
+          <p class="hint">Джой пишет сама, когда захочет — не по будильнику. Браузер спросит разрешение.</p>
+          <div class="row">
+            <span>Лента</span>
+            <div class="pills">
+              <button class="pill" id="refreshChat" type="button">Очистить экран</button>
+            </div>
           </div>
-        </div>
-        <p class="hint">Джой пишет сама, когда захочет — не по будильнику. Иногда утром, иногда соскучится днём, иногда на ночь. Каждый раз по-своему. Браузер спросит разрешение.</p>
-        <div class="row">
-          <span>Чат</span>
-          <div class="pills">
-            <button class="pill" id="refreshChat" type="button">Обновить чат</button>
+          <p class="hint">Сообщения на экране исчезнут. Имя, важные дни и память о разговоре останутся.</p>
+        </section>
+
+        <section class="set-block">
+          <h3>Память</h3>
+          <div class="row row-stack">
+            <span>Важные дни</span>
+            <div class="date-list" id="dateList"></div>
+            <div class="date-add">
+              <input id="dateTitle" type="text" placeholder="День рождения" maxlength="40">
+              <input id="dateValue" type="date">
+              <button class="pill" id="dateAdd" type="button">Запомнить</button>
+            </div>
           </div>
-        </div>
-        <p class="hint">Лента на экране очистится. Имя, важные дни и то, что Джой помнит о разговоре, останутся.</p>
-        <div class="row row-stack">
-          <span>Важные дни</span>
-          <div class="date-list" id="dateList"></div>
-          <div class="date-add">
-            <input id="dateTitle" type="text" placeholder="День рождения" maxlength="40">
-            <input id="dateValue" type="date">
-            <button class="pill" id="dateAdd" type="button">Запомнить</button>
+          <p class="hint">Можно написать в чат: «день рождения 12 марта». Джой напомнит в этот день.</p>
+        </section>
+
+        <section class="set-block">
+          <h3>Аккаунт</h3>
+          <div class="row row-stack">
+            <p class="hint" id="accountHint">Вход по почте и паролю.</p>
+            <button class="logout-btn" id="authSignOut" type="button">Выйти из аккаунта</button>
+            <p class="hint">После выхода нужно войти снова по почте.</p>
           </div>
-        </div>
-        <p class="hint">Можно написать в чат: «день рождения 12 марта». Джой напомнит в этот день.</p>
-        <div class="row row-stack">
-          <span>Аккаунт</span>
-          <p class="hint" id="accountHint">Вход по почте и паролю.</p>
-          <button class="logout-btn" id="authSignOut" type="button">Выйти из аккаунта</button>
-          <p class="hint">После выхода нужно войти снова по почте.</p>
-        </div>
+        </section>
       </div>
     </div>
 
