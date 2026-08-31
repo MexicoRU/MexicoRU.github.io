@@ -3235,10 +3235,11 @@
 
     function photoSrc(kind) {
       const file = kind === "male" ? "icons/joy-face-male.jpg" : "icons/joy-face.jpg";
+      const src = file + "?v=12";
       try {
-        return new URL(file, document.baseURI).href;
+        return new URL(src, document.baseURI).href;
       } catch (_) {
-        return "./" + file;
+        return "./" + src;
       }
     }
 
