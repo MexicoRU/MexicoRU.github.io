@@ -2039,9 +2039,9 @@
           </div>
           <h3>Фото</h3>
           <div class="profile-gallery">
-            <button type="button" data-pos="center 12%" aria-label="Фото 1"><img class="joy-photo gal-a" src="./icons/joy-face.jpg?v=12" alt=""></button>
-            <button type="button" data-pos="28% 22%" aria-label="Фото 2"><img class="joy-photo gal-b" src="./icons/joy-face.jpg?v=12" alt=""></button>
-            <button type="button" data-pos="72% 26%" aria-label="Фото 3"><img class="joy-photo gal-c" src="./icons/joy-face.jpg?v=12" alt=""></button>
+            <button type="button" data-pos="center 24%" aria-label="Фото 1"><img class="joy-photo gal-a" src="./icons/joy-face.jpg?v=12" alt=""></button>
+            <button type="button" data-pos="22% 38%" aria-label="Фото 2"><img class="joy-photo gal-b" src="./icons/joy-face.jpg?v=12" alt=""></button>
+            <button type="button" data-pos="78% 32%" aria-label="Фото 3"><img class="joy-photo gal-c" src="./icons/joy-face.jpg?v=12" alt=""></button>
           </div>
         </div>
       </div>
@@ -6165,7 +6165,7 @@
     document.querySelectorAll(".profile-gallery button").forEach(function (btn) {
       btn.addEventListener("click", function () {
         const hero = document.getElementById("profileHero");
-        hero.style.objectPosition = btn.getAttribute("data-pos") || "center 16%";
+        hero.style.objectPosition = btn.getAttribute("data-pos") || "center 24%";
       });
     });
     document.addEventListener("keydown", function (e) {
