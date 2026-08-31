@@ -5774,7 +5774,7 @@
           state.callSilentRounds = 0;
           postJoyBurst(pick(["Ты тут?", "Не молчи.|||Я слушаю.", "Я соскучилась по голосу."])).then(startCallListen);
         } else {
-          setTimeout(startCallListen, 350);
+          motion.wait(350).then(startCallListen);
         }
       };
       try { rec.start(); } catch (_) {}
