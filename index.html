@@ -7524,18 +7524,24 @@
       if (found) upsertDate(found);
 
       state.liveBeat = pickLiveBeat(value);
-      if (!state.call) showTyping();
-      const hang = livePauseMs(state.liveBeat);
-      if (hang) await motion.wait(hang);
-      const replyPack = extractCallHangup(await getJoyReply(value));
-      hideTyping();
-      await postJoyBurst(replyPack.text);
-      learnRememberTurn(value, replyPack.text);
-      tickJoyWeather();
-      if (state.call && replyPack.hangup) {
-        endCall(true);
+      if (state.call) {
+        const replyPack = extractCallHangup(await getJoyReply(value));
+        hideTyping();
+        await postJoyBurst(replyPack.text);
+        learnRememberTurn(value, replyPack.text);
+        tickJoyWeather();
+        if (replyPack.hangup) {
+          endCall(true);
+          return;
+        }
+        afterJoySpoke();
         return;
       }
+      bumpReplyGen();
+      const packed = await deliverJoyReply(value);
+      if (!packed) return;
+      learnRememberTurn(value, packed.text);
+      tickJoyWeather();
       afterJoySpoke();
     }
 
@@ -7549,16 +7555,14 @@
         return;
       }
       if (!file) return;
-      const namedImage = /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(file.name || "");
-      if (!(file.type || "").match(/^image\//) && !namedImage) return;
+      if (!isImageFile(file)) return;
       try {
         statusEl.textContent = "смотрю фото";
         const dataUrl = await fileToJpegDataUrl(file);
+        bumpReplyGen();
         pushMessage("user", "", dataUrl);
-        showTyping();
-        const reply = await getJoyPhotoReply(dataUrl);
-        hideTyping();
-        await postJoyBurst(reply);
+        const packed = await deliverJoyReply("", { fromPhoto: true, photoUrl: dataUrl });
+        if (!packed) return;
         afterJoySpoke();
       } catch (_) {
         hideTyping();
