@@ -6543,7 +6543,7 @@
       if (!parts.length) return;
       pushMessage("joy", parts[0]);
       const voice = speak(parts.join(" "));
-      const gap = (state.liveBeat === "pause" ? 280 : 0) + (state.soul ? 210 : 150);
+      const gap = (state.liveBeat === "pause" ? 380 : 0) + (state.soul ? 260 : 160) + Math.floor(Math.random() * 380);
       parts.slice(1).forEach(function (line, i) {
         motion.wait((i + 1) * gap).then(function () {
           pushMessage("joy", line);
