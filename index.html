@@ -6294,9 +6294,8 @@
       if (!file) return false;
       const type = String(file.type || "").toLowerCase();
       if (type.indexOf("image/") === 0) return true;
-      if (!type || type === "application/octet-stream") {
-        return /\.(jpe?g|png|webp|heic|heif|gif|bmp|tif|tiff|avif|dng)$/i.test(file.name || "") || true;
-      }
+      if (/\.(jpe?g|png|webp|heic|heif|gif|bmp|tif|tiff|avif|dng)$/i.test(file.name || "")) return true;
+      if (!type || type === "application/octet-stream") return true;
       return false;
     }
 
