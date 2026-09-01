@@ -4769,6 +4769,213 @@
       return 0;
     }
 
+    function userTurnHeavy(text) {
+      const mood = senseMood(text);
+      return mood === "bad" || mood === "anxious" || mood === "tired" || !!state.soul;
+    }
+
+    function bumpReplyGen() {
+      state.replyGen = (state.replyGen || 0) + 1;
+      if (state.readTimer) {
+        clearTimeout(state.readTimer);
+        state.readTimer = 0;
+      }
+      state.reading = false;
+      return state.replyGen;
+    }
+
+    function markUserMessagesRead() {
+      (state.messages || []).forEach(function (m) {
+        if (m.role === "user") m.read = true;
+      });
+      saveMessages();
+      if (!chatEl) return;
+      chatEl.querySelectorAll(".msg.user").forEach(function (el) {
+        el.classList.add("read");
+      });
+    }
+
+    function scheduleReadTicks(ms, gen) {
+      if (state.call) {
+        markUserMessagesRead();
+        return;
+      }
+      state.reading = true;
+      refreshStatus();
+      state.readTimer = setTimeout(function () {
+        state.readTimer = 0;
+        if (gen !== state.replyGen) return;
+        state.reading = false;
+        markUserMessagesRead();
+        refreshStatus();
+      }, Math.max(120, ms || 400));
+    }
+
+    function planJoyReply(userText) {
+      if (state.call) return { kind: "now", delay: 0, readAfter: 160, typeAfter: 0 };
+      const weather = ensureJoyWeather();
+      const heavy = userTurnHeavy(userText);
+      if (heavy) {
+        return {
+          kind: "now",
+          delay: 260 + Math.floor(Math.random() * 720),
+          readAfter: 180 + Math.floor(Math.random() * 260),
+          typeAfter: 160 + Math.floor(Math.random() * 280)
+        };
+      }
+      if (weather === "low" && Math.random() < 0.68) {
+        return {
+          kind: "later",
+          delay: 22000 + Math.floor(Math.random() * 90000),
+          readAfter: 2800 + Math.floor(Math.random() * 7000),
+          typeAfter: 500 + Math.floor(Math.random() * 1400)
+        };
+      }
+      if (weather === "busy" && Math.random() < 0.6) {
+        return {
+          kind: "busy",
+          delay: 480 + Math.floor(Math.random() * 1100),
+          later: 14000 + Math.floor(Math.random() * 36000),
+          readAfter: 380 + Math.floor(Math.random() * 900),
+          typeAfter: 400 + Math.floor(Math.random() * 1000)
+        };
+      }
+      const r = Math.random();
+      if (r < 0.2) {
+        return { kind: "now", delay: 80 + Math.floor(Math.random() * 260), readAfter: 140 + Math.floor(Math.random() * 240), typeAfter: 80 + Math.floor(Math.random() * 240) };
+      }
+      if (r < 0.52) {
+        return { kind: "now", delay: 520 + Math.floor(Math.random() * 1400), readAfter: 280 + Math.floor(Math.random() * 520), typeAfter: 220 + Math.floor(Math.random() * 640) };
+      }
+      if (r < 0.8) {
+        return { kind: "now", delay: 1700 + Math.floor(Math.random() * 2600), readAfter: 420 + Math.floor(Math.random() * 900), typeAfter: 380 + Math.floor(Math.random() * 1100) };
+      }
+      if (r < 0.93) {
+        return { kind: "now", delay: 4800 + Math.floor(Math.random() * 4200), readAfter: 700 + Math.floor(Math.random() * 1400), typeAfter: 500 + Math.floor(Math.random() * 1400) };
+      }
+      return { kind: "now", delay: 9000 + Math.floor(Math.random() * 9000), readAfter: 900 + Math.floor(Math.random() * 1800), typeAfter: 600 + Math.floor(Math.random() * 1600) };
+    }
+
+    function busySoftLine() {
+      if (joyIsMale()) {
+        return pick([
+          "Я чуть занят.|||Напишу, не пропадай.",
+          "Секунду, я тут.|||Чуть занят своим.",
+          "Я на связи.|||Только чуть занят, ладно?"
+        ]);
+      }
+      return pick([
+        "Я чуть занята.|||Напишу, не пропадай.",
+        "Секунду, я тут.|||Чуть занята своим.",
+        "Я на связи.|||Только чуть занята, ладно?"
+      ]);
+    }
+
+    function joySharePhotoSrc() {
+      const male = joyIsMale();
+      const list = male
+        ? [photoSrc("male"), "./icons/joy-face-male.jpg", "./icons/joy-avatar-male.jpg"]
+        : [photoSrc("female"), "./icons/joy-face.jpg", "./icons/joy-avatar.jpg", "./joy-avatar.jpg"];
+      (JOY_POSTS || []).forEach(function (p) {
+        if (p && p.src) list.push(p.src);
+      });
+      return pick(list);
+    }
+
+    function maybeJoySharePhoto(userText, opts) {
+      opts = opts || {};
+      if (state.call || userTurnHeavy(userText || "")) return Promise.resolve();
+      const weather = (loadCare().joyWeather) || "";
+      if (weather === "busy" || weather === "low") return Promise.resolve();
+      const recent = (state.messages || []).slice(-10);
+      const sheSent = recent.some(function (m) { return m.role === "joy" && m.image; });
+      if (sheSent) return Promise.resolve();
+      let chance = 0.07;
+      if (opts.fromPhoto) chance = 0.22;
+      if (weather === "tender") chance += 0.08;
+      if (weather === "even") chance += 0.02;
+      if (Math.random() > chance) return Promise.resolve();
+      const src = joySharePhotoSrc();
+      const caption = pick(["Вот я.", "Держи.", "Просто так.", "Себе.", ""]);
+      return motion.wait(380 + Math.floor(Math.random() * 900)).then(function () {
+        pushMessage("joy", caption, src);
+      });
+    }
+
+    async function stillThisReply(gen) {
+      return gen === state.replyGen && !state.call;
+    }
+
+    async function deliverJoyReply(userText, opts) {
+      opts = opts || {};
+      const gen = state.replyGen;
+      const plan = planJoyReply(userText);
+      scheduleReadTicks(plan.readAfter, gen);
+      let pending = null;
+      function fetchReply() {
+        if (!pending) {
+          pending = opts.photoUrl ? getJoyPhotoReply(opts.photoUrl) : getJoyReply(userText);
+        }
+        return pending;
+      }
+
+      if (state.call) {
+        const replyPack = extractCallHangup(await fetchReply());
+        hideTyping();
+        await postJoyBurst(replyPack.text);
+        return replyPack;
+      }
+
+      if (plan.kind === "busy") {
+        await motion.wait(plan.delay);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        await postJoyBurst(busySoftLine());
+        fetchReply();
+        await motion.wait(plan.later);
+        if (gen !== state.replyGen) return null;
+        if (!state.call) showTyping();
+        const reply = await fetchReply();
+        await motion.wait(plan.typeAfter);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        await postJoyBurst(reply);
+        await maybeJoySharePhoto(userText, opts);
+        return { text: reply, hangup: false };
+      }
+
+      if (plan.kind === "later") {
+        await motion.wait(plan.readAfter);
+        if (gen !== state.replyGen) return null;
+        fetchReply();
+        await motion.wait(Math.max(0, plan.delay - plan.readAfter));
+        if (gen !== state.replyGen) return null;
+        if (!state.call) showTyping();
+        const reply = await fetchReply();
+        await motion.wait(plan.typeAfter);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        await postJoyBurst(reply);
+        await maybeJoySharePhoto(userText, opts);
+        return { text: reply, hangup: false };
+      }
+
+      await motion.wait(Math.min(plan.readAfter, plan.delay));
+      if (gen !== state.replyGen) return null;
+      fetchReply();
+      const rest = Math.max(0, plan.delay - plan.readAfter);
+      if (rest > 180) await motion.wait(rest);
+      if (gen !== state.replyGen) return null;
+      if (!state.call) showTyping();
+      const packed = extractCallHangup(await fetchReply());
+      await motion.wait(plan.typeAfter);
+      if (gen !== state.replyGen) return null;
+      hideTyping();
+      await postJoyBurst(packed.text);
+      await maybeJoySharePhoto(userText, opts);
+      return packed;
+    }
+
     function joyWeatherPool(awayHours, hour) {
       const bag = ["even", "even", "even", "quiet", "tired", "tender", "reflect"];
       if (hour >= 22 || hour < 6) bag.push("tired", "tired", "quiet", "reflect", "low");
