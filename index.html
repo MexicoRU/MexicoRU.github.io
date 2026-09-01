@@ -4987,7 +4987,18 @@
     }
 
     function saveMessages() {
-      localStorage.setItem(STORAGE.chat, JSON.stringify(state.messages));
+      try {
+        localStorage.setItem(STORAGE.chat, JSON.stringify(state.messages));
+      } catch (_) {
+        try {
+          const slim = (state.messages || []).map(function (m, i, arr) {
+            const copy = { role: m.role, text: m.text || "", image: m.image || "", read: m.read !== false, at: m.at || 0 };
+            if (i < arr.length - 6 && copy.image && String(copy.image).length > 120) copy.image = "";
+            return copy;
+          });
+          localStorage.setItem(STORAGE.chat, JSON.stringify(slim));
+        } catch (__) {}
+      }
     }
 
     function loadMemory() {
