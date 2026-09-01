@@ -6283,19 +6283,89 @@
       return humanize(String(c || "").trim());
     }
 
-    async function fileToJpegDataUrl(file) {
+    function dataUrlBytes(url) {
+      const s = String(url || "");
+      const i = s.indexOf(",");
+      const b64 = i >= 0 ? s.slice(i + 1) : s;
+      return Math.floor(b64.length * 0.75);
+    }
+
+    function isImageFile(file) {
+      if (!file) return false;
+      const type = String(file.type || "").toLowerCase();
+      if (type.indexOf("image/") === 0) return true;
+      if (!type || type === "application/octet-stream") {
+        return /\.(jpe?g|png|webp|heic|heif|gif|bmp|tif|tiff|avif|dng)$/i.test(file.name || "") || true;
+      }
+      return false;
+    }
+
+    async function decodeImageFile(file) {
       if (typeof createImageBitmap === "function") {
         try {
-          const bmp = await createImageBitmap(file);
-          const canvas = document.createElement("canvas");
-          canvas.width = bmp.width;
-          canvas.height = bmp.height;
-          canvas.getContext("2d").drawImage(bmp, 0, 0);
-          try { bmp.close(); } catch (_) {}
-          return canvas.toDataURL("image/jpeg", 0.86);
+          return await createImageBitmap(file, { imageOrientation: "from-image" });
+        } catch (_) {}
+        try {
+          return await createImageBitmap(file);
         } catch (_) {}
       }
-      return readFileAsDataUrl(file);
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await new Promise(function (resolve, reject) {
+          const im = new Image();
+          im.onload = function () { resolve(im); };
+          im.onerror = function () { reject(new Error("img")); };
+          im.src = url;
+        });
+        return img;
+      } finally {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+      }
+    }
+
+    async function fileToJpegDataUrl(file) {
+      const MAX_SIDE = 1920;
+      const MAX_BYTES = 880000;
+      let bmp;
+      try {
+        bmp = await decodeImageFile(file);
+      } catch (_) {
+        const raw = await readFileAsDataUrl(file);
+        return shrinkImageDataUrl(raw, MAX_SIDE, 0.88);
+      }
+      const w0 = bmp.width || 1;
+      const h0 = bmp.height || 1;
+      const long = Math.max(w0, h0);
+      function encode(side, quality) {
+        const scale = Math.min(1, side / long);
+        const w = Math.max(1, Math.round(w0 * scale));
+        const h = Math.max(1, Math.round(h0 * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bmp, 0, 0, w, h);
+        try {
+          return canvas.toDataURL("image/jpeg", quality);
+        } catch (_) {
+          return "";
+        }
+      }
+      let side = Math.min(long, MAX_SIDE);
+      let q = (long > 1600 || (file.size || 0) > 450000) ? 0.88 : 0.92;
+      let out = encode(side, q);
+      if (!out) {
+        try { if (bmp.close) bmp.close(); } catch (_) {}
+        return readFileAsDataUrl(file);
+      }
+      if (dataUrlBytes(out) > MAX_BYTES) {
+        out = encode(1600, 0.84) || out;
+      }
+      if (dataUrlBytes(out) > MAX_BYTES) {
+        out = encode(1280, 0.78) || out;
+      }
+      try { if (bmp.close) bmp.close(); } catch (_) {}
+      return out;
     }
 
     function isSkinTone(r, g, b) {
