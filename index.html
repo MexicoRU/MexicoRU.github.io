@@ -7510,6 +7510,7 @@
           fitJoyTalk("Окей, " + value + ".|||Расскажи, что у тебя на душе.")
         ]);
         await postJoyBurst(reply);
+        markUserMessagesRead();
         learnRememberTurn(value, reply);
         afterJoySpoke();
         return;
@@ -7528,6 +7529,7 @@
         const replyPack = extractCallHangup(await getJoyReply(value));
         hideTyping();
         await postJoyBurst(replyPack.text);
+        markUserMessagesRead();
         learnRememberTurn(value, replyPack.text);
         tickJoyWeather();
         if (replyPack.hangup) {
