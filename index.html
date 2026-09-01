@@ -4771,9 +4771,11 @@
 
     function joyWeatherPool(awayHours, hour) {
       const bag = ["even", "even", "even", "quiet", "tired", "tender", "reflect"];
-      if (hour >= 22 || hour < 6) bag.push("tired", "tired", "quiet", "reflect");
+      if (hour >= 22 || hour < 6) bag.push("tired", "tired", "quiet", "reflect", "low");
       else if (hour >= 6 && hour < 11) bag.push("quiet", "even");
+      else if (hour >= 11 && hour < 20) bag.push("even", "busy", "busy");
       else if (hour >= 14 && hour < 18) bag.push("even", "miss");
+      if (hour >= 20) bag.push("low", "quiet");
       if (awayHours >= 10) bag.push("miss", "miss", "tender");
       else if (awayHours >= 4) bag.push("miss", "tender");
       if (state.soul) bag.push("tender", "quiet", "reflect");
