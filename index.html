@@ -5027,7 +5027,9 @@
 
     function renderMessage(msg, animate) {
       const el = document.createElement("div");
-      el.className = "msg " + msg.role + (animate ? " msg-enter" : "");
+      const isUser = msg.role === "user";
+      el.className = "msg " + msg.role + (animate ? " msg-enter" : "") + (isUser && msg.read !== false ? " read" : "");
+      if (isUser && msg.image && !msg.text) el.classList.add("photo-only");
       if (msg.text) el.textContent = msg.text;
       if (msg.image) {
         const img = document.createElement("img");
@@ -5038,6 +5040,13 @@
         }, { once: true });
         img.src = msg.image;
         el.appendChild(img);
+      }
+      if (isUser) {
+        const ticks = document.createElement("span");
+        ticks.className = "msg-ticks";
+        ticks.setAttribute("aria-hidden", "true");
+        ticks.innerHTML = '<svg viewBox="0 0 18 11"><path d="M1.2 5.6 4.1 8.6 9.8 1.8"/><path class="tick-b" d="M8 5.6 10.7 8.6 16.8 1.6"/></svg>';
+        el.appendChild(ticks);
       }
       chatEl.appendChild(el);
       if (animate) {
@@ -5061,7 +5070,13 @@
     }
 
     function pushMessage(role, text, image) {
-      const msg = { role, text: text || "", image: image || "" };
+      const msg = {
+        role: role,
+        text: text || "",
+        image: image || "",
+        read: role === "user" ? false : true,
+        at: Date.now()
+      };
       state.messages.push(msg);
       const el = renderMessage(msg, true);
       saveMessages();
