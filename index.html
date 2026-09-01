@@ -5194,6 +5194,11 @@
         }
         return;
       }
+      if (state.reading) {
+        statusEl.textContent = "читает";
+        statusEl.classList.add("is-typing");
+        return;
+      }
       statusEl.classList.remove("is-typing");
       if (state.call) {
         statusEl.textContent = state.listening ? "на линии · слушаю" : "на линии";
