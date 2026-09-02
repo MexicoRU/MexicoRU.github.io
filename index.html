@@ -8649,6 +8649,11 @@
         }
         const packed = await deliverJoyReply("", { fromPhoto: true, photoUrl: dataUrl });
         if (!packed) return;
+        if (packed.silent) {
+          state.replyHint = null;
+          refreshStatus();
+          return;
+        }
         afterJoySpoke();
       } catch (_) {
         hideTyping();
