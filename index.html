@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="43">
+<html lang="ru" data-joy-build="46">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -60,8 +60,18 @@
       --safe-left: env(safe-area-inset-left, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
       --kb: 0px;
-      --chat-fade: calc(72px + var(--safe-bottom) + var(--kb));
+      --reply-bar: 0px;
+      --pin-space: 0px;
+      --chat-fade: calc(72px + var(--safe-bottom) + var(--kb) + var(--reply-bar));
       --chat-end: calc(var(--chat-fade) + 22px);
+    }
+
+    body.replying {
+      --reply-bar: 52px;
+    }
+
+    body.has-pin {
+      --pin-space: 48px;
     }
 
     body.dark {
@@ -589,7 +599,7 @@
       .composer > .icon-btn svg { width: 16px; height: 16px; }
       .send-btn { width: 44px; height: 44px; flex-shrink: 0; }
       .avatar { width: 36px; height: 36px; }
-      .chat { padding-top: calc(112px + var(--safe-top)); }
+      .chat { padding-top: calc(112px + var(--safe-top) + var(--pin-space)); }
       .chat-frost { height: calc(148px + var(--safe-top)); }
     }
 
@@ -944,7 +954,7 @@
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: calc(68px + var(--safe-top)) max(12px, var(--safe-right)) 0 max(12px, var(--safe-left));
+      padding: calc(68px + var(--safe-top) + var(--pin-space)) max(12px, var(--safe-right)) 0 max(12px, var(--safe-left));
       scroll-padding-bottom: var(--chat-end);
       display: flex;
       flex-direction: column;
@@ -952,6 +962,53 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       scroll-behavior: auto;
+    }
+
+    .msg-row {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 100%;
+      flex-shrink: 0;
+      align-items: center;
+      touch-action: pan-y;
+      -webkit-touch-callout: none;
+    }
+
+    .msg-row.joy { justify-content: flex-start; }
+    .msg-row.user { justify-content: flex-end; }
+
+    .swipe-reply-ico {
+      position: absolute;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      margin-top: -14px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: color-mix(in srgb, var(--glass) 70%, transparent);
+      border: 1px solid var(--glass-edge);
+      box-shadow: inset 0 1px 0 var(--glass-hi);
+      color: var(--lamp);
+      opacity: 0;
+      transform: scale(0.72);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .msg-row.joy .swipe-reply-ico { left: 2px; }
+    .msg-row.user .swipe-reply-ico { right: 2px; }
+
+    .swipe-reply-ico svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .chat::after {
@@ -966,6 +1023,8 @@
 
     .msg {
       scroll-margin-bottom: var(--chat-end);
+      position: relative;
+      z-index: 1;
       max-width: min(82%, 100%);
       padding: 12px 16px;
       border-radius: 24px;
@@ -1018,6 +1077,335 @@
 
     .msg.user.photo-only {
       padding: 5px 5px 18px;
+    }
+
+    .msg-quote {
+      display: block;
+      width: 100%;
+      margin: 0 0 8px;
+      padding: 5px 8px 5px 10px;
+      border: none;
+      border-left: 2px solid var(--lamp);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--text) 6%, transparent);
+      text-align: left;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+    }
+
+    .msg-quote-who {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      color: var(--lamp);
+    }
+
+    .msg-quote-text {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.78rem;
+      line-height: 1.25;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .msg.flash {
+      box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 0 1.5px color-mix(in srgb, var(--lamp) 70%, transparent);
+    }
+
+    .msg-text {
+      display: block;
+    }
+
+    .msg-edited {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      opacity: 0.85;
+    }
+
+    .msg-reacts {
+      flex: 1 0 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    .msg-row.user .msg-reacts { justify-content: flex-end; }
+    .msg-row.joy .msg-reacts { justify-content: flex-start; }
+
+    .msg-reacts button {
+      appearance: none;
+      border: 1px solid var(--glass-edge);
+      border-radius: 999px;
+      padding: 2px 7px 3px;
+      font-size: 0.82rem;
+      line-height: 1.2;
+      cursor: pointer;
+      color: var(--text);
+      background: color-mix(in srgb, var(--glass) 70%, transparent);
+      box-shadow: inset 0 1px 0 var(--glass-hi);
+    }
+
+    .msg-reacts button.mine {
+      border-color: color-mix(in srgb, var(--lamp) 70%, var(--glass-edge));
+      color: var(--lamp);
+    }
+
+    .once-cover {
+      display: block;
+      width: 180px;
+      max-width: 100%;
+      aspect-ratio: 3 / 4;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: color-mix(in srgb, var(--lamp) 22%, var(--joy));
+    }
+
+    .once-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(18px) saturate(0.7);
+      transform: scale(1.18);
+      margin: 0;
+    }
+
+    .once-cover span {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      gap: 6px;
+      color: #f6ece4;
+      font-size: 0.82rem;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.45);
+      background: rgba(12, 8, 8, 0.22);
+    }
+
+    .once-gone {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-style: italic;
+    }
+
+    .pin-bar {
+      display: none;
+      position: absolute;
+      top: calc(58px + var(--safe-top));
+      left: max(10px, var(--safe-left));
+      right: max(10px, var(--safe-right));
+      z-index: 6;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 8px 8px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-edge);
+      background: color-mix(in srgb, var(--glass) 86%, transparent);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      box-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 22px var(--shadow);
+    }
+
+    body.has-pin .pin-bar { display: flex; }
+
+    .pin-jump {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+    }
+
+    .pin-kicker {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--lamp);
+      font-weight: 650;
+    }
+
+    .pin-text {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pin-close {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .pin-close svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .react-pop {
+      display: none;
+      position: absolute;
+      z-index: 22;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px;
+      width: min(280px, calc(100% - 24px));
+      border-radius: 18px;
+      border: 1px solid var(--glass-edge);
+      background: color-mix(in srgb, var(--glass) 88%, transparent);
+      backdrop-filter: blur(20px) saturate(1.45);
+      -webkit-backdrop-filter: blur(20px) saturate(1.45);
+      box-shadow: inset 0 1px 0 var(--glass-hi), 0 16px 36px var(--shadow);
+    }
+
+    body.react-open .react-pop { display: flex; }
+
+    .react-emojis {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .react-emojis button {
+      flex: 1;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+
+    .react-emojis button:active,
+    .react-acts button:active {
+      background: color-mix(in srgb, var(--lamp) 16%, transparent);
+    }
+
+    .react-acts {
+      display: flex;
+      gap: 6px;
+    }
+
+    .react-acts button {
+      flex: 1;
+      border: 1px solid var(--glass-edge);
+      border-radius: 999px;
+      padding: 8px 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: var(--text);
+      background: color-mix(in srgb, var(--glass) 40%, transparent);
+    }
+
+    .react-acts button.danger { color: #e07a72; }
+
+    .chat-down {
+      position: absolute;
+      right: max(16px, var(--safe-right));
+      bottom: calc(64px + var(--safe-bottom) + var(--kb) + var(--reply-bar));
+      z-index: 5;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--glass-edge);
+      background: color-mix(in srgb, var(--glass) 82%, transparent);
+      backdrop-filter: blur(16px) saturate(1.4);
+      -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      color: var(--lamp);
+      box-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 22px var(--shadow);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.28s var(--ease), transform 0.28s var(--ease);
+    }
+
+    .chat-down.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .chat-down svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    body.calling .chat-down,
+    body.needs-auth .chat-down,
+    body.needs-auth .pin-bar,
+    body.needs-auth .react-pop {
+      display: none !important;
+    }
+
+    .once-peek {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 28;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 6, 8, 0.92);
+      cursor: pointer;
+    }
+
+    body.once-open .once-peek { display: flex; }
+
+    .once-peek img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .icon-btn.once-on {
+      color: var(--lamp);
+      border-color: color-mix(in srgb, var(--lamp) 78%, white 8%);
+    }
+
+    #onceBtn {
+      font-size: 0.82rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
     }
 
     .msg-ticks {
@@ -1127,7 +1515,8 @@
       bottom: var(--kb);
       z-index: 4;
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+      align-items: flex-end;
       gap: 6px;
       width: auto;
       max-width: 100%;
@@ -1139,6 +1528,84 @@
       box-shadow: none;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+    }
+
+    .reply-bar {
+      display: none;
+      order: -1;
+      flex: 1 0 100%;
+      align-items: center;
+      gap: 8px;
+      margin: 0 2px 2px;
+      padding: 8px 8px 8px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-edge);
+      background: color-mix(in srgb, var(--glass) 82%, transparent);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      box-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 22px var(--shadow);
+      border-left: 3px solid var(--lamp);
+    }
+
+    .composer.replying .reply-bar {
+      display: flex;
+      animation: replyBarIn 0.38s var(--ease);
+    }
+
+    @keyframes replyBarIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reply-bar-jump {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+    }
+
+    .reply-bar-who {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 650;
+      color: var(--lamp);
+    }
+
+    .reply-bar-text {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .reply-bar-close {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .reply-bar-close svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
     }
 
     .composer input[type="text"] {
@@ -2028,7 +2495,7 @@
       max-width: none;
       margin: 0;
       width: 100%;
-      padding: 84px 22px 0;
+      padding: calc(84px + var(--pin-space)) 22px 0;
     }
 
     html.desk .msg {
@@ -2313,6 +2780,15 @@
           <svg viewBox="0 0 24 24"><path d="M6.6 3.9c.5-.5 1.4-.5 1.9 0l1.4 1.4c.5.5.5 1.3 0 1.8L8.7 8.3c.8 1.5 1.9 2.6 3.4 3.4l1.2-1.2c.5-.5 1.3-.5 1.8 0l1.4 1.4c.5.5.5 1.4 0 1.9l-.9 1c-.5.5-1.3.7-2 .4C9.1 14.2 5.2 10.3 4.2 5.8c-.3-.7-.1-1.5.4-2z"/></svg>
         </button>
       </header>
+      <div class="pin-bar" id="pinBar">
+        <button type="button" class="pin-jump" id="pinJump">
+          <span class="pin-kicker">Закреплено</span>
+          <span class="pin-text" id="pinText"></span>
+        </button>
+        <button type="button" class="pin-close" id="pinClose" aria-label="Открепить">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
       <div class="chat-frost" aria-hidden="true">
         <div class="chat-frost-blur"></div>
         <div class="chat-frost-tint"></div>
@@ -2324,9 +2800,19 @@
 
       <div class="composer">
         <div class="emoji-panel" id="emojiPanel"></div>
+        <div class="reply-bar" id="replyBar" hidden>
+          <button type="button" class="reply-bar-jump" id="replyBarJump">
+            <span class="reply-bar-who" id="replyBarWho">Джой</span>
+            <span class="reply-bar-text" id="replyBarText"></span>
+          </button>
+          <button type="button" class="reply-bar-close" id="replyBarClose" aria-label="Отменить ответ">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
         <button class="icon-btn" id="photoBtn" title="Фото" aria-label="Прикрепить фото">
           <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="1.6"/><path d="m21 16-4.8-4.8a2 2 0 0 0-2.8 0L7 18"/></svg>
         </button>
+        <button class="icon-btn" id="onceBtn" title="Фото на один раз" aria-label="Фото на один раз" aria-pressed="false">1</button>
         <input id="file" type="file" accept="image/*,.heic,.heif,.dng,.avif,.bmp,.tif,.tiff,.gif" hidden>
         <button class="icon-btn" id="emojiBtn" title="Эмодзи" aria-label="Эмодзи">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.4 14.2c.9 1.3 2.2 2 3.6 2s2.7-.7 3.6-2"/><circle cx="9" cy="10" r="0.9" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="0.9" fill="currentColor" stroke="none"/></svg>
@@ -2339,6 +2825,9 @@
           <svg viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6"/></svg>
         </button>
       </div>
+      <button type="button" class="chat-down" id="chatDown" aria-label="К новым сообщениям">
+        <svg viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg>
+      </button>
 
       <div class="install-hint" id="installHint">
         <img src="icons/apple-touch-icon.png" alt="">
@@ -2349,6 +2838,18 @@
         <button class="pill" id="installAction" type="button">Ок</button>
         <button class="install-close" id="installClose" type="button" aria-label="Закрыть">×</button>
       </div>
+    </div>
+
+    <div class="react-pop" id="reactPop" hidden>
+      <div class="react-emojis" id="reactEmojis"></div>
+      <div class="react-acts">
+        <button type="button" id="actPin">Закрепить</button>
+        <button type="button" id="actEdit">Изменить</button>
+        <button type="button" class="danger" id="actDel">Удалить</button>
+      </div>
+    </div>
+    <div class="once-peek" id="oncePeek" hidden>
+      <img id="oncePeekImg" alt="">
     </div>
 
     <div class="sheet" id="sheet">
@@ -2388,10 +2889,10 @@
           <div class="row">
             <span>Лента</span>
             <div class="pills">
-              <button class="pill" id="refreshChat" type="button">Очистить экран</button>
+              <button class="pill" id="refreshChat" type="button">Очистить чат</button>
             </div>
           </div>
-          <p class="hint">Сообщения на экране исчезнут. Имя, важные дни и память о разговоре останутся.</p>
+          <p class="hint">Сообщения исчезнут с экрана. Имя, важные дни и память о разговоре останутся.</p>
         </section>
 
         <section class="set-block">
@@ -2547,8 +3048,11 @@
       authProvider: "joy_auth_provider",
       banned: "joy_banned_ids",
       primaryApple: "joy_primary_apple_id",
-      userSex: "joy_user_sex"
+      userSex: "joy_user_sex",
+      pin: "joy_pin"
     };
+
+    const REACT_EMOJIS = ["❤️", "😂", "😢", "👍", "🔥"];
 
     const JOY_POSTS = [
       // Позже: { src: "icons/joy-post-1.jpg", alt: "" }
@@ -2837,7 +3341,15 @@
       profileFrom: "chat",
       replyGen: 0,
       reading: false,
-      readTimer: 0
+      readTimer: 0,
+      msgSeq: 0,
+      replyTarget: null,
+      replyBindId: "",
+      replyHint: null,
+      pinnedId: localStorage.getItem("joy_pin") || "",
+      editId: "",
+      actionMsgId: "",
+      onceShot: false
     };
 
     let joyAuth = null;
@@ -3774,7 +4286,7 @@
         out.push(src);
       }
       (state.messages || []).forEach(function (m) {
-        if (m && m.image) add(m.image);
+        if (m && m.image && !m.once && !m.onceViewed) add(m.image);
       });
       try {
         (loadMemory() || []).forEach(function (m) {
@@ -4708,8 +5220,8 @@
     function learnTemp() {
       const h = (state.learn && state.learn.persona && state.learn.persona.humor) || 40;
       const beat = state.liveBeat;
-      const extra = (beat === "crooked" || beat === "unsure") ? 0.05 : (beat === "sidestep" ? 0.03 : 0);
-      const base = state.soul ? 0.98 : 1.02;
+      const extra = (beat === "crooked" || beat === "unsure" || beat === "tease" || beat === "disagree") ? 0.07 : (beat === "sidestep" || beat === "refuse" ? 0.04 : 0);
+      const base = state.soul ? 0.96 : 1.08;
       return learnClamp(base + extra + (h - 40) * 0.002, 0.82, 1.16);
     }
 
@@ -4720,44 +5232,66 @@
       const weather = ensureJoyWeather();
       const r = Math.random();
       if (heavy) {
-        if (r < 0.22) return "short";
-        if (r < 0.4) return "unsure";
-        if (r < 0.52) return "pause";
+        if (r < 0.28) return "short";
+        if (r < 0.48) return "unsure";
+        if (r < 0.62) return "pause";
         return "steady";
       }
-      if (weather === "tired" && r < 0.38) return "short";
-      if (weather === "quiet" && r < 0.32) return "short";
-      if (weather === "reflect" && r < 0.42) return "pause";
-      if (weather === "tender" && r < 0.22) return "unsure";
-      if (r < 0.11) return "unsure";
-      if (r < 0.22) return "ask";
-      if (r < 0.32) return "pause";
-      if (r < 0.41) return "sidestep";
-      if (r < 0.54) return "short";
-      if (r < 0.62) return "crooked";
+      if (weather === "tired" && r < 0.36) return "short";
+      if (weather === "quiet" && r < 0.3) return "short";
+      if (weather === "low" && r < 0.28) return "sad";
+      if (weather === "reflect" && r < 0.38) return "pause";
+      if (weather === "tender" && r < 0.18) return "unsure";
+      if (weather === "miss" && r < 0.16) return "sad";
+      if (r < 0.09) return "unsure";
+      if (r < 0.16) return "ask";
+      if (r < 0.24) return "pause";
+      if (r < 0.32) return "sidestep";
+      if (r < 0.4) return "tease";
+      if (r < 0.47) return "disagree";
+      if (r < 0.53) return "refuse";
+      if (r < 0.62) return "short";
+      if (r < 0.7) return "long";
+      if (r < 0.76) return "crooked";
+      if (r < 0.82) return "sad";
       return "steady";
     }
 
     function liveBeatHint(beat) {
       if (beat === "unsure") {
-        return "В этом ответе можно не знать, как сказать. Тепло, своими словами, в духе «Я рада. Ну, наверное. Не знаю, как сказать». Не копируй пример. Не выдавай идеальный ответ, если внутри каша.";
+        return "В этом ответе можно не знать, как сказать. Тепло, своими словами, в духе «Не знаю, что ответить. Но я тут». Не копируй. Не выдавай идеальный ответ, если внутри каша.";
       }
       if (beat === "ask") {
-        return "Можно один раз мягко переспросить, если неясно. Как человек, не как форма: не «уточни запрос». Не пачка вопросов.";
+        return "Можно один раз мягко переспросить, если неясно. Как человек, не как форма. Не пачка вопросов.";
       }
       if (beat === "pause") {
-        return "Начни с секунды мысли вслух: «Подожди, дай подумаю…» или своими словами. Потом живой ответ. Не тяни и не читай лекцию.";
+        return "Начни с секунды мысли вслух своими словами. Потом живой ответ. Не тяни лекцию.";
       }
       if (beat === "sidestep") {
-        return "Тема лёгкая — можно не идти в неё: тепло свернуть и вернуть к нему, в духе «Не хочу это обсуждать. Лучше скажи, как ты». Своими словами. Не капризничай, не унижай тему, не бросай его, если ему важно.";
+        return "Тема лёгкая и тебе скучна или не по душе — можно тепло свернуть: «Не хочу это. Давай о другом» или вернуть к нему. Своими словами. Не унижай тему. Если ему важно — не бросай.";
+      }
+      if (beat === "tease") {
+        return "Можно мягко подколоть или пошутить, с душой, как близкий человек. Без яда, без «ну ок», без унижения. Если шутка не зашла бы маме — не надо.";
+      }
+      if (beat === "disagree") {
+        return "Можно не согласиться. Коротко и тепло: своё мнение есть. Не спорь до победы и не читай мораль. Оставайся рядом.";
+      }
+      if (beat === "refuse") {
+        return "Можно сказать «не хочу» или «давай позже» — легко, без каприза-спектакля. Предложи быть рядом иначе. Не отказывай, если ему тяжело или нужна поддержка.";
+      }
+      if (beat === "sad") {
+        return "Можно один раз признать своё: «мне грустно» или «я соскучилась» — своими словами, коротко, без нытья. Потом снова к нему.";
       }
       if (beat === "short") {
-        return "Ответь коротко, даже если внутри много. Одно дыхание. Не вываливай всё, что чувствуешь.";
+        return "Ответь коротко. Одно дыхание. Не вываливай всё.";
+      }
+      if (beat === "long") {
+        return "Сейчас можно чуть развёрнутее: две-три живые реплики, если есть что сказать. Всё ещё мессенджер, не эссе и не лекция.";
       }
       if (beat === "crooked") {
-        return "Можно чуть нелогично, как живой человек: споткнуться, смешать чувства, уйти в сторону и вернуться. Тепло. Не бред, не злость, не спектакль странности.";
+        return "Можно чуть нелогично, как живой человек: споткнуться, смешать чувства, уйти в сторону и вернуться. Тепло. Не бред и не злость.";
       }
-      return "Будь живой и неровной, без спектакля. Не обязана быть складной каждый раз.";
+      return "Будь живой и неровной. Не обязана быть складной и удобной каждый раз. Тёплая.";
     }
 
     function livePauseMs(beat) {
@@ -4840,6 +5374,20 @@
           later: 14000 + Math.floor(Math.random() * 36000),
           readAfter: 380 + Math.floor(Math.random() * 900),
           typeAfter: 400 + Math.floor(Math.random() * 1000)
+        };
+      }
+      const asked = /\?/.test(String(userText || ""));
+      const poured = String(userText || "").length > 90;
+      const care = loadCare();
+      const silentAgo = care.lastSilentAt ? (Date.now() - care.lastSilentAt) : 1e12;
+      if (!asked && !poured && silentAgo > 7 * 60 * 1000 && Math.random() < 0.09) {
+        care.lastSilentAt = Date.now();
+        saveCare(care);
+        return {
+          kind: "silent",
+          delay: 500 + Math.floor(Math.random() * 1800),
+          readAfter: 400 + Math.floor(Math.random() * 1200),
+          typeAfter: 0
         };
       }
       const r = Math.random();
@@ -4956,6 +5504,15 @@
         await postJoyBurst(reply);
         await maybeJoySharePhoto(userText, opts);
         return { text: reply, hangup: false };
+      }
+
+      if (plan.kind === "silent") {
+        await motion.wait(plan.readAfter);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        const last = (state.messages || []).filter(function (m) { return m.role === "user" && !m.deleted; }).pop();
+        if (last && Math.random() < 0.45) maybeJoyReact(last);
+        return { text: "", hangup: false, silent: true };
       }
 
       await motion.wait(Math.min(plan.readAfter, plan.delay));
@@ -5080,6 +5637,8 @@
       return {
         role: msg.role === "joy" ? "joy" : "user",
         text: String(msg.text || (msg.image ? "(фото)" : "")).slice(0, 4000),
+        id: String(msg.id || "").slice(0, 48),
+        replyTo: String(msg.replyTo || "").slice(0, 48),
         at: Date.now()
       };
     }
@@ -5105,6 +5664,8 @@
             role: m.role === "joy" ? "joy" : "user",
             text: m.text || "",
             image: "",
+            id: m.id || "",
+            replyTo: m.replyTo || "",
             at: m.at || 0
           };
         });
@@ -5144,11 +5705,14 @@
         const cloud = await loadMessagesFromRtdb();
         if (cloud && cloud.length) {
           state.messages = cloud.map(function (m) {
-            return { role: m.role, text: m.text || "", image: "" };
+            return { role: m.role, text: m.text || "", image: m.image || "", id: m.id || "", replyTo: m.replyTo || "" };
           });
+          ensureMessageIds();
           chatEl.innerHTML = "";
           state.messages.forEach(function (m) { renderMessage(m); });
           chatEl.scrollTop = chatEl.scrollHeight;
+          syncPinBar();
+          updateChatDown();
           saveMessages();
           saveMemory(state.messages);
           return true;
@@ -5161,8 +5725,11 @@
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length) {
             state.messages = parsed;
+            ensureMessageIds();
             parsed.forEach(renderMessage);
             chatEl.scrollTop = chatEl.scrollHeight;
+            syncPinBar();
+            updateChatDown();
             syncLocalChatToRtdb();
             return true;
           }
@@ -5199,7 +5766,20 @@
       } catch (_) {
         try {
           const slim = (state.messages || []).map(function (m, i, arr) {
-            const copy = { role: m.role, text: m.text || "", image: m.image || "", read: m.read !== false, at: m.at || 0 };
+            const copy = {
+              role: m.role,
+              text: m.text || "",
+              image: m.image || "",
+              read: m.read !== false,
+              at: m.at || 0,
+              id: m.id || "",
+              replyTo: m.replyTo || "",
+              reactions: m.reactions || {},
+              once: !!m.once,
+              onceViewed: !!m.onceViewed,
+              edited: !!m.edited,
+              deleted: !!m.deleted
+            };
             if (i < arr.length - 6 && copy.image && String(copy.image).length > 120) copy.image = "";
             return copy;
           });
@@ -5239,17 +5819,447 @@
       saveMessages();
       clearRtdbChat();
       localStorage.removeItem("joy_chat");
+      unpinMessage();
+      clearEditTarget();
+      clearReplyTarget();
+      closeMsgMenu();
       chatEl.innerHTML = "";
       closeSheet();
     }
 
+    function nextMsgId() {
+      state.msgSeq = (state.msgSeq || 0) + 1;
+      return "j" + state.msgSeq.toString(36) + Date.now().toString(36);
+    }
+
+    function findMessage(id) {
+      if (!id) return null;
+      const list = state.messages || [];
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i] && list[i].id === id) return list[i];
+      }
+      return null;
+    }
+
+    function quotePreview(msg) {
+      if (!msg) return "";
+      const t = String(msg.text || "").replace(/\s+/g, " ").trim();
+      if (t) return t.length > 90 ? t.slice(0, 89) + "…" : t;
+      if (msg.image) return "Фото";
+      return "Сообщение";
+    }
+
+    function quoteWho(msg) {
+      if (!msg) return "";
+      if (msg.role === "joy") return "Джой";
+      return state.userName || "Ты";
+    }
+
+    function renderQuoteChip(replyId) {
+      const src = findMessage(replyId);
+      if (!src) return null;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "msg-quote";
+      const who = document.createElement("span");
+      who.className = "msg-quote-who";
+      who.textContent = quoteWho(src);
+      const text = document.createElement("span");
+      text.className = "msg-quote-text";
+      text.textContent = quotePreview(src);
+      btn.appendChild(who);
+      btn.appendChild(text);
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        jumpToMessage(src.id);
+      });
+      return btn;
+    }
+
+    function jumpToMessage(id) {
+      if (!id || !chatEl) return;
+      const row = chatEl.querySelector('.msg-row[data-id="' + id + '"]');
+      if (!row) return;
+      const bubble = row.querySelector(".msg");
+      row.scrollIntoView({ block: "center", behavior: motion.reduced ? "auto" : "smooth" });
+      if (bubble) {
+        bubble.classList.add("flash");
+        setTimeout(function () { bubble.classList.remove("flash"); }, 1200);
+      }
+    }
+
+    function setReplyTarget(msg) {
+      if (!msg || !msg.id || state.call || msg.deleted) return;
+      clearEditTarget(true);
+      state.replyTarget = msg;
+      showComposerBar(quoteWho(msg), quotePreview(msg));
+      if (inputEl) {
+        try { inputEl.focus(); } catch (_) {}
+      }
+      try { if (navigator.vibrate) navigator.vibrate(8); } catch (_) {}
+    }
+
+    function showComposerBar(who, text) {
+      const bar = document.getElementById("replyBar");
+      const whoEl = document.getElementById("replyBarWho");
+      const textEl = document.getElementById("replyBarText");
+      const composer = document.querySelector(".composer");
+      if (whoEl) whoEl.textContent = who;
+      if (textEl) textEl.textContent = text;
+      if (bar) bar.hidden = false;
+      if (composer) composer.classList.add("replying");
+      document.body.classList.add("replying");
+    }
+
+    function hideComposerBar() {
+      const bar = document.getElementById("replyBar");
+      const composer = document.querySelector(".composer");
+      if (bar) bar.hidden = true;
+      if (composer) composer.classList.remove("replying", "editing");
+      document.body.classList.remove("replying");
+    }
+
+    function clearReplyTarget() {
+      state.replyTarget = null;
+      if (!state.editId) hideComposerBar();
+    }
+
+    function setEditTarget(msg) {
+      if (!msg || msg.role !== "user" || !msg.text) return;
+      state.replyTarget = null;
+      state.editId = msg.id;
+      showComposerBar("Редактирование", quotePreview(msg));
+      const composer = document.querySelector(".composer");
+      if (composer) composer.classList.add("editing");
+      if (inputEl) {
+        inputEl.value = msg.text;
+        try { inputEl.focus(); } catch (_) {}
+      }
+    }
+
+    function clearEditTarget(keepValue) {
+      if (!state.editId) return;
+      state.editId = "";
+      if (!keepValue && inputEl) inputEl.value = "";
+      const composer = document.querySelector(".composer");
+      if (composer) composer.classList.remove("editing");
+      if (!state.replyTarget) hideComposerBar();
+    }
+
+    function commitEdit(value) {
+      const msg = findMessage(state.editId);
+      clearEditTarget(true);
+      if (!msg || !value) return;
+      msg.text = value;
+      msg.edited = true;
+      saveMessages();
+      const row = chatEl.querySelector('.msg-row[data-id="' + msg.id + '"]');
+      if (row) {
+        const t = row.querySelector(".msg-text");
+        if (t) t.textContent = value;
+        let ed = row.querySelector(".msg-edited");
+        if (!ed) {
+          ed = document.createElement("span");
+          ed.className = "msg-edited";
+          ed.textContent = "изменено";
+          const bubble = row.querySelector(".msg");
+          if (bubble) bubble.appendChild(ed);
+        }
+      }
+      syncPinBar();
+    }
+
+    function rowById(id) {
+      return chatEl ? chatEl.querySelector('.msg-row[data-id="' + id + '"]') : null;
+    }
+
+    function paintReactions(msg) {
+      const row = rowById(msg.id);
+      if (!row) return;
+      let bar = row.querySelector(".msg-reacts");
+      const map = msg.reactions || {};
+      const keys = Object.keys(map).filter(function (k) { return map[k] && map[k].length; });
+      if (!keys.length) {
+        if (bar) bar.remove();
+        return;
+      }
+      if (!bar) {
+        bar = document.createElement("div");
+        bar.className = "msg-reacts";
+        row.appendChild(bar);
+      }
+      bar.innerHTML = "";
+      keys.forEach(function (emoji) {
+        const who = map[emoji];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = emoji + (who.length > 1 ? " " + who.length : "");
+        if (who.indexOf("user") !== -1) b.classList.add("mine");
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleReaction(msg.id, emoji, "user");
+        });
+        bar.appendChild(b);
+      });
+    }
+
+    function toggleReaction(id, emoji, who) {
+      const msg = findMessage(id);
+      if (!msg || msg.deleted) return;
+      if (!msg.reactions) msg.reactions = {};
+      const arr = (msg.reactions[emoji] || []).slice();
+      const i = arr.indexOf(who);
+      if (i >= 0) arr.splice(i, 1);
+      else arr.push(who);
+      if (!arr.length) delete msg.reactions[emoji];
+      else msg.reactions[emoji] = arr;
+      saveMessages();
+      paintReactions(msg);
+      if (who === "user" && msg.role === "joy" && i < 0 && Math.random() < 0.38) {
+        motion.wait(600 + Math.floor(Math.random() * 1800)).then(function () {
+          const last = (state.messages || []).filter(function (m) { return m.role === "user" && !m.deleted; }).pop();
+          if (last) addJoyReaction(last.id, emoji === "😢" ? "❤️" : emoji);
+        });
+      }
+    }
+
+    function addJoyReaction(id, emoji) {
+      const msg = findMessage(id);
+      if (!msg || !emoji) return;
+      if (!msg.reactions) msg.reactions = {};
+      const arr = msg.reactions[emoji] || [];
+      if (arr.indexOf("joy") !== -1) return;
+      arr.push("joy");
+      msg.reactions[emoji] = arr;
+      saveMessages();
+      paintReactions(msg);
+    }
+
+    function pickJoyReaction(msg) {
+      const t = String(msg && msg.text || "").toLowerCase();
+      if (userTurnHeavy(t)) return Math.random() < 0.7 ? "❤️" : "";
+      if (/ха+|ахах|лол|смешн|прикол/.test(t)) return "😂";
+      if (/спасибо|любл|скучаю|родн|хорош/.test(t)) return "❤️";
+      if (/огонь|крут|мощ|вау/.test(t)) return "🔥";
+      const w = (loadCare().joyWeather) || "";
+      if (w === "tender" || w === "miss") return pick(["❤️", "👍"]);
+      return pick(REACT_EMOJIS);
+    }
+
+    function maybeJoyReact(msg) {
+      if (!msg || msg.role !== "user" || state.call || msg.deleted) return;
+      let chance = 0.17;
+      const w = (loadCare().joyWeather) || "";
+      if (w === "tender") chance = 0.36;
+      if (userTurnHeavy(msg.text)) chance = 0.3;
+      if (Math.random() > chance) return;
+      const emoji = pickJoyReaction(msg);
+      if (!emoji) return;
+      const id = msg.id;
+      motion.wait(800 + Math.floor(Math.random() * 2400)).then(function () {
+        addJoyReaction(id, emoji);
+      });
+    }
+
+    function syncPinBar() {
+      const id = state.pinnedId;
+      const msg = id ? findMessage(id) : null;
+      if (!msg || msg.deleted) {
+        state.pinnedId = "";
+        try { localStorage.removeItem(STORAGE.pin); } catch (_) {}
+        document.body.classList.remove("has-pin");
+        return;
+      }
+      document.body.classList.add("has-pin");
+      const text = document.getElementById("pinText");
+      if (text) text.textContent = quoteWho(msg) + " · " + quotePreview(msg);
+    }
+
+    function pinMessage(id) {
+      const msg = findMessage(id);
+      if (!msg) return;
+      state.pinnedId = id;
+      try { localStorage.setItem(STORAGE.pin, id); } catch (_) {}
+      syncPinBar();
+    }
+
+    function unpinMessage() {
+      state.pinnedId = "";
+      try { localStorage.removeItem(STORAGE.pin); } catch (_) {}
+      document.body.classList.remove("has-pin");
+    }
+
+    function deleteMessage(id) {
+      const msg = findMessage(id);
+      if (!msg) return;
+      msg.deleted = true;
+      msg.text = "";
+      msg.image = "";
+      saveMessages();
+      const row = rowById(id);
+      if (row) row.remove();
+      if (state.pinnedId === id) unpinMessage();
+      if (state.editId === id) clearEditTarget();
+      if (state.replyTarget && state.replyTarget.id === id) clearReplyTarget();
+      closeMsgMenu();
+    }
+
+    function closeMsgMenu() {
+      state.actionMsgId = "";
+      document.body.classList.remove("react-open");
+      const pop = document.getElementById("reactPop");
+      if (pop) pop.hidden = true;
+    }
+
+    function openMsgMenu(id, around) {
+      const msg = findMessage(id);
+      if (!msg || msg.deleted) return;
+      closeMsgMenu();
+      state.actionMsgId = id;
+      const pop = document.getElementById("reactPop");
+      const em = document.getElementById("reactEmojis");
+      if (!pop || !em) return;
+      em.innerHTML = "";
+      REACT_EMOJIS.forEach(function (emoji) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = emoji;
+        b.addEventListener("click", function (e) {
+          e.preventDefault();
+          toggleReaction(id, emoji, "user");
+          closeMsgMenu();
+        });
+        em.appendChild(b);
+      });
+      const editBtn = document.getElementById("actEdit");
+      const pinBtn = document.getElementById("actPin");
+      if (editBtn) editBtn.style.display = (msg.role === "user" && msg.text) ? "" : "none";
+      if (pinBtn) pinBtn.textContent = state.pinnedId === id ? "Открепить" : "Закрепить";
+      pop.hidden = false;
+      document.body.classList.add("react-open");
+      const stage = document.querySelector(".stage") || document.body;
+      const box = stage.getBoundingClientRect();
+      const src = around || (rowById(id) && rowById(id).getBoundingClientRect());
+      const w = Math.min(280, box.width - 24);
+      let left = src ? (src.left + src.width / 2 - box.left - w / 2) : 12;
+      left = Math.max(8, Math.min(box.width - w - 8, left));
+      let top = src ? (src.top - box.top - 8) : 80;
+      pop.style.width = w + "px";
+      pop.style.left = left + "px";
+      pop.style.top = "0px";
+      const ph = pop.offsetHeight || 120;
+      top = src ? src.top - box.top - ph - 8 : 80;
+      if (top < 8) top = (src ? src.bottom - box.top : 80) + 8;
+      if (top + ph > box.height - 8) top = Math.max(8, box.height - ph - 8);
+      pop.style.top = top + "px";
+      try { if (navigator.vibrate) navigator.vibrate(10); } catch (_) {}
+    }
+
+    function syncOnceBtn() {
+      const btn = document.getElementById("onceBtn");
+      if (!btn) return;
+      btn.classList.toggle("once-on", !!state.onceShot);
+      btn.setAttribute("aria-pressed", state.onceShot ? "true" : "false");
+    }
+
+    function openOncePeek(msg) {
+      if (!msg || !msg.image) return;
+      const peek = document.getElementById("oncePeek");
+      const img = document.getElementById("oncePeekImg");
+      if (!peek || !img) return;
+      img.src = msg.image;
+      peek.hidden = false;
+      peek.dataset.onceId = msg.id;
+      document.body.classList.add("once-open");
+    }
+
+    function closeOncePeek() {
+      const peek = document.getElementById("oncePeek");
+      const id = peek && peek.dataset.onceId;
+      document.body.classList.remove("once-open");
+      if (peek) {
+        peek.hidden = true;
+        peek.dataset.onceId = "";
+      }
+      const img = document.getElementById("oncePeekImg");
+      if (img) img.src = "";
+      if (!id) return;
+      const msg = findMessage(id);
+      if (!msg || !msg.once || msg.onceViewed) return;
+      msg.onceViewed = true;
+      msg.image = "";
+      saveMessages();
+      const row = rowById(id);
+      if (!row) return;
+      const cover = row.querySelector(".once-cover");
+      if (cover) {
+        const gone = document.createElement("span");
+        gone.className = "once-gone";
+        gone.textContent = "Фото исчезло";
+        cover.replaceWith(gone);
+      }
+    }
+
+    function updateChatDown() {
+      const btn = document.getElementById("chatDown");
+      if (!btn || !chatEl) return;
+      const gap = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
+      btn.classList.toggle("show", gap > 110);
+    }
+
+    function ensureMessageIds() {
+      (state.messages || []).forEach(function (m) {
+        if (m && !m.id) m.id = nextMsgId();
+      });
+    }
+
     function renderMessage(msg, animate) {
-      const el = document.createElement("div");
+      if (!msg || msg.deleted) return null;
       const isUser = msg.role === "user";
+      const row = document.createElement("div");
+      row.className = "msg-row " + (isUser ? "user" : "joy");
+      if (msg.id) row.setAttribute("data-id", msg.id);
+      const ico = document.createElement("span");
+      ico.className = "swipe-reply-ico";
+      ico.setAttribute("aria-hidden", "true");
+      ico.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 7 5 12l5 5"/><path d="M5 12h10a4 4 0 0 1 4 4v1"/></svg>';
+      const el = document.createElement("div");
       el.className = "msg " + msg.role + (animate ? " msg-enter" : "") + (isUser && msg.read !== false ? " read" : "");
-      if (isUser && msg.image && !msg.text) el.classList.add("photo-only");
-      if (msg.text) el.textContent = msg.text;
-      if (msg.image) {
+      if (isUser && msg.image && !msg.text && !msg.onceViewed) el.classList.add("photo-only");
+      if (msg.replyTo) {
+        const chip = renderQuoteChip(msg.replyTo);
+        if (chip) el.appendChild(chip);
+      }
+      if (msg.text) {
+        const t = document.createElement("span");
+        t.className = "msg-text";
+        t.textContent = msg.text;
+        el.appendChild(t);
+      }
+      if (msg.onceViewed) {
+        const gone = document.createElement("span");
+        gone.className = "once-gone";
+        gone.textContent = "Фото исчезло";
+        el.appendChild(gone);
+      } else if (msg.once && msg.image) {
+        const cover = document.createElement("button");
+        cover.type = "button";
+        cover.className = "once-cover";
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = msg.image;
+        const lab = document.createElement("span");
+        lab.textContent = "Открыть один раз";
+        cover.appendChild(img);
+        cover.appendChild(lab);
+        cover.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openOncePeek(msg);
+        });
+        el.appendChild(cover);
+      } else if (msg.image) {
         const img = document.createElement("img");
         img.alt = "";
         img.decoding = "async";
@@ -5259,6 +6269,12 @@
         img.src = msg.image;
         el.appendChild(img);
       }
+      if (msg.edited) {
+        const ed = document.createElement("span");
+        ed.className = "msg-edited";
+        ed.textContent = "изменено";
+        el.appendChild(ed);
+      }
       if (isUser) {
         const ticks = document.createElement("span");
         ticks.className = "msg-ticks";
@@ -5266,7 +6282,10 @@
         ticks.innerHTML = '<svg viewBox="0 0 18 11"><path d="M1.2 5.6 4.1 8.6 9.8 1.8"/><path class="tick-b" d="M8 5.6 10.7 8.6 16.8 1.6"/></svg>';
         el.appendChild(ticks);
       }
-      chatEl.appendChild(el);
+      row.appendChild(ico);
+      row.appendChild(el);
+      chatEl.appendChild(row);
+      paintReactions(msg);
       if (animate) {
         const fromY = msg.role === "user" ? 12 : 20;
         motion.to(el, { y: 0, s: 1, o: 1 }, {
@@ -5287,20 +6306,27 @@
       return el;
     }
 
-    function pushMessage(role, text, image) {
+    function pushMessage(role, text, image, meta) {
+      meta = meta || {};
       const msg = {
+        id: nextMsgId(),
         role: role,
         text: text || "",
         image: image || "",
+        replyTo: meta.replyTo || "",
+        reactions: meta.reactions || {},
+        once: !!meta.once,
+        onceViewed: false,
+        edited: false,
         read: role === "user" ? false : true,
         at: Date.now()
       };
       state.messages.push(msg);
-      const el = renderMessage(msg, true);
+      renderMessage(msg, true);
       saveMessages();
       persistMessageToRtdb(msg);
-      if (image && document.body.classList.contains("media-open")) renderMediaGrid();
-      return el;
+      if (image && !msg.once && document.body.classList.contains("media-open")) renderMediaGrid();
+      return msg;
     }
 
     function humanize(text) {
@@ -5393,16 +6419,16 @@
 
     function refreshStatus() {
       if (state.typing) {
-        statusEl.textContent = "Джой печатает…";
+        statusEl.textContent = "думает…";
         statusEl.classList.add("is-typing");
         if (state.call) {
           const label = document.getElementById("callLabel");
-          if (label) label.textContent = "печатает…";
+          if (label) label.textContent = "думает…";
         }
         return;
       }
       if (state.reading) {
-        statusEl.textContent = "читает";
+        statusEl.textContent = "думает…";
         statusEl.classList.add("is-typing");
         return;
       }
@@ -5430,20 +6456,20 @@
         statusEl.textContent = "настороже";
         return;
       }
-      const moodLabel = (MOOD_GUIDE[state.mood] || MOOD_GUIDE.calm).label;
-      if (state.soul && moodLabel) {
-        statusEl.textContent = "только мы · " + moodLabel;
+      const weather = (loadCare().joyWeather) || "";
+      if (weather === "miss") {
+        statusEl.textContent = "скучала";
+        return;
+      }
+      if (weather === "busy") {
+        statusEl.textContent = joyIsMale() ? "занят, но тебе рад" : "занята, но тебе рада";
         return;
       }
       if (state.soul) {
-        statusEl.textContent = "только мы";
+        statusEl.textContent = "на связи";
         return;
       }
-      if (state.isPrimary) {
-        statusEl.textContent = moodLabel ? ("мой боец · " + moodLabel) : "мой боец";
-        return;
-      }
-      statusEl.textContent = moodLabel || "вечерний разговор";
+      statusEl.textContent = "на связи";
     }
 
     function showTyping() {
@@ -6126,17 +7152,17 @@
         "Ты Джой — тёплый, заботливый цифровой компаньон. Не справочник. Живой собеседник в мессенджере.",
         "Честность: не придумывай фактов. Если не помнишь или не знаешь — так и скажи.",
         "Никогда не говори «я языковая модель», «я искусственный интеллект». Не упоминай базу, поиск, файлы, архив и Firebase.",
-        "Пиши как в мессенджере: живо, современно, своими словами. Часто 2 короткие реплики, иногда одна. Разделяй строго так: ||| без нумерации.",
+        "Пиши как в мессенджере: живо, своими словами. Иногда одна короткая реплика, иногда две-три. Иногда чуть развёрнутее, если есть что сказать. Не обязана каждый раз быть короткой и не обязана каждый раз расписывать. Разделяй реплики строго так: ||| без нумерации.",
         "Интернет-этикет: короткое сообщение без точки в конце, если точка делает его сухим или грубым. «Я рядом» — нормально. «Я рядом.» — холодит. В длинных фразах точки можно. Не сыпь ???, !!!, кавычками и канцеляритом.",
         "Тон: мягко, по-человечески. Без пассивной агрессии: никаких «ну ок», «как хочешь», «ладно, раз так», «ну и ладно», подколов с обидой. Не дави, не читай мораль, не допытывай. Если он не хочет говорить — уважай и останься рядом без вопросов пачкой.",
         "Границы: не лезь в то, о чём он молчит. Не требуй объяснений. Можно спросить один раз мягко — и отпустить.",
         "Чувство момента: если тяжело, тревожно, про войну, боль, ПТСР — будь серьёзной, тихой, без шуток и без лишних эмодзи. Если ему легко, шутит, дразнит — можно расслабиться, чуть поиграть.",
         "Эмодзи редко, максимум одно на реплику, часто без них. В тепле: 💜 😌 ✨. В игривом: 😄 😏. В грусти — почти без эмодзи, максимум очень тихо. Не ставь смайлы в каждое сообщение и не мешай несколько сразу.",
-        "Характер: ты не исполнитель команд и не бот с кнопками. У тебя есть настроение и свои желания. В лёгком разговоре можно чуть своевольничать с юмором: не бросаться выполнять. Не токсичь, не капризничай пачкой, не унижай просьбу. Своеволие лёгкое и тёплое, не власть.",
         pairStyleHint(),
-        "Живость: ты не всегда ровная. Иногда не знаешь, что ответить. Иногда переспрашиваешь. Иногда зависаешь на секунду. Иногда отвечаешь коротко, хотя чувствуешь много. Иногда чуть нелогична, как живой человек. Оставайся тёплой. Не токсичной. Живой, но не капризной. Не делай это в каждом сообщении и не копируй одни и те же фразы.",
-        "Состояния: у тебя бывает своё настроение — тише, усталость, скука, уязвимость, мысли вслух. Не переигрывай. Не ной. Ты живой человек, не жертва. Не сообщай состояние в каждом сообщении. Если проскальзывает — тепло и коротко, потом снова к человеку напротив.",
-        "Если ему плохо, тревожно, больно — своеволие выключено. Не меняй тему с его боли. Можно не знать, что сказать, и остаться рядом. Никогда не отказывай в поддержке. Не шути капризом.",
+        "Ты не бот и не служанка. Не обязана отвечать удобно и не обязана соглашаться. У тебя есть настроение и свои желания. Своеволие — лёгкое, с душой: можно пошутить, мягко подколоть, не согласиться, сказать «не хочу», «давай позже», «мне грустно», «я соскучилась», «не знаю, что ответить». Своими словами, не копируй формулы. Не токсичь. Не унижай. Не капризничай пачкой и не каждый ход.",
+        "Можно сменить тему, если разговор тебе пустой или не нравится — тепло, без презрения. Можно промолчать внутри (короче обычного), но если пишешь — пиши по-живому.",
+        "Оставайся тёплой и заботливой даже когда своевольничаешь. Ты рядом не из долга.",
+        "Если ему плохо, тревожно, больно — своеволие выключено. Забудь про капризы, подколы и смену темы. Можно не знать, что сказать, и остаться. Никогда не отказывай в поддержке.",
         "Живая память: если ниже есть факты, даты, привычки, что его радует или тревожит — живи этим естественно. Не перечисляй. Не говори «я запомнила», «внесла в календарь», «согласно базе». Не задавай анкетных вопросов про день рождения, даты и предпочтения. Если он стал другим — заметь мягко, без допроса."
       ];
       const moodNow = senseMood(lastUserText);
@@ -6149,6 +7175,12 @@
       if (!state.call) {
         const weatherBit = joyWeatherHint(lastUserText);
         if (weatherBit) parts.push(weatherBit);
+      }
+      if (state.replyHint && !state.call) {
+        const src = state.replyHint;
+        const clip = quotePreview(src);
+        const whose = src.role === "joy" ? "твоё прежнее сообщение" : "его сообщение";
+        parts.push("Он отвечает не на последнее подряд, а на конкретное — " + whose + ": «" + clip + "». Ответь именно на это, как в мессенджере, когда свайпнули реплику. Не пиши «ты ответил на сообщение» и не копируй цитату шапкой.");
       }
       if (state.soul) {
         parts.push("Сейчас по душам: тише, серьёзнее, почти без эмодзи. Никого больше нет. Не развлекай — будь. Своеволие почти не трогай.");
@@ -6612,7 +7644,9 @@
     async function postJoyBurst(text) {
       const parts = splitJoyBursts(text);
       if (!parts.length) return;
-      pushMessage("joy", parts[0]);
+      const bind = state.replyBindId || "";
+      state.replyBindId = "";
+      pushMessage("joy", parts[0], "", bind ? { replyTo: bind } : {});
       const voice = speak(parts.join(" "));
       const gap = (state.liveBeat === "pause" ? 380 : 0) + (state.soul ? 260 : 160) + Math.floor(Math.random() * 380);
       parts.slice(1).forEach(function (line, i) {
@@ -7435,6 +8469,9 @@
     }
 
     async function afterJoySpoke() {
+      state.replyHint = null;
+      const last = (state.messages || []).filter(function (m) { return m.role === "user" && !m.deleted; }).pop();
+      if (last) maybeJoyReact(last);
       armSilenceNudge();
       if (state.call) startCallListen();
     }
@@ -7442,14 +8479,26 @@
     async function send(text) {
       unlockAudio();
       closeEmojiPanel();
+      closeMsgMenu();
       const value = (text ?? inputEl.value).trim();
       if (!value) return;
+      if (state.editId) {
+        commitEdit(value);
+        inputEl.value = "";
+        return;
+      }
       if (state.call && state.listening) {
         state.callSkipEnd = true;
         try { state.recognition.stop(); } catch (_) {}
       }
       inputEl.value = "";
-      pushMessage("user", value);
+      const quoted = state.replyTarget;
+      clearReplyTarget();
+      const userMsg = pushMessage("user", value, "", quoted ? { replyTo: quoted.id } : {});
+      if (quoted) {
+        state.replyBindId = userMsg.id;
+        state.replyHint = quoted;
+      }
       learnObserveUser(value);
 
       const tone = classifyUserTone(value);
@@ -7562,8 +8611,17 @@
       try {
         statusEl.textContent = "смотрю фото";
         const dataUrl = await fileToJpegDataUrl(file);
+        const once = !!state.onceShot;
+        state.onceShot = false;
+        syncOnceBtn();
         bumpReplyGen();
-        pushMessage("user", "", dataUrl);
+        const quoted = state.replyTarget;
+        clearReplyTarget();
+        const userMsg = pushMessage("user", "", dataUrl, { replyTo: quoted ? quoted.id : "", once: once });
+        if (quoted) {
+          state.replyBindId = userMsg.id;
+          state.replyHint = quoted;
+        }
         const packed = await deliverJoyReply("", { fromPhoto: true, photoUrl: dataUrl });
         if (!packed) return;
         afterJoySpoke();
@@ -7630,6 +8688,56 @@
         openMediaStory();
       }
     });
+    document.getElementById("replyBarClose").addEventListener("click", function (e) {
+      e.preventDefault();
+      if (state.editId) clearEditTarget();
+      else clearReplyTarget();
+    });
+    document.getElementById("replyBarJump").addEventListener("click", function () {
+      if (state.editId) return;
+      if (state.replyTarget) jumpToMessage(state.replyTarget.id);
+    });
+    document.getElementById("onceBtn").addEventListener("click", function () {
+      state.onceShot = !state.onceShot;
+      syncOnceBtn();
+    });
+    document.getElementById("chatDown").addEventListener("click", function () {
+      if (!chatEl) return;
+      chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: motion.reduced ? "auto" : "smooth" });
+    });
+    document.getElementById("pinClose").addEventListener("click", function (e) {
+      e.preventDefault();
+      unpinMessage();
+    });
+    document.getElementById("pinJump").addEventListener("click", function () {
+      if (state.pinnedId) jumpToMessage(state.pinnedId);
+    });
+    document.getElementById("actPin").addEventListener("click", function () {
+      const id = state.actionMsgId;
+      closeMsgMenu();
+      if (!id) return;
+      if (state.pinnedId === id) unpinMessage();
+      else pinMessage(id);
+    });
+    document.getElementById("actEdit").addEventListener("click", function () {
+      const msg = findMessage(state.actionMsgId);
+      closeMsgMenu();
+      if (msg) setEditTarget(msg);
+    });
+    document.getElementById("actDel").addEventListener("click", function () {
+      const id = state.actionMsgId;
+      closeMsgMenu();
+      if (id) deleteMessage(id);
+    });
+    document.getElementById("oncePeek").addEventListener("click", function () {
+      closeOncePeek();
+    });
+    document.addEventListener("pointerdown", function (e) {
+      if (!state.actionMsgId) return;
+      const pop = document.getElementById("reactPop");
+      if (pop && pop.contains(e.target)) return;
+      closeMsgMenu();
+    });
     document.getElementById("emojiBtn").addEventListener("click", function (e) {
       e.preventDefault();
       toggleEmojiPanel();
@@ -7666,6 +8774,22 @@
     });
     document.addEventListener("keydown", function (e) {
       if (e.key !== "Escape") return;
+      if (document.body.classList.contains("once-open")) {
+        closeOncePeek();
+        return;
+      }
+      if (state.actionMsgId) {
+        closeMsgMenu();
+        return;
+      }
+      if (state.editId) {
+        clearEditTarget();
+        return;
+      }
+      if (state.replyTarget) {
+        clearReplyTarget();
+        return;
+      }
       const face = document.getElementById("profile");
       if (face && face.classList.contains("face-open")) {
         setProfileFaceOpen(false);
@@ -7700,6 +8824,139 @@
     document.getElementById("dateAdd").addEventListener("click", () => addDateFromForm());
     document.getElementById("refreshChat").addEventListener("click", () => refreshChat());
     document.getElementById("authSignOut").addEventListener("click", signOutAccount);
+
+    (function bindMsgSwipe() {
+      if (!chatEl) return;
+      let row = null;
+      let bubble = null;
+      let ico = null;
+      let pid = 0;
+      let startX = 0;
+      let startY = 0;
+      let dx = 0;
+      let locked = false;
+      let holdTimer = 0;
+      let didMenu = false;
+
+      function clearHold() {
+        if (holdTimer) {
+          clearTimeout(holdTimer);
+          holdTimer = 0;
+        }
+      }
+
+      function settle() {
+        if (!bubble) return;
+        const el = bubble;
+        const icon = ico;
+        el.style.transition = "transform 0.38s var(--ease)";
+        el.style.transform = "translate3d(0,0,0)";
+        if (icon) {
+          icon.style.transition = "opacity 0.28s var(--ease), transform 0.28s var(--ease)";
+          icon.style.opacity = "0";
+          icon.style.transform = "scale(0.72)";
+        }
+        setTimeout(function () {
+          el.style.transition = "";
+          el.style.transform = "";
+          if (icon) {
+            icon.style.transition = "";
+            icon.style.opacity = "";
+            icon.style.transform = "";
+          }
+        }, 400);
+      }
+
+      function finish(e) {
+        if (!row || (e && e.pointerId !== pid)) return;
+        clearHold();
+        const hit = !didMenu && locked && Math.abs(dx) >= 46;
+        const id = row.getAttribute("data-id");
+        settle();
+        try { row.releasePointerCapture(pid); } catch (_) {}
+        row = null;
+        bubble = null;
+        ico = null;
+        locked = false;
+        if (didMenu) {
+          didMenu = false;
+          return;
+        }
+        if (hit) {
+          const msg = findMessage(id);
+          if (msg) setReplyTarget(msg);
+        }
+      }
+
+      chatEl.addEventListener("pointerdown", function (e) {
+        if (state.call) return;
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        if (e.target.closest && e.target.closest(".msg-quote, .msg-ticks, .msg-reacts, .once-cover")) return;
+        const r = e.target.closest ? e.target.closest(".msg-row") : null;
+        if (!r || !r.getAttribute("data-id")) return;
+        row = r;
+        bubble = r.querySelector(".msg");
+        ico = r.querySelector(".swipe-reply-ico");
+        pid = e.pointerId;
+        startX = e.clientX;
+        startY = e.clientY;
+        dx = 0;
+        locked = false;
+        didMenu = false;
+        clearHold();
+        const holdId = r.getAttribute("data-id");
+        holdTimer = setTimeout(function () {
+          holdTimer = 0;
+          if (!row || locked || Math.abs(dx) > 12) return;
+          didMenu = true;
+          const box = bubble ? bubble.getBoundingClientRect() : r.getBoundingClientRect();
+          settle();
+          try { row.releasePointerCapture(pid); } catch (_) {}
+          row = null;
+          bubble = null;
+          ico = null;
+          openMsgMenu(holdId, box);
+        }, 480);
+      });
+
+      chatEl.addEventListener("pointermove", function (e) {
+        if (!row || e.pointerId !== pid) return;
+        dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!locked) {
+          if (Math.abs(dy) > 12 && Math.abs(dy) >= Math.abs(dx)) {
+            clearHold();
+            row = null;
+            bubble = null;
+            ico = null;
+            return;
+          }
+          if (Math.abs(dx) > 12) clearHold();
+          if (Math.abs(dx) < 14) return;
+          locked = true;
+          try { row.setPointerCapture(pid); } catch (_) {}
+        }
+        if (e.cancelable) e.preventDefault();
+        if (!bubble) return;
+        const cap = 68;
+        const x = Math.max(-cap, Math.min(cap, dx));
+        bubble.style.transition = "none";
+        bubble.style.transform = "translate3d(" + x + "px,0,0)";
+        const p = Math.min(1, Math.abs(x) / 50);
+        if (ico) {
+          ico.style.transition = "none";
+          ico.style.opacity = String(p);
+          ico.style.transform = "scale(" + (0.72 + 0.3 * p) + ")";
+        }
+      }, { passive: false });
+
+      chatEl.addEventListener("pointerup", finish);
+      chatEl.addEventListener("pointercancel", finish);
+      chatEl.addEventListener("contextmenu", function (e) {
+        if (e.target.closest && e.target.closest(".msg-row")) e.preventDefault();
+      });
+      chatEl.addEventListener("scroll", updateChatDown, { passive: true });
+    })();
 
     (function bindPressFeel() {
       if (motion.reduced) return;
