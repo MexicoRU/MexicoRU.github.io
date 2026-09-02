@@ -5347,7 +5347,8 @@
       }, Math.max(120, ms || 400));
     }
 
-    function planJoyReply(userText) {
+    function planJoyReply(userText, opts) {
+      opts = opts || {};
       if (state.call) return { kind: "now", delay: 0, readAfter: 160, typeAfter: 0 };
       const weather = ensureJoyWeather();
       const heavy = userTurnHeavy(userText);
@@ -5457,7 +5458,7 @@
     async function deliverJoyReply(userText, opts) {
       opts = opts || {};
       const gen = state.replyGen;
-      const plan = planJoyReply(userText);
+      const plan = planJoyReply(userText, opts);
       scheduleReadTicks(plan.readAfter, gen);
       let pending = null;
       function fetchReply() {
