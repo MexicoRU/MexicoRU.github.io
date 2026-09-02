@@ -8611,6 +8611,12 @@
       bumpReplyGen();
       const packed = await deliverJoyReply(value);
       if (!packed) return;
+      if (packed.silent) {
+        tickJoyWeather();
+        state.replyHint = null;
+        refreshStatus();
+        return;
+      }
       learnRememberTurn(value, packed.text);
       tickJoyWeather();
       afterJoySpoke();
