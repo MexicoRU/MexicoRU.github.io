@@ -5147,12 +5147,13 @@
       const avgLen = avg(last8, "n");
       const oldLen = avg(older.slice(-20), "n");
       const gaps = last8.map(function (p) { return p.g || 0; }).filter(function (g) { return g > 0 && g < 36e5 * 18; });
-      const avgGap = gaps.length ? avg(gaps.map(function (g) { return { g: g }; }), "g") : 0;
+      const lastPulse = last6.length ? last6[last6.length - 1] : null;
+      const avgGap = gaps.length ? (gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length) : 0;
       const recentHeavy = last12.filter(function (p) { return heavyM[p.m]; }).length;
       const stretch24 = last24.filter(function (p) { return heavyM[p.m]; }).length;
 
       let stretch = "";
-      if (spaceN >= 1 && last6.length) stretch = "distant";
+      if (lastPulse && lastPulse.p) stretch = "distant";
       else if (heavyDays >= 3 || (heavyDays >= 2 && stretch24 >= 2) || (recentHeavy >= 7 && last12.length >= 8)) stretch = "heavy";
       else if (last8.length >= 5 && warmN === 0 && (coldN >= 5 || (avgLen < 18 && avgGap > 50 * 60 * 1000))) stretch = "distant";
       else if (last6.length >= 4 && sharpN >= 4 && warmN === 0) stretch = "sharp";
