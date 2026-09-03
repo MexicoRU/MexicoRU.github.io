@@ -9192,6 +9192,7 @@
         state.replyHint = quoted;
       }
       learnObserveUser(value);
+      if (asksGeo(value)) requestJoyGeo();
 
       const tone = classifyUserTone(value);
       const result = applyUserTone(tone);
