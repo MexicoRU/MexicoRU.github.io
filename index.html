@@ -8920,6 +8920,7 @@
         markUserMessagesRead();
         learnRememberTurn(value, replyPack.text);
         tickJoyWeather();
+        tickJoyDeed();
         if (replyPack.hangup) {
           endCall(true);
           return;
@@ -8932,6 +8933,7 @@
       if (!packed) return;
       if (packed.silent) {
         tickJoyWeather();
+        tickJoyDeed();
         state.replyHint = null;
         refreshStatus();
         return;
