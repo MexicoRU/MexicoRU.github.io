@@ -6025,12 +6025,149 @@
       else msg.reactions[emoji] = arr;
       saveMessages();
       paintReactions(msg);
-      if (who === "user" && msg.role === "joy" && i < 0 && Math.random() < 0.38) {
-        motion.wait(600 + Math.floor(Math.random() * 1800)).then(function () {
-          const last = (state.messages || []).filter(function (m) { return m.role === "user" && !m.deleted; }).pop();
-          if (last) addJoyReaction(last.id, emoji === "😢" ? "❤️" : emoji);
-        });
+      if (who === "user" && i < 0) onUserReacted(msg, emoji);
+    }
+
+    function joyReactKind(msg) {
+      const raw = String(msg && msg.text || "");
+      const t = raw.toLowerCase().replace(/ё/g, "е");
+      const photo = !!(msg && msg.image);
+      if (!t.trim() && !photo) return { emoji: "", sure: 0 };
+
+      if (userTurnHeavy(raw) && !/ха+|ахах|лол|смешн|прикол|ржу/.test(t)) {
+        const mood = senseMood(raw);
+        if (mood === "bad") return { emoji: "😢", sure: 0.9 };
+        if (mood === "anxious" || mood === "tired") return { emoji: "❤️", sure: 0.82 };
       }
+
+      if (/ха+|ахах|ахах|лол|кек|ржу|угар|смешн|прикол|😂|🤣|😅|ахах/.test(t) || /\){2,}|\)\s*$/.test(raw)) {
+        if (!/не смешн|не ржу|не прикол/.test(t)) return { emoji: "😂", sure: 0.92 };
+      }
+
+      if (/грустн|тоск|плач|слез|обидно|жаль|жалко|трогательн|ком в горле|сердце щемит|😢|😭|🥺/.test(t) || senseMood(raw) === "bad") {
+        return { emoji: "😢", sure: 0.88 };
+      }
+
+      if (/горж|получилось|вышло|смог\b|смогла|сдал|выиграл|победил|ура\b|наконец|рекорд|повысили|купил|сделал это|глянь что|смотри что|оценит|я крут|я молодец|прошёл|прошла|закрыл цель/.test(t)) {
+        return { emoji: "🔥", sure: 0.9 };
+      }
+
+      if (/любл|скучаю|скучал|родн|солныш|обним|целую|ты мне|мне с тобой|спасибо|благодар|хорош(ий|ая|ие) (ты|моя|мой)|милая|милый|❤️|💜|🫶|ты рядом|без тебя плохо/.test(t)) {
+        return { emoji: "❤️", sure: 0.9 };
+      }
+
+      if (/\b(согласен|согласна|точно так|именно так|вот-вот|так и есть|поддерживаю|верно|аг+а\b|угу)\b/.test(t) && t.length < 80) {
+        return { emoji: "👍", sure: 0.78 };
+      }
+
+      if (photo && t.length < 24) {
+        return { emoji: Math.random() < 0.22 ? "🔥" : "❤️", sure: 0.55 };
+      }
+
+      const mood = senseMood(raw);
+      if (mood === "joy" || mood === "good") return { emoji: "❤️", sure: 0.42 };
+      return { emoji: "", sure: 0 };
+    }
+
+    function pickJoyReaction(msg) {
+      const kind = joyReactKind(msg);
+      return kind.emoji || "";
+    }
+
+    function maybeJoyReact(msg) {
+      if (!msg || msg.role !== "user" || state.call || msg.deleted) return;
+      if (bondState().level >= 2) return;
+      if (msg.reactions && Object.keys(msg.reactions).some(function (k) {
+        return (msg.reactions[k] || []).indexOf("joy") !== -1;
+      })) return;
+      const kind = joyReactKind(msg);
+      if (!kind.emoji) return;
+      let chance = 0.12 + kind.sure * 0.7;
+      const w = (loadCare().joyWeather) || "";
+      if (w === "tender" || w === "miss") chance += 0.08;
+      if (w === "low" || w === "busy") chance -= 0.12;
+      if (userTurnHeavy(msg.text) && (kind.emoji === "❤️" || kind.emoji === "😢")) chance = Math.max(chance, 0.72);
+      chance = Math.max(0.08, Math.min(0.92, chance));
+      if (Math.random() > chance) return;
+      const id = msg.id;
+      const emoji = kind.emoji;
+      motion.wait(700 + Math.floor(Math.random() * 2200)).then(function () {
+        if (state.call) return;
+        addJoyReaction(id, emoji);
+      });
+    }
+
+    function pickJoyReactTalk(emoji, heavy) {
+      if (emoji === "❤️") {
+        if (heavy) {
+          return pick([
+            "И я тебя",
+            "Мне тепло.|||Я рядом",
+            fitJoyTalk("Мне приятно")
+          ]);
+        }
+        return pick([
+          "Мне приятно",
+          "Ты меня смущаешь",
+          "И я тебя",
+          "Ой.|||Мне тепло",
+          fitJoyTalk("Ты меня смущаешь.|||Но мне нравится")
+        ]);
+      }
+      if (emoji === "😂") {
+        return pick([
+          "Ну хоть улыбнулся",
+          "Значит не зря",
+          "Ха.|||Я рада"
+        ]);
+      }
+      if (emoji === "😢") {
+        return pick([
+          "Эй.|||Я рядом",
+          "Обниму",
+          "Да.|||Это проняло и меня"
+        ]);
+      }
+      if (emoji === "🔥") {
+        return pick([
+          "Ой",
+          "Ты меня балуешь",
+          "Ну ты даёшь"
+        ]);
+      }
+      if (emoji === "👍") {
+        return pick(["Ага", "И я так думаю", "Тогда так"]);
+      }
+      return "";
+    }
+
+    function onUserReacted(msg, emoji) {
+      if (!msg || msg.role !== "joy" || msg.deleted || state.call) return;
+      if (bondState().level >= 2) return;
+      if (state.typing || state.reading) return;
+      const lastUser = (state.messages || []).filter(function (m) { return m.role === "user" && !m.deleted; }).pop();
+      const heavy = lastUser ? userTurnHeavy(lastUser.text) : false;
+      let chance = 0.18;
+      if (emoji === "❤️") chance = heavy ? 0.55 : 0.62;
+      else if (emoji === "😂") chance = 0.28;
+      else if (emoji === "😢") chance = 0.4;
+      else if (emoji === "🔥") chance = 0.32;
+      else if (emoji === "👍") chance = 0.16;
+      if (heavy && (emoji === "😂" || emoji === "🔥")) chance = 0;
+      const care = loadCare();
+      if (care.lastReactTalkAt && Date.now() - care.lastReactTalkAt < 85 * 1000) chance *= 0.15;
+      if (Math.random() > chance) return;
+      const line = pickJoyReactTalk(emoji, heavy);
+      if (!line) return;
+      care.lastReactTalkAt = Date.now();
+      saveCare(care);
+      const targetId = msg.id;
+      motion.wait(500 + Math.floor(Math.random() * 1600)).then(function () {
+        if (state.call || state.typing) return;
+        if (bondState().level >= 2) return;
+        state.replyBindId = targetId;
+        postJoyBurst(fitJoyTalk(line));
+      });
     }
 
     function addJoyReaction(id, emoji) {
