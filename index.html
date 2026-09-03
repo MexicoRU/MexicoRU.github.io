@@ -5410,7 +5410,7 @@
       const poured = String(userText || "").length > 90;
       const care = loadCare();
       const silentAgo = care.lastSilentAt ? (Date.now() - care.lastSilentAt) : 1e12;
-      const skipSilent = !!(opts.fromPhoto || opts.photoUrl || state.replyHint || weather === "miss" || asksWhatDoing(userText) || (care.userMsgs || 0) < 2);
+      const skipSilent = !!(opts.fromPhoto || opts.photoUrl || state.replyHint || weather === "miss" || asksWhatDoing(userText) || asksSky(userText) || (care.userMsgs || 0) < 2);
       const silentChance = (weather === "quiet" || weather === "tired" || weather === "low") ? 0.14 : 0.08;
       if (!skipSilent && !asked && !poured && silentAgo > 7 * 60 * 1000 && Math.random() < silentChance) {
         care.lastSilentAt = Date.now();
