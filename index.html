@@ -6509,6 +6509,8 @@
       const html = localStorage.getItem("joy_chat");
       if (html) {
         chatEl.innerHTML = html;
+        pinChatPad();
+        finishChatScroll();
         return true;
       }
 
