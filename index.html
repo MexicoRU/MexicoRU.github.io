@@ -5380,8 +5380,8 @@
         };
       }
       const deed = ensureJoyDeed();
-      if (asksWhatDoing(userText)) {
-        const hands = deedIsBusy(deed);
+      if (asksWhatDoing(userText) || asksSky(userText)) {
+        const hands = deedIsBusy(deed) && !asksSky(userText);
         return {
           kind: "now",
           delay: hands ? (900 + Math.floor(Math.random() * 2200)) : (180 + Math.floor(Math.random() * 700)),
