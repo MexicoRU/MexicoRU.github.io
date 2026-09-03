@@ -5089,8 +5089,12 @@
       else if (p.soft <= 34) style.push("можно прямее, без лишней жалости");
       if (p.warmth >= 74) style.push(himHer("ему", "ей", "") + " нужна теплота, не дистанция");
       if (style.length) bits.push("Как " + himHer("с ним", "с ней", "с этим человеком") + " лучше: " + style.join("; ") + ".");
-      const shift = learnMoodShift();
-      if (shift) bits.push(shift);
+      const climate = userClimateHint(userText);
+      if (climate) bits.push(climate);
+      else {
+        const shift = learnMoodShift();
+        if (shift) bits.push(shift);
+      }
       const hits = recallLearnMem(userText);
       if (hits.length) {
         bits.push("Похожие прошлые разговоры: " + hits.map(function (h) {
