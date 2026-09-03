@@ -9655,10 +9655,6 @@
       if (state.editId) return;
       if (state.replyTarget) jumpToMessage(state.replyTarget.id);
     });
-    document.getElementById("onceBtn").addEventListener("click", function () {
-      state.onceShot = !state.onceShot;
-      syncOnceBtn();
-    });
     document.getElementById("chatDown").addEventListener("click", function () {
       if (!chatEl) return;
       chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: motion.reduced ? "auto" : "smooth" });
