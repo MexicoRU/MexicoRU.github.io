@@ -6782,7 +6782,18 @@
         return;
       }
       if (weather === "busy") {
+        const deedLabel = joyDeedStatus(ensureJoyDeed());
+        if (deedLabel) {
+          statusEl.textContent = deedLabel;
+          return;
+        }
         statusEl.textContent = joyIsMale() ? "занят, но тебе рад" : "занята, но тебе рада";
+        return;
+      }
+      const deedNow = ensureJoyDeed();
+      const deedLabel = joyDeedStatus(deedNow);
+      if (deedLabel && deedNow !== "sit" && deedNow !== "nothing") {
+        statusEl.textContent = deedLabel;
         return;
       }
       if (state.soul) {
@@ -7501,6 +7512,7 @@
       if (!state.call) {
         const weatherBit = joyWeatherHint(lastUserText);
         if (weatherBit) parts.push(weatherBit);
+        parts.push(joyDeedHint(lastUserText));
       }
       if (state.replyHint && !state.call) {
         const src = state.replyHint;
