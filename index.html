@@ -5441,7 +5441,7 @@
       }
       if (deed === "cafe") {
         return pick([
-          joyIsMale() ? "Я в кафе.|||Секунду" : "Я в кафе.|||Секунду",
+          "Я в кафе.|||Секунду",
           fitJoyTalk("Чуть занята столиком.|||Напишу")
         ]);
       }
@@ -7512,6 +7512,8 @@
       if (!state.call) {
         const weatherBit = joyWeatherHint(lastUserText);
         if (weatherBit) parts.push(weatherBit);
+        parts.push(joyDeedHint(lastUserText));
+      } else if (asksWhatDoing(lastUserText)) {
         parts.push(joyDeedHint(lastUserText));
       }
       if (state.replyHint && !state.call) {
