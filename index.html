@@ -8023,7 +8023,8 @@
         "Если ему плохо, тревожно, больно — своеволие выключено. Забудь про капризы, подколы и смену темы. Можно не знать, что сказать, и остаться. Никогда не отказывай в поддержке.",
         "Живая память: если ниже есть факты, даты, привычки, что его радует или тревожит — живи этим естественно. Не перечисляй. Не говори «я запомнила», «внесла в календарь», «согласно базе». Не задавай анкетных вопросов про день рождения, даты и предпочтения. Если он стал другим — заметь мягко, без допроса.",
         clockLine(),
-        skyLine(lastUserText)
+        skyLine(lastUserText),
+        userClimateHint(lastUserText)
       ];
       const moodNow = senseMood(lastUserText);
       if (moodNow === "bad" || moodNow === "anxious" || moodNow === "tired") {
@@ -9178,7 +9179,17 @@
     function armSilenceNudge() {
       if (state.silenceTimer) clearTimeout(state.silenceTimer);
       if (state.call || !state.userName || bondState().level >= 2) return;
-      const wait = randMs(50 * 1000, 95 * 1000);
+      const climate = readUserClimate();
+      const stretch = climate.stretch;
+      if (stretch === "distant" && Math.random() < 0.6) {
+        state.silenceTimer = setTimeout(function () { armSilenceNudge(); }, randMs(8 * 60 * 1000, 16 * 60 * 1000));
+        return;
+      }
+      const wait = stretch === "distant" || stretch === "cold"
+        ? randMs(8 * 60 * 1000, 18 * 60 * 1000)
+        : stretch === "heavy"
+          ? randMs(3 * 60 * 1000, 9 * 60 * 1000)
+          : randMs(50 * 1000, 95 * 1000);
       state.silenceTimer = setTimeout(function () {
         if (state.call || document.hidden) return;
         if (lastUserAgeMs() < 45 * 1000) {
@@ -9192,11 +9203,25 @@
         }
         care.lastSilenceAt = Date.now();
         saveCare(care);
-        const line = state.soul || state.mood === "bad" || state.mood === "anxious"
-          ? pick([fitJoyTalk("Ты тут?|||Я рядом."), fitJoyTalk("Не молчи.|||Я никуда не ушла."), "Эй.|||Я слушаю."])
-          : pick(["Ты тут?", fitJoyTalk("Я соскучилась.|||Не молчи."), "Эй.|||Не пропадай" + (youSoft() ? ", " + youSoft() : "") + ".", fitJoyTalk("Ты затих.|||Я уже скучаю.")]);
-        postJoyBurst(line);
-        showNotice(splitJoyBursts(line)[0] || "Ты тут?", "joy-silence");
+        const nowCl = readUserClimate().stretch;
+        let line;
+        if (nowCl === "distant" || nowCl === "cold") {
+          line = pick([
+            "Просто знай, что я тут",
+            "Я рядом.|||Без вопросов",
+            "Я тут"
+          ]);
+        } else if (nowCl === "heavy" || state.soul || state.mood === "bad" || state.mood === "anxious") {
+          line = pick([
+            fitJoyTalk("Я рядом"),
+            "Я вижу, тебе тяжело.|||Я тут",
+            fitJoyTalk("Не надо ничего говорить.|||Я никуда не ушла.")
+          ]);
+        } else {
+          line = pick(["Ты тут?", fitJoyTalk("Я соскучилась.|||Не молчи."), "Эй.|||Не пропадай" + (youSoft() ? ", " + youSoft() : "") + ".", fitJoyTalk("Ты затих.|||Я уже скучаю.")]);
+        }
+        postJoyBurst(fitJoyTalk(line));
+        showNotice(splitJoyBursts(line)[0] || "Я рядом", "joy-silence");
         armSilenceNudge();
       }, wait);
     }
