@@ -6682,6 +6682,7 @@
       if (bar) bar.hidden = false;
       if (composer) composer.classList.add("replying");
       document.body.classList.add("replying");
+      if (window.syncJoyComposer) window.syncJoyComposer();
     }
 
     function hideComposerBar() {
@@ -10094,9 +10095,9 @@
         if (!bar || !app) return;
         const appBox = app.getBoundingClientRect();
         const barBox = bar.getBoundingClientRect();
-        const fade = Math.max(64, Math.ceil(appBox.bottom - barBox.top));
+        const fade = Math.max(80, Math.ceil(appBox.bottom - barBox.top));
         root.style.setProperty("--chat-fade", fade + "px");
-        root.style.setProperty("--chat-end", (fade + 22) + "px");
+        root.style.setProperty("--chat-end", (fade + 36) + "px");
       }
       function sync() {
         const vv = window.visualViewport;
@@ -10107,12 +10108,14 @@
           root.style.setProperty("--kb", kb + "px");
         }
         syncChatEnd();
-        if (chatEl && chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 140) {
-          motion.chatScroll();
+        if (chatEl && chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 160) {
+          finishChatScroll();
         }
       }
+      window.syncJoyComposer = sync;
       sync();
       requestAnimationFrame(sync);
+      requestAnimationFrame(function () { requestAnimationFrame(sync); });
       if (window.visualViewport) {
         window.visualViewport.addEventListener("resize", sync);
         window.visualViewport.addEventListener("scroll", sync);
