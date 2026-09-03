@@ -5217,6 +5217,7 @@
       if (edge.space) {
         bits.push("Просит пространство. Дай. Коротко останься, без вопросов.");
       }
+      if (canName && cl.stretch && cl.stretch !== "easing" && !nowWarm) markClimateNamed(cl.stretch);
       return bits.join(" ");
     }
 
