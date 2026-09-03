@@ -956,12 +956,16 @@
       overflow-x: hidden;
       padding: calc(68px + var(--safe-top) + var(--pin-space)) max(12px, var(--safe-right)) var(--chat-end) max(12px, var(--safe-left));
       scroll-padding-bottom: var(--chat-end);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: block;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       scroll-behavior: auto;
+      box-sizing: border-box;
+    }
+
+    .chat > .msg-row,
+    .chat > .msg {
+      margin-bottom: 10px;
     }
 
     .msg-row {
@@ -2495,7 +2499,7 @@
       max-width: none;
       margin: 0;
       width: 100%;
-      padding: calc(84px + var(--pin-space)) 22px 0;
+      padding: calc(84px + var(--pin-space)) 22px var(--chat-end);
     }
 
     html.desk .msg {
