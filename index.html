@@ -5942,11 +5942,61 @@
       } else {
         bag.push("bed", "videos", "read", "music", "sit", "nothing");
       }
-      return bag;
+      return filterDeedBySky(bag, h);
+    }
+
+    function filterDeedBySky(bag, h) {
+      const sky = joySky() || {};
+      const kind = sky.kind || "";
+      const dayOut = h >= 8 && h < 21 && sky.isDay !== false;
+      let out = bag.slice();
+      function drop(ids) {
+        out = out.filter(function (id) { return ids.indexOf(id) === -1; });
+      }
+      function add(id, n) {
+        for (let i = 0; i < n; i++) out.push(id);
+      }
+      if (kind === "rain") {
+        drop(["walk", "park", "snowplay"]);
+        add("tea", 3);
+        add("sit", 1);
+        add("read", 1);
+        add("blanket", 1);
+      }
+      if (kind === "sun" && dayOut) {
+        add("park", 3);
+        add("walk", 2);
+      }
+      if (kind === "snow") {
+        drop(["park"]);
+        if (dayOut) add("snowplay", 3);
+        add("tea", 1);
+        add("blanket", 1);
+      }
+      if (kind === "heat") {
+        drop(["blanket", "snowplay"]);
+        add("cool", 3);
+        add("cafe", 1);
+        add("sit", 1);
+        if (h >= 12 && h < 17) drop(["walk", "park"]);
+      }
+      if (kind === "cold") {
+        drop(["park"]);
+        add("blanket", 3);
+        add("tea", 2);
+        add("cook", 1);
+        if (h < 11 || h > 16) drop(["walk"]);
+      }
+      if (kind === "wind") {
+        drop(["park", "snowplay"]);
+        add("sit", 1);
+        add("tea", 1);
+      }
+      return out.length ? out : bag;
     }
 
     function deedIsBusy(id) {
-      return id === "cook" || id === "walk" || id === "shop" || id === "cafe" || id === "bath" || id === "wash";
+      return id === "cook" || id === "walk" || id === "park" || id === "shop" || id === "cafe" || id === "bath" || id === "wash" || id === "snowplay";
     }
 
     function joyDeedLive(id) {
@@ -5954,6 +6004,7 @@
         bed: "лежишь в кровати",
         cook: "готовишь",
         walk: "гуляешь",
+        park: "в парке",
         cafe: "в кафе",
         shop: "в магазине",
         videos: "смотришь видосики",
@@ -5963,7 +6014,11 @@
         music: "слушаешь музыку",
         nothing: "ничего особенного не делаешь",
         coffee: "пьёшь кофе",
-        wash: "умываешься"
+        tea: "сидишь с чаем",
+        wash: "умываешься",
+        snowplay: "лепишь снежки",
+        blanket: "дома, в пледе",
+        cool: "ищешь прохладу"
       };
       return map[id] || "просто так";
     }
