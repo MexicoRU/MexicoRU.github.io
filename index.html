@@ -5153,6 +5153,7 @@
       extractLearnFacts(userText);
       const found = parseDateFromText(userText);
       if (found) upsertDate(found);
+      recordUserPulse(userText);
       const mood = senseMood(userText);
       if (mood) {
         const moods = state.learn.moods || [];
