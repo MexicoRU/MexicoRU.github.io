@@ -5230,6 +5230,7 @@
       const mood = senseMood(userText);
       const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul;
       const weather = ensureJoyWeather();
+      const deed = ensureJoyDeed();
       const r = Math.random();
       if (heavy) {
         if (r < 0.28) return "short";
@@ -5237,6 +5238,8 @@
         if (r < 0.62) return "pause";
         return "steady";
       }
+      if ((deed === "bed" || deed === "sit" || deed === "nothing") && r < 0.4) return "short";
+      if (deed === "cook" && r < 0.22) return "ask";
       if (weather === "tired" && r < 0.36) return "short";
       if (weather === "quiet" && r < 0.3) return "short";
       if (weather === "low" && r < 0.28) return "sad";
@@ -5362,6 +5365,16 @@
           typeAfter: 160 + Math.floor(Math.random() * 280)
         };
       }
+      const deed = ensureJoyDeed();
+      if (asksWhatDoing(userText)) {
+        const hands = deedIsBusy(deed);
+        return {
+          kind: "now",
+          delay: hands ? (900 + Math.floor(Math.random() * 2200)) : (180 + Math.floor(Math.random() * 700)),
+          readAfter: 220 + Math.floor(Math.random() * 500),
+          typeAfter: 160 + Math.floor(Math.random() * 500)
+        };
+      }
       if (weather === "low" && Math.random() < 0.68) {
         return {
           kind: "later",
@@ -5370,7 +5383,7 @@
           typeAfter: 500 + Math.floor(Math.random() * 1400)
         };
       }
-      if (weather === "busy" && Math.random() < 0.6) {
+      if ((weather === "busy" || deedIsBusy(deed)) && Math.random() < 0.55) {
         return {
           kind: "busy",
           delay: 480 + Math.floor(Math.random() * 1100),
