@@ -7169,6 +7169,7 @@
       }
       row.appendChild(ico);
       row.appendChild(el);
+      const stick = chatEl && (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 160);
       mountChatNode(row);
       paintReactions(msg);
       if (animate) {
@@ -7184,7 +7185,7 @@
         });
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            motion.chatScroll(msg.role === "user");
+            motion.chatScroll(stick || isUser);
           });
         });
       } else {
