@@ -4974,6 +4974,7 @@
       if (/можешь подлиннее|расскажи подробн/.test(low)) learnAddFact("style", "Любит более развёрнутые ответы");
       if (/не сплю|бессонниц|кошмар|не могу уснуть/.test(low)) learnAddFact("worry", "Тяжело со сном");
       if (/кофе|чай\b/.test(low) && /люблю|пью|утром/.test(low)) learnAddFact("habit", "Любит тёплый напиток по утрам");
+      noteUserCity(text);
     }
 
     function learnWorthRemembering(userText) {
