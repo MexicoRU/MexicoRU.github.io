@@ -4445,6 +4445,7 @@
         btn.classList.remove("emoji-on");
         btn.setAttribute("aria-pressed", "false");
       }
+      if (window.syncJoyComposer) requestAnimationFrame(window.syncJoyComposer);
     }
 
     function fillEmojiPanel(panel) {
@@ -4486,6 +4487,7 @@
         btn.setAttribute("aria-pressed", on ? "true" : "false");
       }
       if (on) fillEmojiPanel(panel);
+      if (window.syncJoyComposer) requestAnimationFrame(window.syncJoyComposer);
     }
 
     function openProfile(from) {
