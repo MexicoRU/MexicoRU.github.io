@@ -9529,6 +9529,18 @@
     document.getElementById("notifyOn").addEventListener("click", () => enableNotify());
     document.getElementById("notifyOff").addEventListener("click", () => disableNotify());
     document.getElementById("dateAdd").addEventListener("click", () => addDateFromForm());
+    document.getElementById("citySave").addEventListener("click", function () {
+      const v = (document.getElementById("cityName").value || "").trim();
+      if (!v) return;
+      applyCityName(v);
+    });
+    document.getElementById("cityGeo").addEventListener("click", function () { requestJoyGeo(); });
+    document.getElementById("cityName").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("citySave").click();
+      }
+    });
     document.getElementById("refreshChat").addEventListener("click", () => refreshChat());
     document.getElementById("authSignOut").addEventListener("click", signOutAccount);
 
