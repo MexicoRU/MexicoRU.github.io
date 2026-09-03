@@ -3089,6 +3089,33 @@
     const soulBtn = document.getElementById("soulBtn");
     const sheet = document.getElementById("sheet");
 
+    function pinChatPad() {
+      if (!chatEl) return null;
+      let pad = document.getElementById("chatPad");
+      if (!pad) {
+        pad = document.createElement("div");
+        pad.id = "chatPad";
+        pad.className = "chat-pad";
+        pad.setAttribute("aria-hidden", "true");
+      }
+      if (pad.parentNode !== chatEl || chatEl.lastElementChild !== pad) {
+        chatEl.appendChild(pad);
+      }
+      return pad;
+    }
+
+    function mountChatNode(node) {
+      if (!chatEl || !node) return;
+      const pad = pinChatPad();
+      if (pad) chatEl.insertBefore(node, pad);
+      else chatEl.appendChild(node);
+    }
+
+    function finishChatScroll() {
+      if (!chatEl) return;
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
     const motion = (function () {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const store = typeof WeakMap === "function" ? new WeakMap() : null;
