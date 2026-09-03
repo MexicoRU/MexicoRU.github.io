@@ -9748,6 +9748,11 @@
       setSoul(state.soul);
       renderDateList();
       syncNotifyPills();
+      syncCityUI();
+      refreshJoySky(false);
+      if (!state.skyTimer) {
+        state.skyTimer = setInterval(function () { refreshJoySky(false); }, 18 * 60 * 1000);
+      }
       const restored = await loadMessages();
       if (restored) joyGoesFirst("load");
       else {
