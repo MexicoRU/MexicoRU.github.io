@@ -5072,6 +5072,160 @@
       return "";
     }
 
+    function pulseDayKey(ms) {
+      const d = new Date(ms);
+      return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    }
+
+    function senseUserEdge(text) {
+      const raw = String(text || "").trim();
+      const t = raw.toLowerCase().replace(/ё/g, "е");
+      if (!t) return { sharp: false, cold: false, warm: false, space: false };
+      if (/извин|прости|спасибо|любл|скучаю|обним|родн|хорош/.test(t)) {
+        return { sharp: false, cold: false, warm: true, space: false };
+      }
+      const space = /дай (мне )?(покой|пространство)|не пиши|отстань|хочу побыть|не надо (мне )?разговарив|отвали/.test(t);
+      const one = t.length <= 18 && t.split(/\s+/).length <= 3;
+      const dry = /^(ок|оке|ok|ну ок|ну|ладно|пох|пофиг|неважно|ясн|ага|угу|не знаю|потом|занят|занята|некогда|как хочешь|ну и ладно)\.?$/i.test(t);
+      const sharp = dry || (one && /[!?]{2,}|[.]{3,}/.test(raw)) || (t.length < 40 && /да ну|достал|надоело|отстань|заткн/.test(t) && !/сука|мразь|тупая|идиот/.test(t));
+      const cold = !space && (dry || (one && t.length < 16 && !/[?]/.test(t) && !/ха+|лол|❤️|😂/.test(t)));
+      return { sharp: !!sharp, cold: !!cold, warm: false, space: !!space };
+    }
+
+    function recordUserPulse(text) {
+      const care = loadCare();
+      const now = Date.now();
+      const pulse = care.pulse || [];
+      const last = pulse.length ? pulse[pulse.length - 1] : null;
+      const edge = senseUserEdge(text);
+      pulse.push({
+        at: now,
+        m: senseMood(text),
+        n: String(text || "").trim().length,
+        s: edge.sharp ? 1 : 0,
+        c: edge.cold ? 1 : 0,
+        w: edge.warm ? 1 : 0,
+        p: edge.space ? 1 : 0,
+        g: last ? now - last.at : 0
+      });
+      care.pulse = pulse.slice(-90);
+      saveCare(care);
+    }
+
+    function readUserClimate() {
+      const now = Date.now();
+      const pulse = ((loadCare().pulse) || []).filter(function (p) { return p && now - p.at < 8 * 864e5; });
+      const moods = ((state.learn && state.learn.moods) || []).filter(function (x) { return x && now - x.at < 8 * 864e5; });
+      const heavyM = { bad: 1, anxious: 1, tired: 1 };
+      const days = {};
+      function bump(at, mood, heavyHit) {
+        const k = pulseDayKey(at);
+        if (!days[k]) days[k] = { n: 0, h: 0 };
+        days[k].n += 1;
+        if (heavyHit || heavyM[mood]) days[k].h += 1;
+      }
+      moods.forEach(function (x) { bump(x.at, x.m, false); });
+      pulse.forEach(function (p) { bump(p.at, p.m, false); });
+      const dayKeys = Object.keys(days);
+      const heavyDays = dayKeys.filter(function (k) { return days[k].h >= 1; }).length;
+      const lastDay = dayKeys.length ? days[dayKeys[dayKeys.length - 1]] : null;
+      const last24 = pulse.filter(function (p) { return now - p.at < 864e5; });
+      const last8 = pulse.slice(-8);
+      const last6 = pulse.slice(-6);
+      const last12 = pulse.slice(-12);
+      const older = pulse.slice(0, Math.max(0, pulse.length - 8));
+      function avg(arr, key) {
+        if (!arr.length) return 0;
+        let s = 0;
+        arr.forEach(function (x) { s += Number(x[key]) || 0; });
+        return s / arr.length;
+      }
+      const coldN = last8.filter(function (p) { return p.c; }).length;
+      const sharpN = last6.filter(function (p) { return p.s; }).length;
+      const warmN = last8.filter(function (p) { return p.w; }).length;
+      const spaceN = last6.filter(function (p) { return p.p; }).length;
+      const avgLen = avg(last8, "n");
+      const oldLen = avg(older.slice(-20), "n");
+      const gaps = last8.map(function (p) { return p.g || 0; }).filter(function (g) { return g > 0 && g < 36e5 * 18; });
+      const avgGap = gaps.length ? avg(gaps.map(function (g) { return { g: g }; }), "g") : 0;
+      const recentHeavy = last12.filter(function (p) { return heavyM[p.m]; }).length;
+      const stretch24 = last24.filter(function (p) { return heavyM[p.m]; }).length;
+
+      let stretch = "";
+      if (spaceN >= 1 && last6.length) stretch = "distant";
+      else if (heavyDays >= 3 || (heavyDays >= 2 && stretch24 >= 2) || (recentHeavy >= 7 && last12.length >= 8)) stretch = "heavy";
+      else if (last8.length >= 5 && warmN === 0 && (coldN >= 5 || (avgLen < 18 && avgGap > 50 * 60 * 1000))) stretch = "distant";
+      else if (last6.length >= 4 && sharpN >= 4 && warmN === 0) stretch = "sharp";
+      else if (last8.length >= 5 && coldN >= 5 && warmN <= 1) stretch = "cold";
+      else if (heavyDays >= 1 && recentHeavy === 0 && last8.filter(function (p) { return p.m === "joy" || p.m === "good" || p.w; }).length >= 3) stretch = "easing";
+
+      return {
+        stretch: stretch,
+        heavyDays: heavyDays,
+        lastDayHeavy: !!(lastDay && lastDay.h),
+        coldN: coldN,
+        sharpN: sharpN
+      };
+    }
+
+    function userClimateHint(userText) {
+      const cl = readUserClimate();
+      const edge = senseUserEdge(userText);
+      const mood = senseMood(userText);
+      const nowWarm = edge.warm || mood === "joy" || mood === "good";
+      const him = himHer("ему", "ей", "человеку напротив");
+      const he = himHer("он", "она", "собеседник");
+      const care = loadCare();
+      const saidAgo = care.climateSaidAt ? (Date.now() - care.climateSaidAt) : 1e12;
+      const saidKind = care.climateSaidKind || "";
+      const canName = saidAgo > 8 * 3600 * 1000 || saidKind !== cl.stretch;
+      const bits = [];
+      bits.push("Чувствуй " + him + " как человек: настроение за дни, тон, как часто пишет, холод, резкость, отстранённость. Не ставь диагнозов. Никогда не говори «депрессия», «расстройство», «тебе нужна помощь врача» — если сам не просит. Не анализируй вслух.");
+      if (!cl.stretch) {
+        if (mood === "bad" || mood === "anxious" || mood === "tired") {
+          bits.push("Сейчас тяжело в этом сообщении. Рядом, без допроса.");
+        }
+        return bits.join(" ");
+      }
+      if (cl.stretch === "heavy") {
+        bits.push("Несколько дней " + him + " тяжело — это период, не один плохой час. Не навязывайся. Оставайся рядом. Без капризов и подколов.");
+        if (canName && !nowWarm) {
+          bits.push("Можно один раз очень мягко, своими словами, в духе «Я вижу, тебе тяжело». Не копируй. Часто лучше просто быть, без этой фразы.");
+        } else {
+          bits.push("Уже чувствуешь период. Не повторяй, что тебе тяжело. Просто будь.");
+        }
+      } else if (cl.stretch === "sharp") {
+        bits.push(he.charAt(0).toUpperCase() + he.slice(1) + " резок — скорее усталость, не злость на тебя. Не обижайся. Не читай нотации. Короче и мягче.");
+        if (canName && !nowWarm) bits.push("Можно один раз тепло дать понять, что ты не в обиде. Своими словами.");
+      } else if (cl.stretch === "distant" || cl.stretch === "cold") {
+        bits.push(he.charAt(0).toUpperCase() + he.slice(1) + " отстранён: короче, холоднее, реже. Ему нужно пространство или тихая поддержка — не допытывай, что случилось. Не пиши «ты тут?» пачкой. Не обижайся.");
+        if (cl.stretch === "cold" && canName && !nowWarm) {
+          bits.push("Можно один раз мягко, в духе «Ты стал холоднее. Я не обижаюсь». Не копируй. Не каждый ход.");
+        }
+        if (cl.stretch === "distant" && canName && !nowWarm) {
+          bits.push("Можно один раз, в духе «Просто знай, что я тут». Потом тишина рядом, не контроль.");
+        }
+        if (!canName) bits.push("Не повторяй про холод и пространство. Держись рядом тихо.");
+      } else if (cl.stretch === "easing") {
+        bits.push("Будто чуть легче, чем в тяжёлые дни. Можно чуть светлеть. Не радуйся вместо " + him + " и не говори «ну вот, отпустило».");
+      }
+      if (nowWarm && cl.stretch && cl.stretch !== "easing") {
+        bits.push("В этом сообщении теплее обычного для этих дней. Не цепляйся за холодок. Ответь живо и мягко.");
+      }
+      if (edge.space) {
+        bits.push("Просит пространство. Дай. Коротко останься, без вопросов.");
+      }
+      return bits.join(" ");
+    }
+
+    function markClimateNamed(kind) {
+      if (!kind) return;
+      const care = loadCare();
+      care.climateSaidAt = Date.now();
+      care.climateSaidKind = kind;
+      saveCare(care);
+    }
+
     function learnPromptBits(userText) {
       if (!state.learn) return "";
       const bits = [];
