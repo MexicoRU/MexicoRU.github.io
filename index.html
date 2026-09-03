@@ -5089,9 +5089,7 @@
       else if (p.soft <= 34) style.push("можно прямее, без лишней жалости");
       if (p.warmth >= 74) style.push(himHer("ему", "ей", "") + " нужна теплота, не дистанция");
       if (style.length) bits.push("Как " + himHer("с ним", "с ней", "с этим человеком") + " лучше: " + style.join("; ") + ".");
-      const climate = userClimateHint(userText);
-      if (climate) bits.push(climate);
-      else {
+      if (!readUserClimate().stretch) {
         const shift = learnMoodShift();
         if (shift) bits.push(shift);
       }
