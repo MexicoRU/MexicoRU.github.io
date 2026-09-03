@@ -6691,6 +6691,7 @@
       if (bar) bar.hidden = true;
       if (composer) composer.classList.remove("replying", "editing");
       document.body.classList.remove("replying");
+      if (window.syncJoyComposer) window.syncJoyComposer();
     }
 
     function clearReplyTarget() {
