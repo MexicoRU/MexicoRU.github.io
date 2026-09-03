@@ -6474,8 +6474,11 @@
           });
           ensureMessageIds();
           chatEl.innerHTML = "";
+          pinChatPad();
           state.messages.forEach(function (m) { renderMessage(m); });
-          chatEl.scrollTop = chatEl.scrollHeight;
+          pinChatPad();
+          finishChatScroll();
+          requestAnimationFrame(finishChatScroll);
           syncPinBar();
           updateChatDown();
           saveMessages();
@@ -7382,13 +7385,15 @@
         el.setAttribute("aria-label", "Джой печатает");
         el.innerHTML = '<span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
       }
-      chatEl.appendChild(el);
+      mountChatNode(el);
       motion.to(el, { y: 0, s: 1, o: 1 }, {
         from: { y: 14, s: 0.98, o: 0 },
         k: 260,
         d: 22
       });
-      requestAnimationFrame(function () { motion.chatScroll(); });
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { motion.chatScroll(); });
+      });
     }
 
     function hideTyping() {
