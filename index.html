@@ -5481,6 +5481,7 @@
       if (state.call || userTurnHeavy(userText || "")) return Promise.resolve();
       const weather = (loadCare().joyWeather) || "";
       if (weather === "busy" || weather === "low") return Promise.resolve();
+      if (deedIsBusy(ensureJoyDeed())) return Promise.resolve();
       const recent = (state.messages || []).slice(-10);
       const sheSent = recent.some(function (m) { return m.role === "joy" && m.image; });
       if (sheSent) return Promise.resolve();
