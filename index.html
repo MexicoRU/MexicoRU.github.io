@@ -5247,7 +5247,6 @@
     function pickLiveBeat(userText) {
       if (state.call) return "steady";
       const mood = senseMood(userText);
-      const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul;
       const climate = readUserClimate();
       const stretch = climate.stretch;
       const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul || stretch === "heavy";
