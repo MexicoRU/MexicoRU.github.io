@@ -5248,6 +5248,9 @@
       if (state.call) return "steady";
       const mood = senseMood(userText);
       const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul;
+      const climate = readUserClimate();
+      const stretch = climate.stretch;
+      const heavy = mood === "bad" || mood === "anxious" || mood === "tired" || state.soul || stretch === "heavy";
       const weather = ensureJoyWeather();
       const deed = ensureJoyDeed();
       const r = Math.random();
@@ -5255,6 +5258,15 @@
         if (r < 0.28) return "short";
         if (r < 0.48) return "unsure";
         if (r < 0.62) return "pause";
+        return "steady";
+      }
+      if (stretch === "distant" || stretch === "cold") {
+        if (r < 0.5) return "short";
+        if (r < 0.7) return "pause";
+        return "steady";
+      }
+      if (stretch === "sharp") {
+        if (r < 0.45) return "short";
         return "steady";
       }
       if ((deed === "bed" || deed === "sit" || deed === "nothing") && r < 0.4) return "short";
@@ -5415,7 +5427,7 @@
       const poured = String(userText || "").length > 90;
       const care = loadCare();
       const silentAgo = care.lastSilentAt ? (Date.now() - care.lastSilentAt) : 1e12;
-      const skipSilent = !!(opts.fromPhoto || opts.photoUrl || state.replyHint || weather === "miss" || asksWhatDoing(userText) || asksSky(userText) || (care.userMsgs || 0) < 2);
+      const skipSilent = !!(opts.fromPhoto || opts.photoUrl || state.replyHint || weather === "miss" || asksWhatDoing(userText) || asksSky(userText) || (care.userMsgs || 0) < 2 || readUserClimate().stretch === "heavy" || readUserClimate().stretch === "distant");
       const silentChance = (weather === "quiet" || weather === "tired" || weather === "low") ? 0.14 : 0.08;
       if (!skipSilent && !asked && !poured && silentAgo > 7 * 60 * 1000 && Math.random() < silentChance) {
         care.lastSilentAt = Date.now();
