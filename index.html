@@ -2801,7 +2801,9 @@
       </div>
 
       <div class="chat-wrap">
-        <div class="chat" id="chat"></div>
+        <div class="chat" id="chat">
+          <div class="chat-pad" id="chatPad" aria-hidden="true"></div>
+        </div>
       </div>
 
       <div class="composer">
@@ -3226,17 +3228,20 @@
         const max = Math.max(0, el.scrollHeight - el.clientHeight);
         const gap = max - el.scrollTop;
         if (userHold && !force) return;
-        if (!force && gap > 88) return;
+        if (!force && gap > 120) return;
         stopChatScroll();
-        if (reduced || gap < 8 || gap > 280) {
-          el.scrollTop = max;
+        function snap() {
+          el.scrollTop = el.scrollHeight;
+        }
+        if (reduced || gap < 6) {
+          snap();
           return;
         }
         const from = el.scrollTop;
         const t0 = performance.now();
-        const dur = Math.min(220, 70 + gap * 0.45);
+        const dur = Math.min(300, 88 + Math.min(Math.max(gap, 0), 480) * 0.42);
         function step(now) {
-          if (userHold) {
+          if (userHold && !force) {
             scrollRaf = 0;
             return;
           }
@@ -3244,8 +3249,12 @@
           const e = 1 - (1 - p) * (1 - p);
           const dest = Math.max(0, el.scrollHeight - el.clientHeight);
           el.scrollTop = from + (dest - from) * e;
-          if (p < 1) scrollRaf = requestAnimationFrame(step);
-          else scrollRaf = 0;
+          if (p < 1) {
+            scrollRaf = requestAnimationFrame(step);
+          } else {
+            snap();
+            scrollRaf = 0;
+          }
         }
         scrollRaf = requestAnimationFrame(step);
       }
