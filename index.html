@@ -6495,7 +6495,9 @@
             state.messages = parsed;
             ensureMessageIds();
             parsed.forEach(renderMessage);
-            chatEl.scrollTop = chatEl.scrollHeight;
+            pinChatPad();
+            finishChatScroll();
+            requestAnimationFrame(finishChatScroll);
             syncPinBar();
             updateChatDown();
             syncLocalChatToRtdb();
