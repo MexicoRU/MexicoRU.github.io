@@ -6182,32 +6182,6 @@
       paintReactions(msg);
     }
 
-    function pickJoyReaction(msg) {
-      const t = String(msg && msg.text || "").toLowerCase();
-      if (userTurnHeavy(t)) return Math.random() < 0.7 ? "❤️" : "";
-      if (/ха+|ахах|лол|смешн|прикол/.test(t)) return "😂";
-      if (/спасибо|любл|скучаю|родн|хорош/.test(t)) return "❤️";
-      if (/огонь|крут|мощ|вау/.test(t)) return "🔥";
-      const w = (loadCare().joyWeather) || "";
-      if (w === "tender" || w === "miss") return pick(["❤️", "👍"]);
-      return pick(REACT_EMOJIS);
-    }
-
-    function maybeJoyReact(msg) {
-      if (!msg || msg.role !== "user" || state.call || msg.deleted) return;
-      let chance = 0.17;
-      const w = (loadCare().joyWeather) || "";
-      if (w === "tender") chance = 0.36;
-      if (userTurnHeavy(msg.text)) chance = 0.3;
-      if (Math.random() > chance) return;
-      const emoji = pickJoyReaction(msg);
-      if (!emoji) return;
-      const id = msg.id;
-      motion.wait(800 + Math.floor(Math.random() * 2400)).then(function () {
-        addJoyReaction(id, emoji);
-      });
-    }
-
     function syncPinBar() {
       const id = state.pinnedId;
       const msg = id ? findMessage(id) : null;
