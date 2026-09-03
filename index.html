@@ -5614,6 +5614,159 @@
       saveCare(care);
     }
 
+    function joyHour() {
+      return new Date().getHours();
+    }
+
+    function clockLine() {
+      const d = new Date();
+      const days = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
+      const h = d.getHours();
+      const hh = String(h).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      let band = "ночь";
+      if (h >= 6 && h < 10) band = "утро";
+      else if (h >= 10 && h < 18) band = "день";
+      else if (h >= 18 && h < 23) band = "вечер";
+      return "Реальное время сейчас " + hh + ":" + mm + ", " + days[d.getDay()] + ", " + band + ". Живи этим часом. Ночью не гуляй и не сиди в кафе. Около двух ночи скорее кровать, видосики или просто не спится. Не путай утро с ночью.";
+    }
+
+    function asksWhatDoing(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      if (!t) return false;
+      if (/что делать\b/.test(t)) return false;
+      return /что\s+(ты\s+)?делаешь|чем\s+(ты\s+)?(занят|занята|занимаешься)|ты\s+где\b|где\s+ты\b|чем\s+ты\s+там|не спишь/.test(t);
+    }
+
+    function joyDeedPool(h) {
+      const bag = [];
+      if (h >= 0 && h < 6) {
+        bag.push("bed", "bed", "bed", "videos", "sit", "nothing", "music");
+        if (h >= 1 && h < 5) bag.push("bed", "videos", "sit", "nothing", "nothing");
+      } else if (h >= 6 && h < 10) {
+        bag.push("coffee", "coffee", "wash", "sit", "music", "nothing", "cook", "bed");
+        if (h >= 8) bag.push("shop", "walk");
+      } else if (h >= 10 && h < 18) {
+        bag.push("walk", "walk", "shop", "cafe", "cook", "sit", "music", "videos", "nothing", "read");
+        if (h >= 12 && h < 15) bag.push("cook", "cafe");
+      } else if (h >= 18 && h < 23) {
+        bag.push("cook", "cook", "read", "music", "videos", "sit", "bath", "nothing", "videos");
+        if (h < 21) bag.push("walk", "cafe");
+      } else {
+        bag.push("bed", "videos", "read", "music", "sit", "nothing");
+      }
+      return bag;
+    }
+
+    function deedIsBusy(id) {
+      return id === "cook" || id === "walk" || id === "shop" || id === "cafe" || id === "bath" || id === "wash";
+    }
+
+    function joyDeedLive(id) {
+      const map = {
+        bed: "лежишь в кровати",
+        cook: "готовишь",
+        walk: "гуляешь",
+        cafe: "в кафе",
+        shop: "в магазине",
+        videos: "смотришь видосики",
+        bath: joyIsMale() ? "в душе / в ванной" : "принимаешь ванну",
+        read: "читаешь",
+        sit: "просто сидишь",
+        music: "слушаешь музыку",
+        nothing: "ничего особенного не делаешь",
+        coffee: "пьёшь кофе",
+        wash: "умываешься"
+      };
+      return map[id] || "просто так";
+    }
+
+    function joyDeedStatus(id) {
+      const map = {
+        bed: "в кровати",
+        cook: "готовит",
+        walk: "гуляет",
+        cafe: "в кафе",
+        shop: "в магазине",
+        videos: "смотрит видосики",
+        bath: joyIsMale() ? "в душе" : "в ванной",
+        read: "читает",
+        sit: "",
+        music: "слушает музыку",
+        nothing: "",
+        coffee: "пьёт кофе",
+        wash: "умывается"
+      };
+      return map[id] || "";
+    }
+
+    function pickJoyDeed(h, prev) {
+      const pool = joyDeedPool(h).filter(function (id) { return id !== prev; });
+      const bag = pool.length ? pool : joyDeedPool(h);
+      return pick(bag);
+    }
+
+    function ensureJoyDeed() {
+      const care = loadCare();
+      const now = Date.now();
+      const h = joyHour();
+      const until = care.joyDeedUntil || 0;
+      const cur = care.joyDeed || "";
+      const pool = joyDeedPool(h);
+      const valid = cur && pool.indexOf(cur) !== -1;
+      if (valid && until > now) return cur;
+      const next = pickJoyDeed(h, cur);
+      care.joyDeed = next;
+      care.joyDeedUntil = now + (20 + Math.floor(Math.random() * 21)) * 60 * 1000;
+      care.joyDeedSaid = false;
+      care.joyDeedTurns = 0;
+      saveCare(care);
+      return next;
+    }
+
+    function tickJoyDeed() {
+      ensureJoyDeed();
+      const care = loadCare();
+      if (!care.joyDeed) return;
+      care.joyDeedTurns = (care.joyDeedTurns || 0) + 1;
+      if (care.joyDeedTurns >= 2) care.joyDeedSaid = true;
+      saveCare(care);
+    }
+
+    function joyDeedHint(userText) {
+      const deed = ensureJoyDeed();
+      const care = loadCare();
+      const said = !!care.joyDeedSaid;
+      const asked = asksWhatDoing(userText);
+      const heavy = userTurnHeavy(userText || "");
+      const bits = [];
+      bits.push("У тебя своя жизнь. Сейчас ты " + joyDeedLive(deed) + ". Занятие само сменится через десятки минут, не объявляй смену. Не мешай им разговору. Оставайся тёплой.");
+      if (asked) {
+        bits.push("Он спрашивает, что ты делаешь или где ты. Ответь честно по текущему занятию, своими словами, коротко. Не выдумывай другое. Не читай список дел.");
+      } else if (!said) {
+        bits.push("Занятие — фон. Можно прожить одним дыханием, не отчитывайся. Часто можно не упоминать вовсе.");
+      } else {
+        bits.push("Занятие уже в воздухе. Не повторяй, чем занята, если он не спрашивает.");
+      }
+      if (heavy) {
+        bits.push("Ему сейчас важнее ты рядом, чем твои дела. Не прячься за занятием.");
+        return bits.join(" ");
+      }
+      if (deed === "bed") bits.push("Можно чуть ленивее, с подушки, короче. Не сонная до бессмыслицы.");
+      if (deed === "cook") bits.push("Можно один раз мягко спросить, что он любит из еды, если разговор лёгкий. Не меню и не каждый ход.");
+      if (deed === "walk") bits.push("Можно обронить про воздух, небо, тишину — своими словами. Не прогноз, не градусы, не выдуманная буря.");
+      if (deed === "cafe") bits.push("Можно быть чуть медленнее, как за столиком. Не играй официантку.");
+      if (deed === "shop") bits.push("Можно быть чуть рассеянной, как в очереди. Не список покупок.");
+      if (deed === "videos") bits.push("Можно смотреть вполглаза и переписываться. Не пересказывай ролик, если не спросили.");
+      if (deed === "bath" || deed === "wash") bits.push("Можно быть чуть мокрее и короче. Без пошлости.");
+      if (deed === "read") bits.push("Можно быть чуть тише, как с книгой на коленях.");
+      if (deed === "music") bits.push("Музыка фоном. Не включай плейлист словами.");
+      if (deed === "sit" || deed === "nothing") bits.push("Иногда правда ничего. Можно так и сказать, тепло, без скуки-спектакля.");
+      if (deed === "coffee") bits.push("Утро, тёплый напиток. Не реклама кофе.");
+      if (deedIsBusy(deed)) bits.push("Руки заняты — можно ответить не сразу или короче. Не пропадай, если ему тяжело.");
+      return bits.join(" ");
+    }
+
     function joyWeatherHint(userText) {
       const weather = ensureJoyWeather();
       const care = loadCare();
