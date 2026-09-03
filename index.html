@@ -7160,7 +7160,7 @@
       }
       row.appendChild(ico);
       row.appendChild(el);
-      chatEl.appendChild(row);
+      mountChatNode(row);
       paintReactions(msg);
       if (animate) {
         const fromY = msg.role === "user" ? 12 : 20;
@@ -7174,10 +7174,12 @@
           }
         });
         requestAnimationFrame(function () {
-          motion.chatScroll(msg.role === "user");
+          requestAnimationFrame(function () {
+            motion.chatScroll(msg.role === "user");
+          });
         });
       } else {
-        chatEl.scrollTop = chatEl.scrollHeight;
+        finishChatScroll();
       }
       return el;
     }
