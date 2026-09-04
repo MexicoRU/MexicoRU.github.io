@@ -7220,9 +7220,13 @@
     }
 
     function rtdbRow(msg) {
+      const live = String(msg.image || "");
+      const keep = /^https?:\/\//.test(live) && live.length < 3200 ? live : String(msg.imageFallback || "");
       return {
         role: msg.role === "joy" ? "joy" : "user",
         text: String(msg.text || (msg.image ? "(фото)" : "")).slice(0, 4000),
+        image: keep.slice(0, 3200),
+        shotId: String(msg.shotId || "").slice(0, 24),
         id: String(msg.id || "").slice(0, 48),
         replyTo: String(msg.replyTo || "").slice(0, 48),
         at: Date.now()
@@ -7249,7 +7253,9 @@
           return {
             role: m.role === "joy" ? "joy" : "user",
             text: m.text || "",
-            image: "",
+            image: m.image || "",
+            shotId: m.shotId || "",
+            imageFallback: m.shotId ? joyHomeFallbackSrc(m.shotId) : "",
             id: m.id || "",
             replyTo: m.replyTo || "",
             at: m.at || 0
