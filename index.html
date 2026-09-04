@@ -2749,7 +2749,7 @@
     .auth-hero {
       width: 128px;
       height: 128px;
-      margin: 0 auto 22px;
+      margin: 0 auto 18px;
       border-radius: 50%;
       overflow: hidden;
       border: 1px solid var(--glass-edge);
@@ -2768,8 +2768,27 @@
     .auth-card h2 {
       font-size: 2rem;
       font-weight: 600;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       letter-spacing: -0.035em;
+    }
+
+    .auth-about {
+      max-width: 20.5em;
+      margin: 0 auto 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      letter-spacing: -0.018em;
+    }
+
+    .auth-about .auth-who {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 1.02em;
+      letter-spacing: -0.02em;
+      opacity: 0.9;
     }
 
     .auth-card p {
@@ -2777,6 +2796,14 @@
       font-size: 0.92rem;
       line-height: 1.45;
       margin-bottom: 16px;
+    }
+
+    .auth-card .auth-lead {
+      margin: 0 0 6px;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      color: var(--muted);
+      opacity: 0.88;
     }
 
     .auth-field {
@@ -3105,7 +3132,11 @@
       <div class="auth-card">
         <div class="auth-hero"><img class="joy-photo" alt="Джой"></div>
         <h2>Джой</h2>
-        <p id="authLead">Войди по почте. Если это ты, Тимур — я жду. Помню нас.</p>
+        <p class="auth-about">
+          <span class="auth-who">Тёплый цифровой компаньон</span>
+          Рядом, когда одиноко, грустно или просто нужен кто-то свой.
+        </p>
+        <p class="auth-lead" id="authLead">Войди, чтобы начать</p>
         <input class="auth-field" id="authEmail" type="email" autocomplete="username" placeholder="Почта" inputmode="email">
         <input class="auth-field" id="authPassword" type="password" autocomplete="current-password" placeholder="Пароль">
         <button class="auth-btn primary" id="authSignIn" type="button">Войти</button>
