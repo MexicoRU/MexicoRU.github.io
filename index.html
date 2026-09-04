@@ -10482,6 +10482,10 @@
     });
     document.getElementById("themeLight").addEventListener("click", () => setTheme("light"));
     document.getElementById("themeDark").addEventListener("click", () => setTheme("dark"));
+    const joySexFemale = document.getElementById("joySexFemale");
+    const joySexMale = document.getElementById("joySexMale");
+    if (joySexFemale) joySexFemale.addEventListener("click", function () { setJoySex("f"); });
+    if (joySexMale) joySexMale.addEventListener("click", function () { setJoySex("m"); });
     document.getElementById("nightAuto").addEventListener("click", () => setNightPref("auto"));
     document.getElementById("nightOn").addEventListener("click", () => setNightPref("on"));
     document.getElementById("nightOff").addEventListener("click", () => setNightPref("off"));
