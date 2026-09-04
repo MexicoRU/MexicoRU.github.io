@@ -6149,36 +6149,6 @@
         return replyPack;
       }
 
-      if (plan.kind === "busy-ack") {
-        await motion.wait(plan.delay);
-        if (gen !== state.replyGen) return null;
-        hideTyping();
-        const heard = busyHeardLine();
-        markJoyBusyAck();
-        await postJoyBurst(heard);
-        return { text: heard, hangup: false };
-      }
-
-      if (plan.kind === "busy") {
-        await motion.wait(plan.delay);
-        if (gen !== state.replyGen) return null;
-        hideTyping();
-        const line = busySoftLine();
-        markJoyBusyTold();
-        await postJoyBurst(line);
-        fetchReply();
-        await motion.wait(plan.later);
-        if (gen !== state.replyGen) return null;
-        if (!state.call) showTyping();
-        const reply = await fetchReply();
-        await motion.wait(plan.typeAfter);
-        if (gen !== state.replyGen) return null;
-        hideTyping();
-        await postJoyBurst(reply);
-        await maybeJoySharePhoto(userText, opts);
-        return { text: reply, hangup: false };
-      }
-
       if (plan.kind === "later") {
         await motion.wait(plan.readAfter);
         if (gen !== state.replyGen) return null;
