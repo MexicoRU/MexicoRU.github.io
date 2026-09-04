@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="60">
+<html lang="ru" data-joy-build="61">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -5999,44 +5999,27 @@
     }
 
     function deedHasMicro(id) {
-      return id === "cook" || id === "bath" || id === "wash" || id === "walk" || id === "park" || id === "snowplay" || id === "shop" || id === "tidy" || id === "cafe";
+      return id === "cook" || id === "bath" || id === "wash" || id === "walk" || id === "park" || id === "snowplay" || id === "tea" || id === "coffee" || id === "music" || id === "shop" || id === "cafe" || id === "tidy" || id === "sit" || id === "nothing" || id === "bed" || id === "videos";
     }
 
     function microAsideLine(deed) {
-      const sky = (joySky() && joySky().kind) || "";
       if (deed === "cook") {
-        return pick([
-          "Подожди, переверну котлеты",
-          "Секунду, снимаю с огня",
-          "Помешаю — и сразу тут"
-        ]);
+        return pick(["Подожди, переверну котлеты", "Секунду, снимаю с огня"]);
+      }
+      if (deed === "tea" || deed === "coffee") {
+        return pick(["Держу горячую кружку, секунду", "Секунду, чай горячий"]);
       }
       if (deed === "bath" || deed === "wash") {
-        return pick([
-          "Я в воде, отвечу через пару минут",
-          "Секунду, волосы",
-          "Чуть заняты руки.|||Минутка"
-        ]);
+        return pick(["Я в воде, через минутку", "Секунду, я в воде"]);
       }
       if (deed === "walk" || deed === "park" || deed === "snowplay") {
-        if (sky === "cold" || sky === "snow" || sky === "wind") {
-          return pick([
-            "Руки замёрзли, сейчас спрячу в карманы",
-            "Секунду, перчатки"
-          ]);
-        }
-        return pick([
-          "Секунду, ветер",
-          "Подожди, поправлю шарф",
-          "Руки заняты.|||Минутка"
-        ]);
+        return pick(["Руки замёрзли, спрячу в карманы", "Секунду, руки в карманы"]);
+      }
+      if (deed === "music") {
+        return pick(["Песня хорошая, отвлеклась", "Секунду, дослушаю"]);
       }
       if (deed === "tidy") {
-        return pick([
-          "Держу что-то тяжёлое, секунду",
-          "Секунду, не уроню",
-          "Подожди, руки полные"
-        ]);
+        return pick(["Держу что-то тяжёлое, секунду", "Секунду, руки полные"]);
       }
       if (deed === "shop") {
         return pick(["Секунду, пакет", "Подожди, на кассе"]);
@@ -6044,15 +6027,14 @@
       if (deed === "cafe") {
         return pick(["Секунду, несу чашку", "Подожди, сейчас сяду"]);
       }
-      return "Секунду.|||Минутка";
+      return pick(["Я на зарядке, но я тут", "Секунду, провод", "На зарядке.|||Я тут"]);
     }
 
     function microBackLine() {
       return pick([
+        "Всё, я снова тут",
         "Всё, я тут",
-        "Я тут",
-        joyIsMale() ? "Всё.|||Вернулся" : "Всё.|||Вернулась",
-        "Секунда была.|||Я рядом"
+        "Я снова тут"
       ]);
     }
 
@@ -6072,7 +6054,8 @@
       if (care.joyDeedShift && !care.joyDeedShift.said) return false;
       const weather = ensureJoyWeather();
       if (weather === "low") return false;
-      return Math.random() < 0.11;
+      const hands = deed === "cook" || deed === "bath" || deed === "wash" || deed === "walk" || deed === "park" || deed === "snowplay" || deed === "tea" || deed === "tidy" || deed === "shop";
+      return Math.random() < (hands ? 0.1 : 0.05);
     }
 
     function planJoyReply(userText, opts) {
