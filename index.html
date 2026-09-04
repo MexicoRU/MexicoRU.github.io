@@ -10866,15 +10866,12 @@
       const last = batch[batch.length - 1];
       const combined = batch.map(function (b) { return b.text || ""; }).filter(Boolean).join("\n");
       let quoted = null;
-      let bindId = last.id || "";
       for (let i = 0; i < batch.length; i++) {
-        if (batch[i].replyTo) {
-          quoted = findMessage(batch[i].replyTo);
-          bindId = batch[i].id || bindId;
-        }
+        if (batch[i].replyTo) quoted = findMessage(batch[i].replyTo);
       }
       state.replyHint = quoted || null;
-      if (bindId) state.replyBindId = bindId;
+      state.replyBindId = "";
+      state.allowReplyBind = false;
       state.burstBatch = batch.length > 1 ? batch : null;
       state.liveBeat = pickLiveBeat(combined || last.text);
       setMood(senseMood(combined || last.text));
