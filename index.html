@@ -3600,6 +3600,7 @@
         }
       })(),
       faceBusy: false,
+      allowReplyBind: false,
       reminderTimers: {},
       pendingBurst: [],
       burstTimer: 0,
@@ -11074,10 +11075,7 @@
         const quoted = state.replyTarget;
         clearReplyTarget();
         const userMsg = pushMessage("user", "", dataUrl, { replyTo: quoted ? quoted.id : "", once: once });
-        if (quoted) {
-          state.replyBindId = userMsg.id;
-          state.replyHint = quoted;
-        }
+        if (quoted) state.replyHint = quoted;
         const packed = await deliverJoyReply("", { fromPhoto: true, photoUrl: dataUrl });
         if (!packed) return;
         if (packed.silent) {
