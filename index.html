@@ -3510,7 +3510,13 @@
       editId: "",
       actionMsgId: "",
       onceShot: false,
-      joyFace: "",
+      joyFace: (function () {
+        try {
+          return localStorage.getItem("joy_face_" + (localStorage.getItem("joy_uid") || "guest")) || "";
+        } catch (_) {
+          return "";
+        }
+      })(),
       faceBusy: false
     };
 
@@ -5971,18 +5977,12 @@
     }
 
     function joySharePhotoSrc() {
-      const male = joyIsMale();
-      const list = male
-        ? [photoSrc("male"), "./icons/joy-face-male.jpg", "./icons/joy-avatar-male.jpg"]
-        : [photoSrc("female"), "./icons/joy-face.jpg", "./icons/joy-avatar.jpg", "./joy-avatar.jpg"];
-      (JOY_POSTS || []).forEach(function (p) {
-        if (p && p.src) list.push(p.src);
-      });
-      return pick(list);
+      return state.joyFace || "";
     }
 
     function maybeJoySharePhoto(userText, opts) {
       opts = opts || {};
+      if (!state.joyFace) return Promise.resolve();
       if (state.call || userTurnHeavy(userText || "")) return Promise.resolve();
       const weather = (loadCare().joyWeather) || "";
       if (weather === "busy" || weather === "low") return Promise.resolve();
