@@ -5941,34 +5941,6 @@
       }, Math.max(120, ms || 400));
     }
 
-    function joyHandsBusy() {
-      return ensureJoyWeather() === "busy" || deedIsBusy(ensureJoyDeed());
-    }
-
-    function markJoyBusyTold() {
-      const care = loadCare();
-      care.joyBusyTold = true;
-      care.joyWeatherSaid = true;
-      care.joyDeedSaid = true;
-      saveCare(care);
-    }
-
-    function markJoyBusyAck() {
-      const care = loadCare();
-      care.joyBusyAck = true;
-      care.joyBusyTold = true;
-      care.joyWeatherSaid = true;
-      saveCare(care);
-    }
-
-    function joyBusyCycle() {
-      const care = loadCare();
-      return {
-        told: !!care.joyBusyTold,
-        ack: !!care.joyBusyAck
-      };
-    }
-
     function userLetsJoyBeBusy(text) {
       const raw = String(text || "").trim();
       const t = raw.toLowerCase().replace(/ё/g, "е");
