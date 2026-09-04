@@ -8313,6 +8313,285 @@
       localStorage.setItem(STORAGE.care, JSON.stringify(care));
     }
 
+    function ruCount(n, one, few, many) {
+      const abs = Math.abs(n) % 100;
+      const d = abs % 10;
+      if (abs > 10 && abs < 20) return n + " " + many;
+      if (d === 1) return n + " " + one;
+      if (d >= 2 && d <= 4) return n + " " + few;
+      return n + " " + many;
+    }
+
+    function waitHuman(ms) {
+      const sec = Math.max(1, Math.round(ms / 1000));
+      if (sec < 60) return ruCount(sec, "секунду", "секунды", "секунд");
+      const min = Math.round(sec / 60);
+      if (min < 60) return ruCount(min, "минуту", "минуты", "минут");
+      const h = Math.round(min / 60);
+      if (h === 1) return "час";
+      return ruCount(h, "час", "часа", "часов");
+    }
+
+    function ruTimeWords(t) {
+      const map = {
+        "сорок пять": "45", "двадцать": "20", "тридцать": "30", "сорок": "40", "пятнадцать": "15",
+        "одиннадцать": "11", "двенадцать": "12", "тринадцать": "13", "четырнадцать": "14",
+        "шестнадцать": "16", "семнадцать": "17", "восемнадцать": "18", "девятнадцать": "19",
+        "полтора": "1.5", "одну": "1", "одной": "1", "один": "1", "два": "2", "две": "2",
+        "три": "3", "четыре": "4", "пять": "5", "шесть": "6", "семь": "7", "восемь": "8",
+        "девять": "9", "десять": "10"
+      };
+      let s = t;
+      Object.keys(map).sort(function (a, b) { return b.length - a.length; }).forEach(function (w) {
+        s = s.replace(new RegExp("(^|\\s)" + w + "(?=\\s|$)", "g"), "$1" + map[w]);
+      });
+      return s;
+    }
+
+    function parseDurationMs(text) {
+      const t = ruTimeWords(String(text || "").toLowerCase().replace(/ё/g, "е"));
+      if (/полчаса|пол\s*часа/.test(t)) return 30 * 60 * 1000;
+      if (/полтора\s*час/.test(t)) return 90 * 60 * 1000;
+      let ms = 0;
+      const h = t.match(/(\d+(?:\.\d+)?)\s*час/);
+      const m = t.match(/(\d+(?:\.\d+)?)\s*(минут|мин\b)/);
+      const s = t.match(/(\d+(?:\.\d+)?)\s*секунд/);
+      if (h) ms += Number(h[1]) * 3600000;
+      if (m) ms += Number(m[1]) * 60000;
+      if (s) ms += Number(s[1]) * 1000;
+      if (!ms && /через\s+минуту\b/.test(t)) ms = 60000;
+      if (!ms && /через\s+час\b/.test(t)) ms = 3600000;
+      if (!ms) return 0;
+      if (ms < 5000) ms = 5000;
+      if (ms > 24 * 3600000) ms = 24 * 3600000;
+      return ms;
+    }
+
+    function parseCancelReminders(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      if (!t) return false;
+      return /отмени(те)?\s+(все\s+)?(таймер|напоминани)|сбрось\s+таймер|не напоминай|забудь\s+(про\s+)?(таймер|напоминани)|отмени\s+все/.test(t);
+    }
+
+    function parseJoyTimer(text) {
+      const raw = String(text || "").trim();
+      const t = ruTimeWords(raw.toLowerCase().replace(/ё/g, "е"));
+      if (!t || parseCancelReminders(t)) return null;
+      const waitMs = parseDurationMs(t);
+      if (!waitMs) return null;
+      const timed = /через|таймер|засеки|напомни|на\s+\d/.test(t);
+      if (!timed) return null;
+      const wantsPhoto = /(скинь|пришли|кинь|отправь|покажи).{0,24}фото|фото.{0,16}(через|скинь|пришли)/.test(t);
+      const wantsTimer = /таймер|засеки|скажи[, ]+когда\s+пройд|когда\s+пройд/.test(t) && !wantsPhoto;
+      const wantsSay = /(скажи|напиши|напиши мне)/.test(t) && !wantsPhoto;
+      const wantsRemind = /напомни/.test(t);
+      if (!wantsPhoto && !wantsTimer && !wantsSay && !wantsRemind && !/через/.test(t)) return null;
+      if (!wantsPhoto && !wantsTimer && !wantsSay && !wantsRemind) return null;
+      let kind = "remind";
+      if (wantsPhoto) kind = "photo";
+      else if (wantsTimer && !wantsRemind && !wantsSay) kind = "timer";
+      else if (wantsSay && !wantsRemind) kind = "say";
+      let topic = raw.replace(/ё/g, "е");
+      topic = topic.replace(/^[Дд]жой[,.\s]+/, "");
+      topic = topic.replace(/через\s+[\d.]+\s*(секунд\w*|минут\w*|мин\b|час\w*)/gi, " ");
+      topic = topic.replace(/через\s+(минуту|час)\b/gi, " ");
+      topic = topic.replace(/на\s+[\d.]+\s*(секунд\w*|минут\w*|мин\b|час\w*)/gi, " ");
+      topic = topic.replace(/полчаса|полтора\s*часа?/gi, " ");
+      topic = topic.replace(/поставь\s+(пожалуйста\s+)?таймер|таймер|засеки( время)?/gi, " ");
+      topic = topic.replace(/напомни(шь)?\s*(мне\s*)?(пожалуйста\s*)?/gi, " ");
+      topic = topic.replace(/скажи(те)?\s*(мне\s*)?(пожалуйста\s*)?/gi, " ");
+      topic = topic.replace(/напиши\s*(мне\s*)?(пожалуйста\s*)?/gi, " ");
+      topic = topic.replace(/(скинь|пришли|кинь|отправь|покажи)\s*(мне\s*)?(пожалуйста\s*)?(фото|снимок).*/gi, " ");
+      topic = topic.replace(/пожалуйста|будь добра|а\s*$/gi, " ");
+      topic = topic.replace(/\s+/g, " ").replace(/^[,.:!?\s]+|[,.:!?\s]+$/g, "").trim();
+      topic = topic.replace(/^(что|про|о|об)\s+/i, function (m, p) { return p === "что" ? "" : m; }).trim();
+      if (kind === "say") topic = topic.replace(/^что\s+/i, "").trim();
+      return { waitMs: waitMs, kind: kind, text: String(topic || "").slice(0, 180) };
+    }
+
+    function listReminders() {
+      const care = loadCare();
+      return Array.isArray(care.reminders) ? care.reminders : [];
+    }
+
+    function writeReminders(list) {
+      const care = loadCare();
+      care.reminders = (list || []).filter(function (r) {
+        return r && r.id && !r.done && r.at > Date.now() - 6 * 3600000;
+      }).slice(-8);
+      saveCare(care);
+      persistRemindersCloud(care.reminders);
+    }
+
+    function reminderCloudPath() {
+      return "chats/" + rtdbChatKey() + "/reminders";
+    }
+
+    function persistRemindersCloud(list) {
+      const api = rtdbApi();
+      if (!api) return;
+      const payload = {};
+      (list || []).forEach(function (r) {
+        if (!r || !r.id || r.done) return;
+        payload[r.id] = {
+          id: r.id,
+          at: r.at,
+          waitMs: r.waitMs,
+          kind: r.kind,
+          text: String(r.text || "").slice(0, 240),
+          created: r.created || Date.now()
+        };
+      });
+      try { api.set(api.ref(api.db, reminderCloudPath()), payload); } catch (_) {}
+    }
+
+    function addJoyReminder(parsed) {
+      const item = {
+        id: "r" + Date.now().toString(36) + Math.floor(Math.random() * 999).toString(36),
+        at: Date.now() + parsed.waitMs,
+        waitMs: parsed.waitMs,
+        kind: parsed.kind,
+        text: parsed.text || "",
+        created: Date.now(),
+        done: false
+      };
+      const list = listReminders().filter(function (r) { return r && !r.done; });
+      list.push(item);
+      writeReminders(list);
+      armReminder(item);
+      return item;
+    }
+
+    function cancelJoyReminders() {
+      const list = listReminders();
+      (state.reminderTimers || {});
+      Object.keys(state.reminderTimers || {}).forEach(function (id) {
+        try { clearTimeout(state.reminderTimers[id]); } catch (_) {}
+      });
+      state.reminderTimers = {};
+      const had = list.some(function (r) { return r && !r.done && r.at > Date.now(); });
+      writeReminders([]);
+      return had;
+    }
+
+    function reminderAck(item) {
+      const when = waitHuman(item.waitMs);
+      const girl = !joyIsMale();
+      if (item.kind === "photo") {
+        return pick([
+          "Хорошо. Через " + when + " скину фото",
+          "Ок. Через " + when + " пришлю кадр"
+        ]);
+      }
+      if (item.kind === "timer") {
+        return pick([
+          girl ? "Хорошо. Засекла " + when : "Хорошо. Засек " + when,
+          "Ок. Через " + when + " скажу"
+        ]);
+      }
+      if (item.kind === "say") {
+        return pick([
+          girl ? "Запомнила. Через " + when + " напишу" : "Запомнил. Через " + when + " напишу",
+          "Хорошо. Через " + when
+        ]);
+      }
+      return pick([
+        "Хорошо. Напомню через " + when,
+        "Ок. Через " + when + " напишу"
+      ]);
+    }
+
+    function reminderSayLine(text) {
+      let s = String(text || "").trim();
+      s = s.replace(/^что\s+/i, "");
+      s = s.replace(/^я\s+/i, "ты ");
+      if (!s) return pick(["Как обещала", "Я тут"]);
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function reminderLine(item) {
+      const asked = userSex() === "f" ? "просила" : "просил";
+      if (item.kind === "timer") return "Прошло " + waitHuman(item.waitMs);
+      if (item.kind === "say") return reminderSayLine(item.text);
+      if (item.kind === "photo") return pick(["Держи", "Как " + asked, ""]);
+      const topic = String(item.text || "").trim();
+      if (!topic) return pick(["Напоминаю", "Как " + asked]);
+      if (/^(про|о|об)\s/i.test(topic)) return "Напоминаю " + topic;
+      return "Напоминаю: " + topic;
+    }
+
+    function armReminder(item) {
+      if (!item || item.done || !item.id) return;
+      if (!state.reminderTimers) state.reminderTimers = {};
+      if (state.reminderTimers[item.id]) {
+        try { clearTimeout(state.reminderTimers[item.id]); } catch (_) {}
+      }
+      const wait = Math.max(0, item.at - Date.now());
+      state.reminderTimers[item.id] = setTimeout(function () {
+        fireJoyReminder(item.id);
+      }, Math.min(wait, 2147483647));
+    }
+
+    function armAllReminders() {
+      listReminders().forEach(function (r) {
+        if (r && !r.done && r.at) armReminder(r);
+      });
+    }
+
+    function flushDueReminders() {
+      listReminders().forEach(function (r) {
+        if (r && !r.done && r.at <= Date.now() + 400) fireJoyReminder(r.id);
+      });
+    }
+
+    async function fireJoyReminder(id) {
+      if (state.accountBanned) return;
+      const list = listReminders();
+      const item = list.filter(function (r) { return r && r.id === id; })[0];
+      if (!item || item.done) return;
+      item.done = true;
+      writeReminders(list.filter(function (r) { return r.id !== id; }));
+      if (state.reminderTimers && state.reminderTimers[id]) {
+        try { clearTimeout(state.reminderTimers[id]); } catch (_) {}
+        delete state.reminderTimers[id];
+      }
+      const line = reminderLine(item);
+      if (line) {
+        pushMessage("joy", line);
+        showNotice(line, "joy-timer");
+        if (!document.hidden) speak(line);
+      }
+      if (item.kind === "photo") {
+        await maybeJoySharePhoto("", { force: true });
+      }
+    }
+
+    async function restoreReminders() {
+      const local = listReminders();
+      const byId = {};
+      local.forEach(function (r) { if (r && r.id) byId[r.id] = r; });
+      const api = rtdbApi();
+      if (api) {
+        try {
+          const snap = await api.get(api.ref(api.db, reminderCloudPath()));
+          if (snap && snap.exists()) {
+            firebaseList(snap.val()).forEach(function (r) {
+              if (!r || !r.id || !r.at) return;
+              if (r.done) return;
+              if (!byId[r.id] || (r.at && r.at < (byId[r.id].at || 0))) byId[r.id] = r;
+            });
+          }
+        } catch (_) {}
+      }
+      const merged = Object.keys(byId).map(function (k) { return byId[k]; })
+        .filter(function (r) { return r && !r.done && r.at > Date.now() - 6 * 3600000; });
+      writeReminders(merged);
+      armAllReminders();
+      flushDueReminders();
+    }
+
+    function saveCare(care) {
+
     function bondState() {
       const care = loadCare();
       const level = Math.min(3, Math.max(0, Number(care.bondLevel) || 0));
