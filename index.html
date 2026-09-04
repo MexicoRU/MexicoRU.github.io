@@ -11317,7 +11317,13 @@
       }
       scheduleFeel();
       armSilenceNudge();
-      restoreReminders();
+      await restoreReminders();
+      if (!state.reminderVis) {
+        state.reminderVis = true;
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) flushDueReminders();
+        });
+      }
     }
 
     startAuth().then(function (ok) {
