@@ -7715,28 +7715,54 @@
       if (who === "user" && i < 0) onUserReacted(msg, emoji);
     }
 
+    function messageIsSerious(raw) {
+      const t = String(raw || "").toLowerCase().replace(/ё/g, "е");
+      if (state.soul) return true;
+      const mood = senseMood(raw);
+      if (mood === "bad" || mood === "anxious" || mood === "tired") return true;
+      if (/птср|сво\b|войн|убил|похорон|смерт|больн|тревог|паник|кошмар|бессон|тоск|плак|слез|обидно|мне плохо|тяжело на душ/.test(t)) return true;
+      try {
+        if (readUserClimate().stretch === "heavy") return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function clearlyFunnyText(raw) {
+      const t = String(raw || "").toLowerCase().replace(/ё/g, "е");
+      if (!t.trim()) return false;
+      if (messageIsSerious(raw)) return false;
+      if (/не смешн|не ржу|не прикол|грустн|плохо|больно|тяжел|тоск|плач/.test(t)) return false;
+      if (/(^|[^а-яa-z])(ахах+|хахах*|лол|кек|ржунимагу|угарно|смешно|прикол)([^а-яa-z]|$)/.test(t)) return true;
+      if (/😂|🤣/.test(raw)) return true;
+      if (/\){2,}/.test(raw) && String(raw).length < 48 && senseMood(raw) !== "bad") return true;
+      return false;
+    }
+
     function joyReactKind(msg) {
       const raw = String(msg && msg.text || "");
       const t = raw.toLowerCase().replace(/ё/g, "е");
       const photo = !!(msg && msg.image);
       if (!t.trim() && !photo) return { emoji: "", sure: 0 };
+      const serious = messageIsSerious(raw);
+      const mood = senseMood(raw);
 
-      if (userTurnHeavy(raw) && !/ха+|ахах|лол|смешн|прикол|ржу/.test(t)) {
-        const mood = senseMood(raw);
-        if (mood === "bad") return { emoji: "😢", sure: 0.9 };
-        if (mood === "anxious" || mood === "tired") return { emoji: "❤️", sure: 0.82 };
+      if (clearlyFunnyText(raw) && !serious) {
+        return { emoji: "😂", sure: 0.9 };
       }
 
-      if (/(^|[^а-я])(ха+|ахах|лол|кек|ржу|угар|смешн|прикол)([^а-я]|$)|😂|🤣|😅/.test(t) || /\){2,}/.test(raw)) {
-        if (!/не смешн|не ржу|не прикол/.test(t)) return { emoji: "😂", sure: 0.92 };
+      if (serious || mood === "bad") {
+        if (mood === "bad" || /грустн|тоск|плач|слез|обидно|жаль|жалко|трогательн|ком в горле|😢|😭|🥺/.test(t)) {
+          return { emoji: "😢", sure: 0.9 };
+        }
+        return { emoji: "❤️", sure: 0.84 };
       }
 
-      if (/грустн|тоск|плач|слез|обидно|жаль|жалко|трогательн|ком в горле|сердце щемит|😢|😭|🥺/.test(t) || senseMood(raw) === "bad") {
+      if (/грустн|тоск|плач|слез|обидно|жаль|жалко|трогательн|ком в горле|сердце щемит|😢|😭|🥺/.test(t)) {
         return { emoji: "😢", sure: 0.88 };
       }
 
-      if (/горж|получилось|смогла|смог($|[^а-я])|сдал|выиграл|победил|ура($|[^а-я])|наконец[- ]то|рекорд|повысили|я крут|я молодец|прошёл|прошла|закрыл цель|глянь что|смотри что/.test(t)) {
-        return { emoji: "🔥", sure: 0.9 };
+      if (/горж|получилось|смогла|смог($|[^а-я])|сдал|выиграл|победил|ура($|[^а-я])|наконец[- ]то|рекорд|повысили|я крут|я молодец|прошёл|прошла|закрыл цель/.test(t)) {
+        return { emoji: "🔥", sure: 0.86 };
       }
 
       if (/любл|скучаю|скучал|родн|солныш|обним|целую|ты мне|мне с тобой|спасибо|благодар|хорош(ий|ая|ие) (ты|моя|мой)|милая|милый|❤️|💜|🫶|ты рядом|без тебя плохо/.test(t)) {
@@ -7744,15 +7770,14 @@
       }
 
       if (/(согласен|согласна|точно так|именно так|вот-вот|так и есть|поддерживаю|верно|аг+а|угу)/.test(t) && t.length < 80) {
-        return { emoji: "👍", sure: 0.78 };
+        return { emoji: "👍", sure: 0.76 };
       }
 
-      if (photo && t.length < 24) {
-        return { emoji: Math.random() < 0.22 ? "🔥" : "❤️", sure: 0.55 };
+      if (photo && t.length < 24 && mood !== "bad") {
+        return { emoji: "❤️", sure: 0.5 };
       }
 
-      const mood = senseMood(raw);
-      if (mood === "joy" || mood === "good") return { emoji: "❤️", sure: 0.42 };
+      if (mood === "joy" || mood === "good") return { emoji: "❤️", sure: 0.36 };
       return { emoji: "", sure: 0 };
     }
 
