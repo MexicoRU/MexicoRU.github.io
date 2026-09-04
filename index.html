@@ -5998,6 +5998,81 @@
       return false;
     }
 
+    function deedHasMicro(id) {
+      return id === "cook" || id === "bath" || id === "wash" || id === "walk" || id === "park" || id === "snowplay" || id === "shop" || id === "tidy" || id === "cafe";
+    }
+
+    function microAsideLine(deed) {
+      const sky = (joySky() && joySky().kind) || "";
+      if (deed === "cook") {
+        return pick([
+          "Подожди, переверну котлеты",
+          "Секунду, снимаю с огня",
+          "Помешаю — и сразу тут"
+        ]);
+      }
+      if (deed === "bath" || deed === "wash") {
+        return pick([
+          "Я в воде, отвечу через пару минут",
+          "Секунду, волосы",
+          "Чуть заняты руки.|||Минутка"
+        ]);
+      }
+      if (deed === "walk" || deed === "park" || deed === "snowplay") {
+        if (sky === "cold" || sky === "snow" || sky === "wind") {
+          return pick([
+            "Руки замёрзли, сейчас спрячу в карманы",
+            "Секунду, перчатки"
+          ]);
+        }
+        return pick([
+          "Секунду, ветер",
+          "Подожди, поправлю шарф",
+          "Руки заняты.|||Минутка"
+        ]);
+      }
+      if (deed === "tidy") {
+        return pick([
+          "Держу что-то тяжёлое, секунду",
+          "Секунду, не уроню",
+          "Подожди, руки полные"
+        ]);
+      }
+      if (deed === "shop") {
+        return pick(["Секунду, пакет", "Подожди, на кассе"]);
+      }
+      if (deed === "cafe") {
+        return pick(["Секунду, несу чашку", "Подожди, сейчас сяду"]);
+      }
+      return "Секунду.|||Минутка";
+    }
+
+    function microBackLine() {
+      return pick([
+        "Всё, я тут",
+        "Я тут",
+        joyIsMale() ? "Всё.|||Вернулся" : "Всё.|||Вернулась",
+        "Секунда была.|||Я рядом"
+      ]);
+    }
+
+    function canJoyMicro(userText, opts) {
+      opts = opts || {};
+      if (state.call || opts.photoUrl || opts.fromPhoto) return false;
+      if (userTurnHeavy(userText)) return false;
+      if (asksWhatDoing(userText) || asksWhyWrote(userText) || asksSky(userText)) return false;
+      if (userLetsJoyBeBusy(userText)) return false;
+      if (String(userText || "").trim().length > 160) return false;
+      const deed = ensureJoyDeed();
+      if (!deedHasMicro(deed)) return false;
+      const care = loadCare();
+      if (care.joyMicroDone) return false;
+      if (care.joyMicroAt && Date.now() - care.joyMicroAt < 18 * 60 * 1000) return false;
+      if ((care.userMsgs || 0) < 3) return false;
+      if (care.joyDeedShift && !care.joyDeedShift.said) return false;
+      return Math.random() < 0.11;
+    }
+
     function planJoyReply(userText, opts) {
       opts = opts || {};
       if (state.call) return { kind: "now", delay: 0, readAfter: 160, typeAfter: 0 };
