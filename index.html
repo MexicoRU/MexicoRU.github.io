@@ -7879,6 +7879,7 @@
       motion.wait(500 + Math.floor(Math.random() * 1600)).then(function () {
         if (state.call || state.typing) return;
         if (bondState().level >= 2) return;
+        state.allowReplyBind = true;
         state.replyBindId = targetId;
         postJoyBurst(fitJoyTalk(line));
       });
