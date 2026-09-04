@@ -3600,7 +3600,11 @@
         }
       })(),
       faceBusy: false,
-      reminderTimers: {}
+      reminderTimers: {},
+      pendingBurst: [],
+      burstTimer: 0,
+      replyBusy: false,
+      burstBatch: null
     };
 
     let joyAuth = null;
