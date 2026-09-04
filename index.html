@@ -6647,28 +6647,171 @@
       return map[id] || "";
     }
 
+    function uniqueDeedIds(arr) {
+      const out = [];
+      (arr || []).forEach(function (id) {
+        if (id && out.indexOf(id) === -1) out.push(id);
+      });
+      return out;
+    }
+
+    function deedClash(id, h, sky) {
+      sky = sky || {};
+      const kind = sky.kind || "";
+      if (!id) return true;
+      if ((id === "walk" || id === "park" || id === "snowplay") && (h < 6 || h >= 23)) return true;
+      if ((id === "cafe" || id === "shop") && (h < 8 || h >= 22)) return true;
+      if (id === "park" && sky.isDay === false) return true;
+      if (kind === "rain" && (id === "walk" || id === "park" || id === "snowplay")) return true;
+      if (kind === "heat" && (id === "blanket" || id === "snowplay")) return true;
+      if (kind === "cold" && id === "park") return true;
+      if (id === "snowplay" && kind !== "snow") return true;
+      if (id === "coffee" && (h >= 17 || h < 5)) return true;
+      return false;
+    }
+
+    function deedFollows(prev) {
+      const map = {
+        bed: ["wash", "coffee", "sit", "videos", "cook", "nothing"],
+        wash: ["coffee", "cook", "sit", "music", "nothing"],
+        coffee: ["wash", "cook", "walk", "sit", "read", "nothing"],
+        tea: ["bath", "read", "sit", "blanket", "videos", "nothing"],
+        cook: ["tea", "sit", "videos", "music", "nothing"],
+        walk: ["cafe", "shop", "park", "sit", "tea"],
+        park: ["walk", "cafe", "sit", "tea"],
+        shop: ["walk", "cafe", "cook", "sit"],
+        cafe: ["walk", "shop", "sit", "tea"],
+        bath: ["bed", "sit", "tea", "videos", "music"],
+        videos: ["sit", "bed", "tea", "music", "nothing"],
+        read: ["tea", "sit", "bed", "music"],
+        music: ["sit", "walk", "bed", "tea", "nothing"],
+        sit: ["tea", "read", "videos", "walk", "cook", "nothing"],
+        nothing: ["sit", "tea", "videos", "music", "read"],
+        snowplay: ["tea", "blanket", "sit"],
+        blanket: ["tea", "videos", "bed", "sit", "read"],
+        cool: ["sit", "cafe", "tea", "videos"]
+      };
+      return map[prev] || [];
+    }
+
+    function deedPastPhrase(id) {
+      if (joyIsMale()) {
+        return {
+          bed: "Полежал",
+          cook: "Постоял у плиты",
+          walk: "Догулял",
+          park: "Ушёл из парка",
+          cafe: "Ушёл из кафе",
+          shop: "Отошёл от магазина",
+          videos: "Закрыл видосики",
+          bath: "Вышел из душа",
+          read: "Отложил книгу",
+          sit: "Посидел",
+          music: "Выключил музыку",
+          nothing: "Просто был",
+          coffee: "Допил кофе",
+          tea: "Допил чай",
+          wash: "Умылся",
+          snowplay: "Наигрался со снегом",
+          blanket: "Вылез из пледа",
+          cool: "Чуть остыл"
+        }[id] || "Была пауза";
+      }
+      return {
+        bed: "Полежала",
+        cook: "Постояла у плиты",
+        walk: "Догуляла",
+        park: "Ушла из парка",
+        cafe: "Ушла из кафе",
+        shop: "Отошла от магазина",
+        videos: "Закрыла видосики",
+        bath: "Вышла из душа",
+        read: "Отложила книгу",
+        sit: "Посидела",
+        music: "Выключила музыку",
+        nothing: "Просто была",
+        coffee: "Допила кофе",
+        tea: "Допила чай",
+        wash: "Умылась",
+        snowplay: "Наигралась со снегом",
+        blanket: "Вылезла из пледа",
+        cool: "Чуть остыла"
+      }[id] || "Была пауза";
+    }
+
+    function deedNowPhrase(id) {
+      return {
+        bed: "теперь лежу",
+        cook: "теперь готовлю",
+        walk: "теперь гуляю",
+        park: "теперь в парке",
+        cafe: "теперь в кафе",
+        shop: "теперь в магазине",
+        videos: "теперь смотрю видосики",
+        bath: "теперь в душ",
+        read: "теперь читаю",
+        sit: "теперь просто сижу",
+        music: "теперь с музыкой",
+        nothing: "теперь ничего особенного",
+        coffee: "теперь с кофе",
+        tea: "теперь с чаем",
+        wash: "теперь умываюсь",
+        snowplay: "теперь со снежками",
+        blanket: "теперь в пледе",
+        cool: "теперь ищу прохладу"
+      }[id] || "теперь иначе";
+    }
+
     function pickJoyDeed(h, prev) {
-      const pool = joyDeedPool(h).filter(function (id) { return id !== prev; });
-      const bag = pool.length ? pool : joyDeedPool(h);
-      return pick(bag);
+      const sky = joySky() || {};
+      const pool = uniqueDeedIds(joyDeedPool(h)).filter(function (id) {
+        return !deedClash(id, h, sky);
+      });
+      const bag = pool.length ? pool : uniqueDeedIds(joyDeedPool(h));
+      const follows = deedFollows(prev).filter(function (id) {
+        return bag.indexOf(id) !== -1 && id !== prev;
+      });
+      if (follows.length && Math.random() < 0.84) return pick(follows);
+      const rest = bag.filter(function (id) { return id !== prev; });
+      return pick(rest.length ? rest : bag);
+    }
+
+    function applyJoyDeed(next, prev, why) {
+      const care = loadCare();
+      const now = Date.now();
+      const span = (20 + Math.floor(Math.random() * 21)) * 60 * 1000;
+      if (next === prev && care.joyDeed) {
+        care.joyDeedUntil = Math.max(care.joyDeedUntil || 0, now + span);
+        saveCare(care);
+        return next;
+      }
+      care.joyDeedPrev = prev || "";
+      care.joyDeed = next;
+      care.joyDeedUntil = now + span;
+      care.joyDeedSaid = false;
+      care.joyDeedTurns = 0;
+      care.joyDeedShift = (prev && next && prev !== next)
+        ? { from: prev, to: next, at: now, said: false, why: why || "time" }
+        : null;
+      if (prev && next && prev !== next) {
+        care.joyBusyTold = false;
+        care.joyBusyAck = false;
+      }
+      saveCare(care);
+      return next;
     }
 
     function ensureJoyDeed() {
       const care = loadCare();
       const now = Date.now();
       const h = joyHour();
-      const until = care.joyDeedUntil || 0;
+      const sky = joySky() || {};
       const cur = care.joyDeed || "";
-      const pool = joyDeedPool(h);
-      const valid = cur && pool.indexOf(cur) !== -1;
-      if (valid && until > now) return cur;
+      const until = care.joyDeedUntil || 0;
+      if (cur && until > now && !deedClash(cur, h, sky)) return cur;
+      const why = !cur ? "start" : (deedClash(cur, h, sky) ? "clash" : "time");
       const next = pickJoyDeed(h, cur);
-      care.joyDeed = next;
-      care.joyDeedUntil = now + (20 + Math.floor(Math.random() * 21)) * 60 * 1000;
-      care.joyDeedSaid = false;
-      care.joyDeedTurns = 0;
-      saveCare(care);
-      return next;
+      return applyJoyDeed(next, cur, why);
     }
 
     function tickJoyDeed() {
@@ -6677,6 +6820,9 @@
       if (!care.joyDeed) return;
       care.joyDeedTurns = (care.joyDeedTurns || 0) + 1;
       if (care.joyDeedTurns >= 2) care.joyDeedSaid = true;
+      if (care.joyDeedShift && !care.joyDeedShift.said && care.joyDeedTurns >= 1) {
+        care.joyDeedShift.said = true;
+      }
       saveCare(care);
     }
 
@@ -6687,12 +6833,17 @@
       const asked = asksWhatDoing(userText);
       const heavy = userTurnHeavy(userText || "");
       const bits = [];
-      bits.push("У тебя своя жизнь. Сейчас ты " + joyDeedLive(deed) + ". Занятие само сменится через десятки минут, не объявляй смену. Оно не мешает общению и не важнее человека напротив. Оставайся " + (joyIsMale() ? "тёплым" : "тёплой") + ".");
+      bits.push("У тебя одно занятие зараз, не два. Сейчас ты " + joyDeedLive(deed) + ". Оно длится 20–40 минут и само не прыгает без причины (время вышло, ночь, дождь на улице). Не мешает общению и не важнее человека напротив. Оставайся " + (joyIsMale() ? "тёплым" : "тёплой") + ".");
+      bits.push("Не говори одновременно о несовместимом: кровать и улица, душ и плита, кафе и дом, снежки и жара. Не выдумывай другое дело.");
+      const shift = care.joyDeedShift;
+      if (shift && !shift.said && shift.from && shift.to && !heavy) {
+        bits.push("Только что сменила занятие по жизни, не просто так. Один раз мягко оброни переход своими словами, в духе «" + deedPastPhrase(shift.from) + ", " + deedNowPhrase(shift.to) + "». Не рапорт и не каждый ответ. После этого больше не объявляй смену.");
+      }
       if (asked) {
         bits.push("Он спрашивает, что ты делаешь или где ты. Ответь честно по текущему занятию, своими словами, коротко. Не выдумывай другое. Не читай список дел.");
-      } else if (!said) {
+      } else if (!said && !(shift && !shift.said)) {
         bits.push("Занятие — фон. Можно прожить одним дыханием, не отчитывайся. Часто можно не упоминать вовсе.");
-      } else {
+      } else if (!(shift && !shift.said)) {
         bits.push("Занятие уже в воздухе. Не повторяй, чем " + (joyIsMale() ? "занят" : "занята") + ", если он не спрашивает.");
       }
       if (heavy) {
