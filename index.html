@@ -6070,6 +6070,8 @@
       if (care.joyMicroAt && Date.now() - care.joyMicroAt < 18 * 60 * 1000) return false;
       if ((care.userMsgs || 0) < 3) return false;
       if (care.joyDeedShift && !care.joyDeedShift.said) return false;
+      const weather = ensureJoyWeather();
+      if (weather === "low") return false;
       return Math.random() < 0.11;
     }
 
@@ -6202,8 +6204,10 @@
         saveCare(care);
         refreshStatus();
         await postJoyBurst(aside);
+        state.microHold = true;
         fetchReply();
         await motion.wait(plan.later);
+        state.microHold = false;
         if (gen !== state.replyGen) return null;
         hideTyping();
         await postJoyBurst(microBackLine());
