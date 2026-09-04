@@ -10699,6 +10699,7 @@
     loadTheme();
     applyNight();
     setInterval(applyNight, 60 * 1000);
+    syncJoySexPills();
     syncAvatar();
     if (window.speechSynthesis) {
       window.speechSynthesis.addEventListener("voiceschanged", function () {
@@ -10722,6 +10723,7 @@
       await ensureLongMemory();
       state.joyStarted = true;
       syncVoicePills();
+      syncJoySexPills();
       syncBondUI();
       setSoul(state.soul);
       renderDateList();
