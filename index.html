@@ -2962,6 +2962,18 @@
         </section>
 
         <section class="set-block">
+          <h3>Джой</h3>
+          <div class="row">
+            <span>Кто рядом</span>
+            <div class="pills">
+              <button class="pill" id="joySexFemale" type="button">Девушка</button>
+              <button class="pill" id="joySexMale" type="button">Парень</button>
+            </div>
+          </div>
+          <p class="hint">Меняется характер и обращение. Голос и память те же. Фото можно своё — в профиле.</p>
+        </section>
+
+        <section class="set-block">
           <h3>Чат</h3>
           <div class="row">
             <span>Уведомления</span>
@@ -3163,21 +3175,9 @@
       primaryApple: "joy_primary_apple_id",
       userSex: "joy_user_sex",
       pin: "joy_pin",
-      face: "joy_face"
+      face: "joy_face",
+      joySex: "joy_sex"
     };
-
-    const JOY_FACE_PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">' +
-      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0" stop-color="#f3d2c4"/><stop offset=".5" stop-color="#e3ae9a"/><stop offset="1" stop-color="#c48472"/>' +
-      '</linearGradient><radialGradient id="s" cx="36%" cy="30%" r="58%">' +
-      '<stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>' +
-      '</radialGradient></defs>' +
-      '<rect width="240" height="240" fill="url(#g)"/>' +
-      '<circle cx="88" cy="72" r="78" fill="url(#s)"/>' +
-      '<text x="120" y="148" text-anchor="middle" font-family="ui-rounded, SF Pro Rounded, -apple-system, system-ui" font-size="96" font-weight="600" fill="#fff" fill-opacity=".94">Д</text>' +
-      '</svg>'
-    );
 
     const REACT_EMOJIS = ["❤️", "😂", "😢", "👍", "🔥"];
 
