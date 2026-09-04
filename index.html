@@ -6309,17 +6309,46 @@
 
     function maybeJoySharePhoto(userText, opts) {
       opts = opts || {};
-      const asked = !!opts.force || asksHomePhoto(userText || "") || !!opts.claimed;
-      if (state.call) return Promise.resolve();
-      if (!asked && userTurnHeavy(userText || "")) return Promise.resolve();
+      opts.userText = userText || opts.userText || "";
+      return sendJoyHomePhoto(opts);
+    }
+
+    async function fetchJoyGeneratedPhoto(shot) {
+      const scene = pick(shot.scenes || [""]);
+      if (!scene) return "";
+      const url = joyPollinationsUrl(joyPhotoPrompt(scene), shot.id);
+      const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = setTimeout(function () { try { if (ctrl) ctrl.abort(); } catch (_) {} }, 14000);
+      try {
+        const res = await fetch(url, { mode: "cors", signal: ctrl ? ctrl.signal : undefined, referrerPolicy: "no-referrer" });
+        clearTimeout(timer);
+        if (!res.ok) return "";
+        const blob = await res.blob();
+        if (!blob || blob.size < 1200) return "";
+        const type = blob.type || "image/jpeg";
+        if (type && type.indexOf("text") === 0) return "";
+        const file = new File([blob], (shot.id || "joy") + ".jpg", { type: type.indexOf("image") === 0 ? type : "image/jpeg" });
+        const data = await fileToJpegDataUrl(file);
+        return data && data.indexOf("data:image") === 0 ? data : "";
+      } catch (_) {
+        try { clearTimeout(timer); } catch (__) {}
+        return "";
+      }
+    }
+
+    async function sendJoyHomePhoto(opts) {
+      opts = opts || {};
+      const asked = !!opts.force || asksHomePhoto(opts.userText || "") || !!opts.claimed;
+      if (state.call && !asked) return;
+      if (!asked && userTurnHeavy(opts.userText || "")) return;
       const care = loadCare();
       const weather = care.joyWeather || "";
-      if (!asked && weather === "low") return Promise.resolve();
+      if (!asked && weather === "low") return;
       const recent = (state.messages || []).slice(-8);
       const sheSent = recent.some(function (m) { return m.role === "joy" && m.image; });
-      if (!asked && sheSent) return Promise.resolve();
-      if (!asked && care.lastHomePhotoAt && Date.now() - care.lastHomePhotoAt < 38 * 60 * 1000) return Promise.resolve();
-      if (!asked && (care.userMsgs || 0) < 2) return Promise.resolve();
+      if (!asked && sheSent) return;
+      if (!asked && care.lastHomePhotoAt && Date.now() - care.lastHomePhotoAt < 38 * 60 * 1000) return;
+      if (!asked && (care.userMsgs || 0) < 2) return;
       let chance = 0.09;
       if (opts.fromPhoto) chance = 0.14;
       if (opts.fromFeel) chance = 0.16;
@@ -6328,23 +6357,23 @@
       if (weather === "miss") chance += 0.05;
       const deed = ensureJoyDeed();
       if (deed === "cook" || deed === "tea" || deed === "coffee" || deed === "blanket") chance += 0.06;
-      if (!asked && Math.random() > chance) return Promise.resolve();
+      if (!asked && Math.random() > chance) return;
       const shot = pickJoyHomeShot({ asked: asked }) || JOY_HOME_SHOTS[JOY_HOME_SHOTS.length - 1];
-      if (!shot) return Promise.resolve();
-      const scene = pick(shot.scenes || [""]);
-      if (!scene) return Promise.resolve();
-      const src = joyPollinationsUrl(joyPhotoPrompt(scene), shot.id);
+      if (!shot) return;
       const fallback = joyHomeFallbackSrc(shot.id);
-      const caption = pick((shot.captions || []).filter(Boolean)) || "Держи.";
-      return motion.wait(asked ? 280 : (420 + Math.floor(Math.random() * 1100))).then(function () {
-        pushMessage("joy", caption, src, { shotId: shot.id, imageFallback: fallback });
-        try {
-          const next = loadCare();
-          next.lastHomePhotoAt = Date.now();
-          next.lastHomePhotoId = shot.id;
-          saveCare(next);
-        } catch (_) {}
-      });
+      const caption = pick((shot.captions || []).filter(Boolean)) || "Держи";
+      if (asked && statusEl) statusEl.textContent = "фотографирую";
+      let src = fallback;
+      const live = await fetchJoyGeneratedPhoto(shot);
+      if (live) src = live;
+      pushMessage("joy", caption, src, { shotId: shot.id, imageFallback: fallback });
+      try {
+        const next = loadCare();
+        next.lastHomePhotoAt = Date.now();
+        next.lastHomePhotoId = shot.id;
+        saveCare(next);
+      } catch (_) {}
+      if (asked) refreshStatus();
     }
 
     async function deliverJoyReply(userText, opts) {
