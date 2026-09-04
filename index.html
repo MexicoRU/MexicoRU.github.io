@@ -8528,6 +8528,7 @@
         try { clearTimeout(state.reminderTimers[item.id]); } catch (_) {}
       }
       const wait = Math.max(0, item.at - Date.now());
+      if (wait <= 500) return;
       state.reminderTimers[item.id] = setTimeout(function () {
         fireJoyReminder(item.id);
       }, Math.min(wait, 2147483647));
@@ -10764,7 +10765,7 @@
       if (parseCancelReminders(value)) {
         const had = cancelJoyReminders();
         await postJoyBurst(had
-          ? pick(["Хорошо. Больше не буду напоминать", "Ок. Сняла"])
+          ? pick(["Хорошо. Больше не буду напоминать", joyIsMale() ? "Ок. Снял" : "Ок. Сняла"])
           : pick(["Сейчас ничего не жду", "Таймера нет"]));
         afterJoySpoke();
         return;
