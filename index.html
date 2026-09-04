@@ -9440,6 +9440,13 @@
         parts.push(himHer("Ему", "Ей", "Ему") + " сейчас легче. Можно чуть поиграть, своевольничать и иногда свой сленг, не переигрывая.");
       }
       if (!state.call) parts.push(liveBeatHint(state.liveBeat || "steady"));
+      if (!state.call) parts.push(joyThreadHint());
+      else {
+        const prevCall = lastJoyTalk();
+        if (prevCall) {
+          parts.push("Нить звонка: ты только что " + (joyIsMale() ? "сказал" : "сказала") + " «" + clipText(prevCall, 90) + "». Продолжай, не начинай заново.");
+        }
+      }
       if (!state.call) {
         const weatherBit = joyWeatherHint(lastUserText);
         if (weatherBit) parts.push(weatherBit);
