@@ -8322,13 +8322,13 @@
       return n + " " + many;
     }
 
-    function waitHuman(ms) {
+    function waitHuman(ms, past) {
       const sec = Math.max(1, Math.round(ms / 1000));
-      if (sec < 60) return ruCount(sec, "секунду", "секунды", "секунд");
+      if (sec < 60) return ruCount(sec, past ? "секунда" : "секунду", "секунды", "секунд");
       const min = Math.round(sec / 60);
-      if (min < 60) return ruCount(min, "минуту", "минуты", "минут");
+      if (min < 60) return ruCount(min, past ? "минута" : "минуту", "минуты", "минут");
       const h = Math.round(min / 60);
-      if (h === 1) return "час";
+      if (h === 1) return past ? "час" : "час";
       return ruCount(h, "час", "часа", "часов");
     }
 
@@ -8512,7 +8512,7 @@
 
     function reminderLine(item) {
       const asked = userSex() === "f" ? "просила" : "просил";
-      if (item.kind === "timer") return "Прошло " + waitHuman(item.waitMs);
+      if (item.kind === "timer") return "Прошло " + waitHuman(item.waitMs, true);
       if (item.kind === "say") return reminderSayLine(item.text);
       if (item.kind === "photo") return pick(["Держи", "Как " + asked, ""]);
       const topic = String(item.text || "").trim();
