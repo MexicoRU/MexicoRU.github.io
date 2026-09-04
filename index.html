@@ -3509,7 +3509,9 @@
       pinnedId: localStorage.getItem("joy_pin") || "",
       editId: "",
       actionMsgId: "",
-      onceShot: false
+      onceShot: false,
+      joyFace: "",
+      faceBusy: false
     };
 
     let joyAuth = null;
@@ -4058,7 +4060,9 @@
       state.joyStarted = false;
       state.archiveDigest = "";
       state.authBusy = false;
+      state.joyFace = "";
       document.body.classList.remove("primary-bond");
+      try { syncAvatar(); } catch (_) {}
     }
 
     function signOutAccount() {
