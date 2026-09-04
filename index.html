@@ -6182,6 +6182,46 @@
         return pending;
       }
 
+      if (state.call) {
+        const replyPack = extractCallHangup(await fetchReply());
+        hideTyping();
+        await postJoyBurst(replyPack.text);
+        return replyPack;
+      }
+
+      if (plan.kind === "micro") {
+        await motion.wait(plan.delay);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        const deed = ensureJoyDeed();
+        const aside = microAsideLine(deed);
+        const care = loadCare();
+        care.joyMicroAt = Date.now();
+        care.joyMicroUntil = Date.now() + (plan.later || 90000);
+        care.joyMicroDone = true;
+        saveCare(care);
+        refreshStatus();
+        await postJoyBurst(aside);
+        fetchReply();
+        await motion.wait(plan.later);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        await postJoyBurst(microBackLine());
+        try {
+          const done = loadCare();
+          done.joyMicroUntil = 0;
+          saveCare(done);
+        } catch (_) {}
+        refreshStatus();
+        if (!state.call) showTyping();
+        const reply = await fetchReply();
+        await motion.wait(plan.typeAfter);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        await postJoyBurst(reply);
+        return { text: reply, hangup: false };
+      }
+
       if (plan.kind === "later") {
         await motion.wait(plan.readAfter);
         if (gen !== state.replyGen) return null;
