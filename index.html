@@ -6849,7 +6849,8 @@
         wash: "теперь умываюсь",
         snowplay: "теперь со снежками",
         blanket: "теперь в пледе",
-        cool: "теперь ищу прохладу"
+        cool: "теперь ищу прохладу",
+        tidy: "теперь убираюсь"
       }[id] || "теперь иначе";
     }
 
@@ -6887,6 +6888,7 @@
       if (prev && next && prev !== next) {
         care.joyBusyTold = false;
         care.joyBusyAck = false;
+        care.joyMicroDone = false;
       }
       saveCare(care);
       return next;
