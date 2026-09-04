@@ -8444,6 +8444,7 @@
         };
       });
       try { api.set(api.ref(api.db, reminderCloudPath()), payload); } catch (_) {}
+      try { api.set(api.ref(api.db, learnPath() + "/reminders"), payload); } catch (_) {}
     }
 
     function addJoyReminder(parsed) {
