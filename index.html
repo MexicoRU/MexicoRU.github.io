@@ -6147,28 +6147,80 @@
       return { kind: "now", delay: 9000 + Math.floor(Math.random() * 9000), readAfter: 900 + Math.floor(Math.random() * 1800), typeAfter: 600 + Math.floor(Math.random() * 1600) };
     }
 
-    function joySharePhotoSrc() {
-      return state.joyFace || "";
+    function deedAtHome(deed) {
+      return ["cook", "tea", "coffee", "bed", "blanket", "bath", "wash", "sit", "nothing", "read", "music", "videos", "tidy"].indexOf(deed) >= 0;
+    }
+
+    function asksHomePhoto(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      if (!t) return false;
+      return /скинь\s*(фото|снимок|картинк)|пришли\s*(фото|снимок)|покажи\s*(фото|квартир|дом|комнат)|фото из дома|как у тебя дома|хочу (твое )?фото|кинь фото/.test(t);
+    }
+
+    function pickJoyHomeShot(opts) {
+      opts = opts || {};
+      const deed = ensureJoyDeed();
+      const h = joyHour();
+      const weather = (loadCare().joyWeather) || "";
+      const lastId = (loadCare().lastHomePhotoId) || "";
+      const asked = !!opts.asked;
+      if (!asked && !deedAtHome(deed)) return null;
+      const bag = [];
+      JOY_HOME_SHOTS.forEach(function (shot) {
+        const hourOk = !shot.hours || shot.hours.indexOf(h) >= 0;
+        const deedOk = shot.deeds.indexOf(deed) >= 0;
+        if (!asked && !hourOk) return;
+        if (!asked && shot.id === "cutlets" && deed !== "cook") return;
+        if (!asked && shot.id === "sunset" && (h < 16 || h > 21)) return;
+        if (!asked && shot.id === "candles" && h >= 7 && h < 19) return;
+        if (!asked && !deedOk && shot.id === "cutlets") return;
+        let w = 1;
+        if (deedOk) w += 4;
+        if (hourOk) w += 1;
+        if (shot.id === lastId) w = Math.max(1, w - 3);
+        if (weather === "tender" && (shot.id === "candles" || shot.id === "corner" || shot.id === "mug" || shot.id === "blanket")) w += 2;
+        if (weather === "miss" && (shot.id === "mug" || shot.id === "corner" || shot.id === "tea")) w += 2;
+        if (weather === "quiet" && (shot.id === "corner" || shot.id === "blanket" || shot.id === "candles")) w += 1;
+        if (asked && deedOk) w += 3;
+        for (let i = 0; i < w; i++) bag.push(shot);
+      });
+      if (!bag.length) return null;
+      return pick(bag);
     }
 
     function maybeJoySharePhoto(userText, opts) {
       opts = opts || {};
-      if (!state.joyFace) return Promise.resolve();
-      if (state.call || userTurnHeavy(userText || "")) return Promise.resolve();
-      const weather = (loadCare().joyWeather) || "";
-      if (weather === "low") return Promise.resolve();
+      const asked = asksHomePhoto(userText || "");
+      if (state.call) return Promise.resolve();
+      if (!asked && userTurnHeavy(userText || "")) return Promise.resolve();
+      const care = loadCare();
+      const weather = care.joyWeather || "";
+      if (!asked && weather === "low") return Promise.resolve();
       const recent = (state.messages || []).slice(-10);
       const sheSent = recent.some(function (m) { return m.role === "joy" && m.image; });
       if (sheSent) return Promise.resolve();
-      let chance = 0.07;
-      if (opts.fromPhoto) chance = 0.22;
+      if (!asked && care.lastHomePhotoAt && Date.now() - care.lastHomePhotoAt < 38 * 60 * 1000) return Promise.resolve();
+      if (!asked && (care.userMsgs || 0) < 2) return Promise.resolve();
+      let chance = 0.09;
+      if (opts.fromPhoto) chance = 0.14;
+      if (opts.fromFeel) chance = 0.16;
       if (weather === "tender") chance += 0.08;
-      if (weather === "even") chance += 0.02;
-      if (Math.random() > chance) return Promise.resolve();
-      const src = joySharePhotoSrc();
-      const caption = pick(["Вот я.", "Держи.", "Просто так.", "Себе.", ""]);
-      return motion.wait(380 + Math.floor(Math.random() * 900)).then(function () {
-        pushMessage("joy", caption, src);
+      if (weather === "even") chance += 0.03;
+      if (weather === "miss") chance += 0.05;
+      const deed = ensureJoyDeed();
+      if (deed === "cook" || deed === "tea" || deed === "coffee" || deed === "blanket") chance += 0.06;
+      if (!asked && Math.random() > chance) return Promise.resolve();
+      const shot = pickJoyHomeShot({ asked: asked });
+      if (!shot) return Promise.resolve();
+      const caption = pick(shot.captions);
+      return motion.wait(420 + Math.floor(Math.random() * 1100)).then(function () {
+        pushMessage("joy", caption, shot.src);
+        try {
+          const next = loadCare();
+          next.lastHomePhotoAt = Date.now();
+          next.lastHomePhotoId = shot.id;
+          saveCare(next);
+        } catch (_) {}
       });
     }
 
