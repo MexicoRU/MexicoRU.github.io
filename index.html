@@ -6537,7 +6537,7 @@
       const maxTurns = care.joyWeatherMaxTurns || 10;
       if (care.joyWeather && until > now && turns < maxTurns) return care.joyWeather;
       const awayHours = lastUserAgeMs() / 36e5;
-      const weather = pick(joyWeatherPool(awayHours, new Date().getHours()));
+      const weather = pick(joyWeatherPool(awayHours, joyHour()));
       care.joyWeather = weather;
       care.joyWeatherUntil = now + (35 + Math.floor(Math.random() * 130)) * 60 * 1000;
       care.joyWeatherTurns = 0;
