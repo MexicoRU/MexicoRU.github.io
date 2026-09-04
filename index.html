@@ -9962,14 +9962,15 @@
         await voice;
         return;
       }
-      const parts = splitJoyBursts(stripJoyPhotoClaim(text));
+      const parts = splitJoyBursts(stripJoyPhotoClaim(text).replace(/@@\d+@@/g, " "));
       if (!parts.length) return;
-      pushMessage("joy", parts[0], "", keepBind ? { replyTo: keepBind } : {});
+      const pairEach = !!(batch && batch.length >= 2 && parts.length === batch.length);
+      pushMessage("joy", parts[0], "", pairEach ? { replyTo: batch[0].id } : (keepBind ? { replyTo: keepBind } : {}));
       const voice = speak(parts.join(" "));
       const gap = (state.liveBeat === "pause" ? 380 : 0) + (state.soul ? 260 : 160) + Math.floor(Math.random() * 380);
       parts.slice(1).forEach(function (line, i) {
         motion.wait((i + 1) * gap).then(function () {
-          pushMessage("joy", line);
+          pushMessage("joy", line, "", pairEach ? { replyTo: batch[i + 1].id } : {});
         });
       });
       await voice;
