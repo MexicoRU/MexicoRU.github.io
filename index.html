@@ -6275,9 +6275,12 @@
       if (!asked && Math.random() > chance) return Promise.resolve();
       const shot = pickJoyHomeShot({ asked: asked });
       if (!shot) return Promise.resolve();
+      const scene = pick(shot.scenes || [""]);
+      if (!scene) return Promise.resolve();
+      const src = joyPollinationsUrl(joyPhotoPrompt(scene));
       const caption = pick(shot.captions);
       return motion.wait(420 + Math.floor(Math.random() * 1100)).then(function () {
-        pushMessage("joy", caption, shot.src);
+        pushMessage("joy", caption, src);
         try {
           const next = loadCare();
           next.lastHomePhotoAt = Date.now();
