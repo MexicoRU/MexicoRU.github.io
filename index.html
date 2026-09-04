@@ -3218,14 +3218,37 @@
 
     const REACT_EMOJIS = ["❤️", "😂", "😢", "👍", "🔥"];
 
+    const JOY_PHOTO_STYLE = "photo taken on iPhone, realistic, natural light, no filters";
+
     const JOY_HOME_SHOTS = [
-      { id: "cutlets", src: "icons/home/cutlets.jpg", deeds: ["cook"], hours: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], captions: ["Котлетки.", "На сковороде.", "Ужин почти.", ""] },
-      { id: "tea", src: "icons/home/tea-window.jpg", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], captions: ["У окна.", "Чай.", "Тихо.", ""] },
-      { id: "blanket", src: "icons/home/blanket.jpg", deeds: ["bed", "blanket", "read", "videos", "sit"], hours: null, captions: ["Плед.", "Кровать.", "Дома.", ""] },
-      { id: "sunset", src: "icons/home/sunset.jpg", deeds: ["sit", "tea", "coffee", "nothing", "read", "music"], hours: [16, 17, 18, 19, 20, 21], captions: ["Закат.", "Из окна.", "Смотри.", ""] },
-      { id: "candles", src: "icons/home/candles.jpg", deeds: ["sit", "nothing", "read", "music", "blanket", "tea", "bed"], hours: [19, 20, 21, 22, 23, 0, 1, 2], captions: ["Вечер.", "Свечи.", "Тихо дома.", ""] },
-      { id: "mug", src: "icons/home/mug-hands.jpg", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: null, captions: ["Кружка.", "Тепло.", "Себе.", ""] },
-      { id: "corner", src: "icons/home/corner.jpg", deeds: ["sit", "nothing", "music", "read", "videos", "blanket", "tea", "tidy"], hours: null, captions: ["Уголок.", "Дома.", "Просто так.", ""] }
+      { id: "cutlets", deeds: ["cook"], hours: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], captions: ["Котлетки.", "На сковороде.", "Ужин почти.", ""], scenes: [
+        "homemade cutlets frying in a well-used dark skillet on a small apartment stove, oil sheen, light steam, close-up of the pan",
+        "slightly messy ordinary kitchen, cutlets in a frying pan, wooden spatula, lived-in stove, casual overhead phone angle"
+      ] },
+      { id: "tea", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], captions: ["У окна.", "Чай.", "Тихо.", ""], scenes: [
+        "ceramic mug of tea on a wooden apartment windowsill, sheer curtains, quiet city rooftops out of focus, faint steam",
+        "coffee in a simple ceramic cup by the window, morning light, a book and a tiny plant on the sill, unposed"
+      ] },
+      { id: "blanket", deeds: ["bed", "blanket", "read", "videos", "sit"], hours: null, captions: ["Плед.", "Кровать.", "Дома.", ""], scenes: [
+        "rumpled cream bed with a chunky knit terracotta throw casually draped, pillow slightly dented, ordinary bedroom",
+        "unmade cozy bed, knit blanket, headphones on the nightstand, lived-in and warm, not a hotel"
+      ] },
+      { id: "sunset", deeds: ["sit", "tea", "coffee", "nothing", "read", "music"], hours: [16, 17, 18, 19, 20, 21], captions: ["Закат.", "Из окна.", "Смотри.", ""], scenes: [
+        "sunset sky seen from inside through an ordinary city apartment window, sheer curtains at the edges, wooden sill in the foreground",
+        "golden hour light through apartment glass, dusty rose and orange sky, handheld slightly crooked frame"
+      ] },
+      { id: "candles", deeds: ["sit", "nothing", "read", "music", "blanket", "tea", "bed"], hours: [19, 20, 21, 22, 23, 0, 1, 2], captions: ["Вечер.", "Свечи.", "Тихо дома.", ""], scenes: [
+        "two small lit candles on a low wooden table at night, warm amber glow, knit throw in the background, dark ordinary room",
+        "evening candles on a windowsill in a small apartment, soft flame light, cozy and quiet, not a spa"
+      ] },
+      { id: "mug", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: null, captions: ["Кружка.", "Тепло.", "Себе.", ""], scenes: [
+        "first-person iPhone snapshot of holding a ceramic mug of tea, only hands and mug, cream knit sleeve, no face anywhere",
+        "hands holding a warm coffee mug near a window, cropped at the wrists, ordinary skin, no jewelry branding, no face"
+      ] },
+      { id: "corner", deeds: ["sit", "nothing", "music", "read", "videos", "blanket", "tea", "tidy"], hours: null, captions: ["Уголок.", "Дома.", "Просто так.", ""], scenes: [
+        "cozy corner of a small apartment: low chair or floor cushion, knit throw, mug, headphones, a book, warm lamp",
+        "lived-in cozy nook, slightly messy in a human way, plant, candle, ordinary furniture, not catalog perfect"
+      ] }
     ];
 
     const JOY_POSTS = [
