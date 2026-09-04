@@ -8027,17 +8027,14 @@
         const img = document.createElement("img");
         img.alt = "";
         img.decoding = "async";
-        img.referrerPolicy = "origin";
-        const live = /pollinations\.ai/.test(msg.image);
         const fallback = msg.imageFallback || joyHomeFallbackSrc(msg.shotId);
-        if (live) img.className = "photo-wait";
+        img.className = "photo-wait";
         img.addEventListener("load", function () {
           img.classList.remove("photo-wait");
         });
         img.addEventListener("error", function () {
-          const next = fallback && img.src.indexOf(fallback) < 0 ? fallback : "";
-          if (next) {
-            img.src = next;
+          if (fallback && img.getAttribute("src") !== fallback) {
+            img.src = fallback;
             return;
           }
           img.classList.remove("photo-wait");
