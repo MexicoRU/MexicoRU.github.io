@@ -6338,6 +6338,10 @@
 
     async function sendJoyHomePhoto(opts) {
       opts = opts || {};
+      if (state.skipHomePhoto && !opts.force) {
+        state.skipHomePhoto = false;
+        return;
+      }
       const asked = !!opts.force || asksHomePhoto(opts.userText || "") || !!opts.claimed;
       if (state.call && !asked) return;
       if (!asked && userTurnHeavy(opts.userText || "")) return;
