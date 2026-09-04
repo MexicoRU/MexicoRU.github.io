@@ -9926,12 +9926,44 @@
       return parts.slice(0, 3);
     }
 
+    function parseTaggedJoyReplies(text, batch) {
+      if (!batch || batch.length < 2) return null;
+      const raw = String(text || "").trim();
+      if (!/@@\d+@@/.test(raw)) return null;
+      const chunks = raw.split(/@@(\d+)@@/);
+      const out = [];
+      const seen = {};
+      for (let i = 1; i < chunks.length; i += 2) {
+        const idx = Number(chunks[i]) - 1;
+        let line = humanize(String(chunks[i + 1] || "")).replace(/\s*\|\|\|\s*/g, " ").trim();
+        line = line.replace(/@@\d+@@/g, "").trim();
+        if (!line || idx < 0 || idx >= batch.length || seen[idx]) continue;
+        seen[idx] = true;
+        out.push({ text: line, replyTo: batch[idx].id });
+      }
+      if (out.length >= 2) return out;
+      return null;
+    }
+
     async function postJoyBurst(text) {
+      const batch = state.burstBatch;
+      const tagged = parseTaggedJoyReplies(stripJoyPhotoClaim(text), batch);
+      const keepBind = !!state.allowReplyBind && (state.replyBindId || "");
+      state.replyBindId = "";
+      state.allowReplyBind = false;
+      if (tagged && tagged.length) {
+        const voice = speak(tagged.map(function (x) { return x.text; }).join(" "));
+        const gap = (state.liveBeat === "pause" ? 380 : 0) + (state.soul ? 260 : 160) + Math.floor(Math.random() * 380);
+        for (let i = 0; i < tagged.length; i++) {
+          if (i) await motion.wait(gap);
+          pushMessage("joy", tagged[i].text, "", { replyTo: tagged[i].replyTo });
+        }
+        await voice;
+        return;
+      }
       const parts = splitJoyBursts(stripJoyPhotoClaim(text));
       if (!parts.length) return;
-      const bind = state.replyBindId || "";
-      state.replyBindId = "";
-      pushMessage("joy", parts[0], "", bind ? { replyTo: bind } : {});
+      pushMessage("joy", parts[0], "", keepBind ? { replyTo: keepBind } : {});
       const voice = speak(parts.join(" "));
       const gap = (state.liveBeat === "pause" ? 380 : 0) + (state.soul ? 260 : 160) + Math.floor(Math.random() * 380);
       parts.slice(1).forEach(function (line, i) {
