@@ -11013,34 +11013,10 @@
 
       state.liveBeat = pickLiveBeat(value);
       if (state.call) {
-        const replyPack = extractCallHangup(await getJoyReply(value));
-        hideTyping();
-        await postJoyBurst(replyPack.text);
-        markUserMessagesRead();
-        learnRememberTurn(value, replyPack.text);
-        tickJoyWeather();
-        tickJoyDeed();
-        if (replyPack.hangup) {
-          endCall(true);
-          return;
-        }
-        afterJoySpoke();
+        await runJoyTurnBatch([{ text: value, id: userMsg.id, replyTo: userMsg.replyTo || "" }]);
         return;
       }
-      bumpReplyGen();
-      const packed = await deliverJoyReply(value);
-      if (!packed) return;
-      if (packed.silent) {
-        tickJoyWeather();
-        tickJoyDeed();
-        state.replyHint = null;
-        refreshStatus();
-        return;
-      }
-      learnRememberTurn(value, packed.text);
-      tickJoyWeather();
-      tickJoyDeed();
-      afterJoySpoke();
+      queueJoyTurn(value, userMsg);
     }
 
     async function sendPhoto(file) {
