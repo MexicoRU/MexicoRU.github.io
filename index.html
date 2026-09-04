@@ -10830,7 +10830,7 @@
         hideTyping();
         afterJoySpoke();
         if (value.length < 90) return;
-        state.timerHint = "фото уже ушло";
+        state.skipHomePhoto = true;
       }
 
       state.liveBeat = pickLiveBeat(value);
