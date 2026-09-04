@@ -6244,8 +6244,10 @@
       ].join(", ");
     }
 
-    function joyPollinationsUrl(prompt) {
-      const seed = 1 + Math.floor(Math.random() * 999999);
+    function joyPollinationsUrl(prompt, shotId) {
+      const slot = { cutlets: 1, tea: 2, blanket: 3, sunset: 4, candles: 5, mug: 6, corner: 7 }[shotId] || 0;
+      const jitter = Math.floor(Math.random() * 18);
+      const seed = 40421000 + slot * 1000 + joyHour() * 12 + jitter;
       return "https://image.pollinations.ai/prompt/" + encodeURIComponent(prompt) +
         "?width=768&height=1024&nologo=true&enhance=false&seed=" + seed + "&referrer=joy-app";
     }
@@ -6308,7 +6310,7 @@
       if (!shot) return Promise.resolve();
       const scene = pick(shot.scenes || [""]);
       if (!scene) return Promise.resolve();
-      const src = joyPollinationsUrl(joyPhotoPrompt(scene));
+      const src = joyPollinationsUrl(joyPhotoPrompt(scene), shot.id);
       const caption = pick(shot.captions);
       return motion.wait(420 + Math.floor(Math.random() * 1100)).then(function () {
         pushMessage("joy", caption, src);
