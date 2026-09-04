@@ -6105,11 +6105,23 @@
         return replyPack;
       }
 
+      if (plan.kind === "busy-ack") {
+        await motion.wait(plan.delay);
+        if (gen !== state.replyGen) return null;
+        hideTyping();
+        const heard = busyHeardLine();
+        markJoyBusyAck();
+        await postJoyBurst(heard);
+        return { text: heard, hangup: false };
+      }
+
       if (plan.kind === "busy") {
         await motion.wait(plan.delay);
         if (gen !== state.replyGen) return null;
         hideTyping();
-        await postJoyBurst(busySoftLine());
+        const line = busySoftLine();
+        markJoyBusyTold();
+        await postJoyBurst(line);
         fetchReply();
         await motion.wait(plan.later);
         if (gen !== state.replyGen) return null;
