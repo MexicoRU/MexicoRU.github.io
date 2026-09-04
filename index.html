@@ -8406,6 +8406,7 @@
       topic = topic.replace(/\s+/g, " ").replace(/^[,.:!?\s]+|[,.:!?\s]+$/g, "").trim();
       topic = topic.replace(/^(что|про|о|об)\s+/i, function (m, p) { return p === "что" ? "" : m; }).trim();
       if (kind === "say") topic = topic.replace(/^что\s+/i, "").trim();
+      if (kind === "remind" && !topic) kind = "timer";
       return { waitMs: waitMs, kind: kind, text: String(topic || "").slice(0, 180) };
     }
 
