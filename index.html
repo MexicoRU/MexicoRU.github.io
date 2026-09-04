@@ -5959,19 +5959,6 @@
       return false;
     }
 
-    function busyHeardLine() {
-      const sweet = himHer("Ты милый.|||Я вернусь", "Ты милая.|||Я вернусь", "Ты милый.|||Я вернусь");
-      const got = joyIsMale() ? "Понял тебя.|||Я рядом чуть позже" : "Поняла тебя.|||Я рядом чуть позже";
-      return pick([
-        "Спасибо за понимание)",
-        sweet,
-        "Не скучай",
-        "Спасибо.|||Я вернусь",
-        fitJoyTalk("Хорошо.|||Не скучай, я скоро"),
-        got
-      ]);
-    }
-
     function planJoyReply(userText, opts) {
       opts = opts || {};
       if (state.call) return { kind: "now", delay: 0, readAfter: 160, typeAfter: 0 };
