@@ -9309,6 +9309,10 @@
         skyLine(lastUserText),
         userClimateHint(lastUserText)
       ];
+      if (state.timerHint) {
+        parts.push("Напоминание уже стоит. Не обещай ещё раз, не говори про таймер и не называй минуты. Просто ответь на остальное тепло.");
+        state.timerHint = "";
+      }
       const moodNow = senseMood(lastUserText);
       if (moodNow === "bad" || moodNow === "anxious" || moodNow === "tired") {
         parts.push("Сейчас " + himHer("ему", "ей", "человеку напротив") + " тяжело. Без своеволия, подколов, смены темы и близости. Мягко, серьёзно, рядом.");
