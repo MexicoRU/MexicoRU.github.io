@@ -2197,6 +2197,85 @@
       color: rgba(246, 236, 228, 0.7);
     }
 
+    .profile-face-wrap {
+      position: relative;
+      width: max-content;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .profile.face-open .profile-face-wrap {
+      width: 100%;
+    }
+
+    .profile-face-cam {
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      z-index: 1;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      background: #fff;
+      color: #1c1c1e;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    body.dark .profile-face-cam {
+      background: #2c2420;
+      color: #f6ece4;
+    }
+
+    .profile-face-cam svg {
+      width: 17px;
+      height: 17px;
+      display: block;
+    }
+
+    .profile.face-open .profile-face-cam,
+    .profile.face-open .profile-face-hint,
+    .profile.face-open .profile-face-actions {
+      display: none;
+    }
+
+    .profile-face-hint {
+      margin: 10px 0 0;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .profile-face-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .face-btn {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .face-btn.ghost { color: var(--muted); }
+
+    .joy-photo.is-placeholder {
+      object-position: center;
+    }
+
     .profile-back {
       position: absolute;
       top: calc(12px + env(safe-area-inset-top, 0px));
