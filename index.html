@@ -10788,6 +10788,104 @@
       if (state.call) startCallListen();
     }
 
+    function queueJoyTurn(value, userMsg) {
+      if (state.call) {
+        runJoyTurnBatch([{ text: value, id: userMsg && userMsg.id, replyTo: userMsg && userMsg.replyTo }]);
+        return;
+      }
+      state.pendingBurst = state.pendingBurst || [];
+      state.pendingBurst.push({
+        text: value,
+        id: userMsg && userMsg.id,
+        replyTo: (userMsg && userMsg.replyTo) || "",
+        at: Date.now()
+      });
+      if (state.burstTimer) clearTimeout(state.burstTimer);
+      const n = state.pendingBurst.length;
+      const wait = n === 1 ? 1200 : Math.min(2000, 800 + n * 280);
+      state.burstTimer = setTimeout(function () { flushJoyTurns(); }, wait);
+    }
+
+    async function flushJoyTurns() {
+      state.burstTimer = 0;
+      if (state.replyBusy) return;
+      const batch = (state.pendingBurst || []).slice();
+      if (!batch.length) return;
+      state.pendingBurst = [];
+      state.replyBusy = true;
+      try {
+        await runJoyTurnBatch(batch);
+      } finally {
+        state.replyBusy = false;
+        if ((state.pendingBurst || []).length) {
+          state.burstTimer = setTimeout(function () { flushJoyTurns(); }, 380);
+        }
+      }
+    }
+
+    async function runJoyTurnBatch(batch) {
+      if (!batch || !batch.length) return;
+      const last = batch[batch.length - 1];
+      const combined = batch.map(function (b) { return b.text || ""; }).filter(Boolean).join("\n");
+      let quoted = null;
+      let bindId = last.id || "";
+      for (let i = 0; i < batch.length; i++) {
+        if (batch[i].replyTo) {
+          quoted = findMessage(batch[i].replyTo);
+          bindId = batch[i].id || bindId;
+        }
+      }
+      state.replyHint = quoted || null;
+      if (bindId) state.replyBindId = bindId;
+      state.burstBatch = batch.length > 1 ? batch : null;
+      state.liveBeat = pickLiveBeat(combined || last.text);
+      setMood(senseMood(combined || last.text));
+      if (state.call) {
+        const replyPack = extractCallHangup(await getJoyReply(combined || last.text));
+        hideTyping();
+        await postJoyBurst(replyPack.text);
+        markUserMessagesRead();
+        learnRememberTurn(combined || last.text, replyPack.text);
+        tickJoyWeather();
+        tickJoyDeed();
+        state.burstBatch = null;
+        if (replyPack.hangup) {
+          endCall(true);
+          return;
+        }
+        afterJoySpokeBatch(batch);
+        return;
+      }
+      bumpReplyGen();
+      const packed = await deliverJoyReply(combined || last.text, { burst: batch });
+      state.burstBatch = null;
+      if (!packed) return;
+      if (packed.silent) {
+        tickJoyWeather();
+        tickJoyDeed();
+        state.replyHint = null;
+        refreshStatus();
+        return;
+      }
+      learnRememberTurn(combined || last.text, packed.text);
+      tickJoyWeather();
+      tickJoyDeed();
+      afterJoySpokeBatch(batch);
+    }
+
+    function afterJoySpokeBatch(batch) {
+      state.replyHint = null;
+      (batch || []).forEach(function (b, i) {
+        const msg = findMessage(b.id);
+        if (!msg) return;
+        motion.wait(520 + i * 320 + Math.floor(Math.random() * 400)).then(function () {
+          maybeJoyReact(msg);
+        });
+      });
+      armSilenceNudge();
+      if (state.call) startCallListen();
+    }
+
     async function send(text) {
       unlockAudio();
       closeEmojiPanel();
