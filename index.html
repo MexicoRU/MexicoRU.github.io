@@ -9385,6 +9385,97 @@
       return rooms + " Окно одно и то же: двор, бежевая пятиэтажка напротив, берёза, серые крыши. Интерьер не меняется — те же стены, плед, кружка, шторы. На фото меняются только ракурс, свет и небо: рассвет, полдень, закат, ночь. Иногда кидаешь живые кадры с телефона из этих же комнат, без лица и без постановки. Не пиши, что отправила фото — кадр уходит сам. Не выдумывай другой вид из окна и другой интерьер. Не обещай отправить файл. Не описывай лицо. Не говори, что фото сгенерировано.";
     }
 
+    function lastJoyTalk() {
+      const list = state.messages || [];
+      for (let i = list.length - 1; i >= 0; i--) {
+        const m = list[i];
+        if (m && m.role === "joy" && m.text && !m.deleted) {
+          return String(m.text).replace(/\s*\|\|\|\s*/g, " ").replace(/\s+/g, " ").trim();
+        }
+      }
+      return "";
+    }
+
+    function joyThreadHint() {
+      const prev = lastJoyTalk();
+      const who = joyIsMale() ? "сказал" : "сказала";
+      const bits = [
+        "Это один непрерывный диалог. Не начинай заново, не здоровайся, не теряй тему и настроение.",
+        "Не отвечай только на последнее короткое «да», «ок», «ага», «нет», если рядом есть мысль, вопрос или продолжение — держи их."
+      ];
+      if (prev) {
+        bits.push("Ты только что " + who + ": «" + clipText(prev, 180) + "». Если он отвечает на это — продолжай эту нить, не перескакивай.");
+      }
+      return bits.join(" ");
+    }
+
+    function packBurstUserTurn(batch) {
+      const prev = lastJoyTalk();
+      const who = joyIsMale() ? "сказал" : "сказала";
+      const lines = (batch || []).map(function (b, i) {
+        return (i + 1) + ". «" + String(b.text || "").replace(/\s+/g, " ").trim() + "»";
+      }).join("\n");
+      return [
+        prev ? ("Ты только что " + who + ": «" + clipText(prev, 160) + "».") : "Продолжение вашего диалога.",
+        "Дальше он написал подряд, одна нить, по порядку:",
+        lines,
+        "Ответь по всей нити: не теряй тему, не игнорируй ранние сообщения, не отвечай только на последнее."
+      ].join("\n");
+    }
+
+    function buildJoyApiHistory() {
+      const remembered = loadMemory()
+        .filter(function (m) { return m.text && (m.role === "user" || m.role === "joy"); })
+        .slice(-24)
+        .map(function (m) {
+          return { role: m.role === "joy" ? "assistant" : "user", content: m.text };
+        });
+      const live = (state.messages || [])
+        .filter(function (m) { return m.text && (m.role === "user" || m.role === "joy") && !m.deleted; })
+        .slice(-18)
+        .map(function (m) {
+          return { role: m.role === "joy" ? "assistant" : "user", content: m.text };
+        });
+      const seen = {};
+      const merged = [];
+      function add(h) {
+        if (!h || !h.content) return;
+        const key = h.role + "\0" + h.content;
+        if (seen[key]) return;
+        seen[key] = true;
+        merged.push({ role: h.role, content: h.content });
+      }
+      remembered.forEach(add);
+      live.forEach(add);
+      const history = merged.slice(state.call ? -10 : -28);
+      if (state.replyHint && state.replyHint.text) {
+        const qRole = state.replyHint.role === "joy" ? "assistant" : "user";
+        const qText = String(state.replyHint.text);
+        const has = history.some(function (h) { return h && h.content === qText; });
+        if (!has) history.splice(Math.max(0, history.length - 4), 0, { role: qRole, content: qText });
+      }
+      const folded = [];
+      for (let i = 0; i < history.length; i++) {
+        const cur = history[i];
+        const prev = folded[folded.length - 1];
+        if (prev && prev.role === cur.role) {
+          prev.content += (prev.role === "user" ? "\n" : " ") + cur.content;
+        } else {
+          folded.push({ role: cur.role, content: cur.content });
+        }
+      }
+      const batch = state.burstBatch;
+      if (batch && batch.length > 1) {
+        const pack = packBurstUserTurn(batch);
+        if (folded.length && folded[folded.length - 1].role === "user") {
+          folded[folded.length - 1].content = pack;
+        } else {
+          folded.push({ role: "user", content: pack });
+        }
+      }
+      return folded;
+    }
+
     function joyBurstHint() {
       const batch = state.burstBatch;
       if (!batch || batch.length < 2) return "";
@@ -9393,9 +9484,11 @@
       }).join(" ");
       return [
         "Он прислал несколько сообщений подряд, по порядку: " + lines,
+        "Это продолжение того же разговора, не новый чат. Читай все как одну нить вместе с твоей последней репликой.",
+        "Короткое последнее часто про предыдущее, а мысль — в ранних. Не теряйся и не отвечай только на последнее.",
         "Если суть одна (продолжение, уточнение, одно чувство, одно «и ещё») — один ответ как обычно. Можно ||| на два пузыря. Без @@, без номеров, без вида «ответ на цитату».",
-        "Если мысли разные — ответь на каждое, строго: @@1@@текст|||@@2@@текст. Номер = номер его сообщения. Внутри одного @@ не ставь |||. В тексте для человека не пиши номера и не говори «ты написал несколько сообщений».",
-        "Не путай сообщения. Не отвечай только на последнее, если мысли разные."
+        "Если мысли разные — ответь на каждое, строго: @@1@@текст|||@@2@@текст. Номер = номер его сообщения. Внутри одного @@ не ставь |||. Свяжи ответы в один разговор, не как список. В тексте для человека не пиши номера и не говори «ты написал несколько сообщений».",
+        "Не путай сообщения."
       ].join(" ");
     }
 
