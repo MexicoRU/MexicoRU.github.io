@@ -6327,8 +6327,18 @@
         if (!blob || blob.size < 1200) return "";
         const type = blob.type || "image/jpeg";
         if (type && type.indexOf("text") === 0) return "";
-        const file = new File([blob], (shot.id || "joy") + ".jpg", { type: type.indexOf("image") === 0 ? type : "image/jpeg" });
-        const data = await fileToJpegDataUrl(file);
+        let data = "";
+        try {
+          const file = new File([blob], (shot.id || "joy") + ".jpg", { type: type.indexOf("image") === 0 ? type : "image/jpeg" });
+          data = await fileToJpegDataUrl(file);
+        } catch (_) {
+          data = await new Promise(function (resolve) {
+            const r = new FileReader();
+            r.onload = function () { resolve(String(r.result || "")); };
+            r.onerror = function () { resolve(""); };
+            r.readAsDataURL(blob);
+          });
+        }
         return data && data.indexOf("data:image") === 0 ? data : "";
       } catch (_) {
         try { clearTimeout(timer); } catch (__) {}
