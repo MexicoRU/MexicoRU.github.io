@@ -4387,8 +4387,27 @@
       return STORAGE.face + "_" + (currentUid() || "guest");
     }
 
+    function joyFacePlaceholder() {
+      const male = joyIsMale();
+      const a = male ? "#d7c8ba" : "#f3d2c4";
+      const b = male ? "#9a8878" : "#e3ae9a";
+      const c = male ? "#5c534c" : "#c48472";
+      return "data:image/svg+xml," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">' +
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + a + '"/><stop offset=".5" stop-color="' + b + '"/><stop offset="1" stop-color="' + c + '"/>' +
+        '</linearGradient><radialGradient id="s" cx="36%" cy="30%" r="58%">' +
+        '<stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>' +
+        '</radialGradient></defs>' +
+        '<rect width="240" height="240" fill="url(#g)"/>' +
+        '<circle cx="88" cy="72" r="78" fill="url(#s)"/>' +
+        '<text x="120" y="148" text-anchor="middle" font-family="ui-rounded, SF Pro Rounded, -apple-system, system-ui" font-size="96" font-weight="600" fill="#fff" fill-opacity=".94">Д</text>' +
+        '</svg>'
+      );
+    }
+
     function photoSrc() {
-      return state.joyFace || JOY_FACE_PLACEHOLDER;
+      return state.joyFace || joyFacePlaceholder();
     }
 
     function cssFaceUrl(src) {
