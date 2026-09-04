@@ -8576,13 +8576,16 @@
       const api = rtdbApi();
       if (api) {
         try {
-          const snap = await api.get(api.ref(api.db, reminderCloudPath()));
-          if (snap && snap.exists()) {
-            firebaseList(snap.val()).forEach(function (r) {
-              if (!r || !r.id || !r.at) return;
-              if (r.done) return;
-              if (!byId[r.id] || (r.at && r.at < (byId[r.id].at || 0))) byId[r.id] = r;
-            });
+          const paths = [learnPath() + "/reminders", reminderCloudPath()];
+          for (let i = 0; i < paths.length; i++) {
+            const snap = await api.get(api.ref(api.db, paths[i]));
+            if (snap && snap.exists()) {
+              firebaseList(snap.val()).forEach(function (r) {
+                if (!r || !r.id || !r.at) return;
+                if (r.done) return;
+                if (!byId[r.id] || (r.at && r.at < (byId[r.id].at || Infinity))) byId[r.id] = r;
+              });
+            }
           }
         } catch (_) {}
       }
