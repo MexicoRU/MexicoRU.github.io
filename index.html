@@ -8821,7 +8821,9 @@
         const reachBit = joyReachHint(lastUserText);
         if (reachBit) parts.push(reachBit);
       }
-      if (state.replyHint && !state.call) {
+      if (state.microHold) {
+        parts.push("Ты уже попросила минуту руками отдельным сообщением. Этот ответ уйдёт, когда вернёшься. Не проси ждать снова и не повторяй про котлеты. Просто ответь на его слова.");
+      }
         const src = state.replyHint;
         const clip = quotePreview(src);
         const whose = src.role === "joy" ? "твоё прежнее сообщение" : "его сообщение";
