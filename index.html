@@ -9172,17 +9172,19 @@
     }
 
     function feelKind() {
-      const hour = new Date().getHours();
+      const hour = joyHour();
+      const part = joyDayPart();
       const care = loadCare();
       const away = care.lastVisit ? (Date.now() - care.lastVisit) / 36e5 : 0;
       const bag = [];
       if (away >= 12) {
         bag.push("miss", "miss", "miss");
       }
-      if (hour >= 5 && hour < 12) bag.push("morning", "morning", "because");
-      else if (hour >= 12 && hour < 18) bag.push("miss", "because", "because");
-      else if (hour >= 18 || hour < 2) bag.push("night", "night", "because");
-      else bag.push("because");
+      if (part === "morning") bag.push("morning", "morning", "because");
+      else if (part === "day") bag.push("miss", "because", "because");
+      else if (part === "evening") bag.push("evening", "evening", "because");
+      else bag.push("night", "night", "because");
+      if (hour >= 23 || hour < 5) bag.push("night");
       const weather = ensureJoyWeather();
       if (weather === "miss") bag.push("miss", "miss");
       if (weather === "tired" || weather === "quiet") bag.push("night", "because");
