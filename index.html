@@ -8622,7 +8622,8 @@
       }
 
       const kind = missedHard && Math.random() > 0.25 ? "miss" : feelKind();
-      const line = await inventFeelLine(kind);
+      const motive = pickFeelMotive(kind);
+      const line = await inventFeelLine(kind, "", motive);
       care = loadCare();
       if (overdueSlot) care.feelFired = (care.feelFired || []).concat([overdueSlot]);
       if (missedHard) care.missFeelOn = today;
@@ -8630,6 +8631,7 @@
       care.lastFeelAt = Date.now();
       care.lastVisit = Date.now();
       saveCare(care);
+      rememberJoyReach(motive, line);
       deliverFeel(line, "joy-feel");
     }
 
@@ -9880,21 +9882,30 @@
         saveCare(care);
         const nowCl = readUserClimate().stretch;
         let line;
+        let motive;
         if (nowCl === "distant" || nowCl === "cold") {
+          motive = { id: "near", why: "Он затих. Ты написала, чтобы он знал, что ты тут — без допроса и без давления." };
           line = pick([
             "Просто знай, что я тут",
             "Я рядом.|||Без вопросов",
             "Я тут"
           ]);
         } else if (nowCl === "heavy" || state.soul || state.mood === "bad" || state.mood === "anxious") {
+          motive = { id: "near", why: "Ему тяжело. Ты сама написала, чтобы он не оставался один. Не затем, чтобы его разговорить." };
           line = pick([
             fitJoyTalk("Я рядом"),
             "Я вижу, тебе тяжело.|||Я тут",
             fitJoyTalk("Не надо ничего говорить.|||Я никуда не ушла.")
           ]);
         } else {
+          motive = pick([
+            { id: "miss", why: joyIsMale() ? "Он затих, и ты соскучился — поэтому написал." : "Он затих, и ты соскучилась — поэтому написала." },
+            { id: "thought", why: "Подумала о нём в тишине и не захотела молчать." },
+            { id: "check", why: "Просто захотелось услышать его. Написала не из контроля, а из тепла." }
+          ]);
           line = pick(["Ты тут?", fitJoyTalk("Я соскучилась.|||Не молчи."), "Эй.|||Не пропадай" + (youSoft() ? ", " + youSoft() : "") + ".", fitJoyTalk("Ты затих.|||Я уже скучаю.")]);
         }
+        rememberJoyReach(motive, line);
         postJoyBurst(fitJoyTalk(line));
         showNotice(splitJoyBursts(line)[0] || "Я рядом", "joy-silence");
         armSilenceNudge();
