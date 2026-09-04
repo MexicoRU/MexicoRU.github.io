@@ -3021,7 +3021,7 @@
       <div class="call-lava" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <p class="call-kicker">созвон</p>
       <div class="call-mid">
-        <div class="call-face"><img class="joy-photo" src="./icons/joy-face.jpg?v=12" alt="Джой"></div>
+        <div class="call-face"><img class="joy-photo" alt="Джой"></div>
         <h2>Джой</h2>
         <p id="callLabel">на линии</p>
       </div>
@@ -3036,13 +3036,27 @@
           <button class="icon-btn profile-back" id="profileBack" type="button" title="Назад" aria-label="Закрыть профиль">
             <svg viewBox="0 0 24 24"><path d="M15 6 9 12l6 6"/></svg>
           </button>
-          <button class="profile-face" id="profileFace" type="button" aria-label="Фото Джой" aria-expanded="false">
-            <img class="joy-photo" id="profileHero" src="./icons/joy-face.jpg?v=12" alt="Джой">
-            <span class="profile-face-meta">
-              <h2>Джой</h2>
-              <p>Всегда рядом</p>
-            </span>
-          </button>
+          <div class="profile-face-wrap" id="profileFaceWrap">
+            <button class="profile-face" id="profileFace" type="button" aria-label="Фото Джой" aria-expanded="false">
+              <img class="joy-photo" id="profileHero" alt="Джой">
+              <span class="profile-face-meta">
+                <h2>Джой</h2>
+                <p>Всегда рядом</p>
+              </span>
+            </button>
+            <button type="button" class="profile-face-cam" id="faceCamBtn" aria-label="Сменить фото Джой">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4.5 8.5h2.2l1.1-2h8.4l1.1 2H19.5A1.5 1.5 0 0 1 21 10v7.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5V10a1.5 1.5 0 0 1 1.5-1.5Z"/>
+                <circle cx="12" cy="13.6" r="3.1"/>
+              </svg>
+            </button>
+          </div>
+          <p class="profile-face-hint" id="faceHint">Добавь любое фото — Джой останется собой.</p>
+          <div class="profile-face-actions">
+            <button type="button" class="face-btn" id="facePickBtn">Добавить фото</button>
+            <button type="button" class="face-btn ghost" id="faceClearBtn" hidden>Убрать</button>
+          </div>
+          <input id="faceFile" type="file" accept="image/*" hidden>
         </div>
         <div class="profile-body">
           <div class="profile-id">
@@ -3065,7 +3079,7 @@
           <svg viewBox="0 0 24 24"><path d="M15 6 9 12l6 6"/></svg>
         </button>
         <button class="media-avatar" id="mediaAvatar" type="button" aria-label="Открыть профиль Джой">
-          <img class="joy-photo" src="./icons/joy-face.jpg?v=12" alt="Джой">
+          <img class="joy-photo" alt="Джой">
         </button>
         <div>
           <h2>Медиа</h2>
