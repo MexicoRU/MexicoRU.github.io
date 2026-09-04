@@ -3453,6 +3453,7 @@
     const state = {
       userName: localStorage.getItem(STORAGE.name) || "",
       voiceGender: localStorage.getItem(STORAGE.voice) || "female",
+      joySex: localStorage.getItem("joy_sex") === "m" ? "m" : "f",
       yandexVoice: localStorage.getItem(STORAGE.yandexVoice) || "oksana",
       soul: localStorage.getItem(STORAGE.soul) === "1",
       mood: "calm",
