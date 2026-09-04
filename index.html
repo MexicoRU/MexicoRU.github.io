@@ -7063,14 +7063,14 @@
       sky = sky || {};
       const kind = sky.kind || "";
       if (!id) return true;
-      if ((id === "walk" || id === "park" || id === "snowplay") && (h < 6 || h >= 23)) return true;
+      if ((id === "walk" || id === "park" || id === "snowplay") && (h < 8 || h >= 22)) return true;
       if ((id === "cafe" || id === "shop") && (h < 8 || h >= 22)) return true;
       if (id === "park" && sky.isDay === false) return true;
       if (kind === "rain" && (id === "walk" || id === "park" || id === "snowplay")) return true;
       if (kind === "heat" && (id === "blanket" || id === "snowplay")) return true;
       if (kind === "cold" && id === "park") return true;
       if (id === "snowplay" && kind !== "snow") return true;
-      if (id === "coffee" && (h >= 17 || h < 5)) return true;
+      if (id === "coffee" && (h >= 14 || h < 5)) return true;
       return false;
     }
 
@@ -8460,8 +8460,22 @@
     }
 
     function todayKey() {
-      const d = new Date();
-      return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+      try {
+        const parts = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Europe/Moscow",
+          year: "numeric",
+          month: "numeric",
+          day: "numeric"
+        }).formatToParts(new Date());
+        const map = {};
+        parts.forEach(function (p) {
+          if (p.type !== "literal") map[p.type] = p.value;
+        });
+        return Number(map.year) + "-" + Number(map.month) + "-" + Number(map.day);
+      } catch (_) {
+        const d = new Date();
+        return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+      }
     }
 
     function loadCare() {
