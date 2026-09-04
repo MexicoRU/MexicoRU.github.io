@@ -6432,7 +6432,8 @@
         if (gen !== state.replyGen) return null;
         hideTyping();
         await postJoyBurst(reply);
-        await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(reply), claimed: joyClaimedPhoto(reply) });
+        await maybeJoySharePhoto(userText, { force: !state.skipHomePhoto && (asksHomePhoto(userText) || joyClaimedPhoto(reply)), claimed: joyClaimedPhoto(reply) });
+        state.skipHomePhoto = false;
         return { text: reply, hangup: false };
       }
 
@@ -6448,7 +6449,8 @@
         if (gen !== state.replyGen) return null;
         hideTyping();
         await postJoyBurst(reply);
-        await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(reply), claimed: joyClaimedPhoto(reply) });
+        await maybeJoySharePhoto(userText, { force: !state.skipHomePhoto && (asksHomePhoto(userText) || joyClaimedPhoto(reply)), claimed: joyClaimedPhoto(reply) });
+        state.skipHomePhoto = false;
         return { text: reply, hangup: false };
       }
 
@@ -6473,7 +6475,8 @@
       if (gen !== state.replyGen) return null;
       hideTyping();
       await postJoyBurst(packed.text);
-      await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(packed.text), claimed: joyClaimedPhoto(packed.text) });
+      await maybeJoySharePhoto(userText, { force: !state.skipHomePhoto && (asksHomePhoto(userText) || joyClaimedPhoto(packed.text)), claimed: joyClaimedPhoto(packed.text) });
+      state.skipHomePhoto = false;
       return packed;
     }
 
