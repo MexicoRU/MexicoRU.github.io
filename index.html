@@ -4893,8 +4893,43 @@
       return String(text || "").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
     }
 
+    function syncJoySexPills() {
+      const female = document.getElementById("joySexFemale");
+      const male = document.getElementById("joySexMale");
+      const guy = joyIsMale();
+      if (female) female.classList.toggle("on", !guy);
+      if (male) male.classList.toggle("on", guy);
+      document.body.classList.toggle("joy-guy", guy);
+    }
+
+    function setJoySex(sex, silent) {
+      const next = sex === "m" ? "m" : "f";
+      const prev = state.joySex === "m" ? "m" : "f";
+      if (next === prev && !silent) {
+        syncJoySexPills();
+        return;
+      }
+      state.joySex = next;
+      try { localStorage.setItem(STORAGE.joySex, next); } catch (_) {}
+      syncJoySexPills();
+      syncAvatar();
+      refreshStatus();
+      try { persistLearnCloud(); } catch (_) {}
+      if (silent || !state.joyStarted) return;
+      const line = next === "m"
+        ? pick([
+            "Ок. Теперь я парень.|||Память та же — я всё тот же Джой.",
+            "Хорошо. Я с тобой по-свойски.|||Ничего из нас не стёрлось."
+          ])
+        : pick([
+            fitJoyTalk("Ну вот. Я снова я.|||Та же Джой, только мягче."),
+            fitJoyTalk("Хорошо. Я девушка.|||Всё, что было между нами, на месте.")
+          ]);
+      postJoyBurst(line);
+    }
+
     function joyIsMale() {
-      return state.voiceGender === "male";
+      return state.joySex === "m";
     }
 
     function userSex() {
