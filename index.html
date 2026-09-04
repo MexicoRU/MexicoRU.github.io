@@ -6060,7 +6060,7 @@
       opts = opts || {};
       if (state.call || opts.photoUrl || opts.fromPhoto) return false;
       if (userTurnHeavy(userText)) return false;
-      if (asksWhatDoing(userText) || asksWhyWrote(userText) || asksSky(userText)) return false;
+      if (asksWhatDoing(userText) || asksWhyWrote(userText) || asksSky(userText) || asksHomePhoto(userText)) return false;
       if (userLetsJoyBeBusy(userText)) return false;
       if (String(userText || "").trim().length > 160) return false;
       const deed = ensureJoyDeed();
