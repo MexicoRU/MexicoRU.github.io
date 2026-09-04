@@ -5221,6 +5221,7 @@
           persona: state.learn.persona,
           moods: (state.learn.moods || []).slice(-40),
           userSex: userSex() || "",
+          joySex: state.joySex === "m" ? "m" : "f",
           at: state.learn.at,
           v: 2
         });
@@ -5306,6 +5307,12 @@
         if (!state.isPrimary && snap && snap.exists()) {
           const rawSex = snap.val() && snap.val().userSex;
           if ((rawSex === "m" || rawSex === "f") && !state.userSex) lockUserSex(rawSex, true);
+        }
+        if (snap && snap.exists()) {
+          const rawJoy = snap.val() && snap.val().joySex;
+          if ((rawJoy === "m" || rawJoy === "f") && !localStorage.getItem(STORAGE.joySex)) {
+            setJoySex(rawJoy, true);
+          }
         }
       } catch (_) {}
       cacheLearnLocal();
