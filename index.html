@@ -7254,11 +7254,12 @@
 
     function rtdbRow(msg) {
       const live = String(msg.image || "");
-      const keep = /^https?:\/\//.test(live) && live.length < 3200 ? live : String(msg.imageFallback || "");
+      const local = String(msg.imageFallback || "");
+      const keep = live.indexOf("icons/") === 0 ? live : local;
       return {
         role: msg.role === "joy" ? "joy" : "user",
         text: String(msg.text || (msg.image ? "(фото)" : "")).slice(0, 4000),
-        image: keep.slice(0, 3200),
+        image: keep.slice(0, 400),
         shotId: String(msg.shotId || "").slice(0, 24),
         id: String(msg.id || "").slice(0, 48),
         replyTo: String(msg.replyTo || "").slice(0, 48),
@@ -10819,6 +10820,13 @@
           return;
         }
         state.timerHint = ack;
+      } else if (asksHomePhoto(value)) {
+        if (!state.call) showTyping();
+        await sendJoyHomePhoto({ force: true, userText: value });
+        hideTyping();
+        afterJoySpoke();
+        if (value.length < 90) return;
+        state.timerHint = "фото уже ушло";
       }
 
       state.liveBeat = pickLiveBeat(value);
