@@ -6395,7 +6395,7 @@
         if (gen !== state.replyGen) return null;
         hideTyping();
         await postJoyBurst(reply);
-        await maybeJoySharePhoto(userText, opts);
+        await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(reply), claimed: joyClaimedPhoto(reply) });
         return { text: reply, hangup: false };
       }
 
