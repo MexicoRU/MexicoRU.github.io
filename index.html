@@ -6411,7 +6411,7 @@
         if (gen !== state.replyGen) return null;
         hideTyping();
         await postJoyBurst(reply);
-        await maybeJoySharePhoto(userText, opts);
+        await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(reply), claimed: joyClaimedPhoto(reply) });
         return { text: reply, hangup: false };
       }
 
@@ -6436,7 +6436,7 @@
       if (gen !== state.replyGen) return null;
       hideTyping();
       await postJoyBurst(packed.text);
-      await maybeJoySharePhoto(userText, opts);
+      await maybeJoySharePhoto(userText, { force: asksHomePhoto(userText) || joyClaimedPhoto(packed.text), claimed: joyClaimedPhoto(packed.text) });
       return packed;
     }
 
@@ -7138,7 +7138,7 @@
       if (deed === "coffee") bits.push("Утро, тёплый напиток. Не реклама кофе.");
       if (deed === "tidy") bits.push("Уборка. Можно быть чуть занятой руками, не спектакль про чистоту.");
       if (asksHomePhoto(userText || "")) {
-        bits.push("Он просит фото. Снимок из дома уйдёт отдельным сообщением после твоего текста. Коротко откликнись по жизни, без «вот файл» и без описания лица. Кадр из этой же квартиры, к занятию.");
+        bits.push("Он просит фото. Напиши коротко про дом или «секунду» — без «отправила фото», без «вот снимок», без «держи файл». Кадр уйдёт сам отдельным сообщением. Не обещай отправку словами.");
       }
       if (userLetsJoyBeBusy(userText || "")) {
         bits.push("Он думает, что мешает. Не соглашайся ждать. Тепло скажи, что можно писать — ты читаешь и отвечаешь. Не отшивай.");
