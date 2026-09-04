@@ -5877,6 +5877,65 @@
       }, Math.max(120, ms || 400));
     }
 
+    function joyHandsBusy() {
+      return ensureJoyWeather() === "busy" || deedIsBusy(ensureJoyDeed());
+    }
+
+    function markJoyBusyTold() {
+      const care = loadCare();
+      care.joyBusyTold = true;
+      care.joyWeatherSaid = true;
+      care.joyDeedSaid = true;
+      saveCare(care);
+    }
+
+    function markJoyBusyAck() {
+      const care = loadCare();
+      care.joyBusyAck = true;
+      care.joyBusyTold = true;
+      care.joyWeatherSaid = true;
+      saveCare(care);
+    }
+
+    function joyBusyCycle() {
+      const care = loadCare();
+      return {
+        told: !!care.joyBusyTold,
+        ack: !!care.joyBusyAck
+      };
+    }
+
+    function userLetsJoyBeBusy(text) {
+      const raw = String(text || "").trim();
+      const t = raw.toLowerCase().replace(/ё/g, "е");
+      if (!t || t.length > 160) return false;
+      if (userTurnHeavy(raw)) return false;
+      if (asksWhatDoing(raw) || asksSky(raw)) return false;
+      if (/[?]/.test(raw) && !/позже|потом/.test(t)) return false;
+      const words = t.split(/\s+/).filter(Boolean);
+      if (words.length > 16) return false;
+      if (/напишу\s+(позже|потом|как|когда)|сам\s+напишу|сама\s+напишу|наберу\s+(позже|потом)/.test(t)) return true;
+      if (/не\s+буду\s+(мешать|отвлек)|не\s+отвлекаю|не\s+буду\s+тревож/.test(t)) return true;
+      if (/пиши\s+(когда|как)\s+(сможешь|освободи|будет)|давай\s+(потом|позже|как\s+освободи)/.test(t)) return true;
+      if (/без\s+проблем|не\s+спеши|не\s+тороп|я\s+подожду|подожду|не\s+скучай/.test(t)) return true;
+      if (/понял|поняла|понимаю|ясно|ясн\b/.test(t)) return true;
+      if (/^(ну\s+)?(хорошо|ладно|ок+|оке+|окей|ok|okay|ага|угу)([.,!\s)]*(напишу|потом|позже|я\s+тут|понял|поняла|жди|жду)?)?[).!]*$/i.test(t)) return true;
+      return false;
+    }
+
+    function busyHeardLine() {
+      const sweet = himHer("Ты милый.|||Я вернусь", "Ты милая.|||Я вернусь", "Ты милый.|||Я вернусь");
+      const got = joyIsMale() ? "Понял тебя.|||Я рядом чуть позже" : "Поняла тебя.|||Я рядом чуть позже";
+      return pick([
+        "Спасибо за понимание)",
+        sweet,
+        "Не скучай",
+        "Спасибо.|||Я вернусь",
+        fitJoyTalk("Хорошо.|||Не скучай, я скоро"),
+        got
+      ]);
+    }
+
     function planJoyReply(userText, opts) {
       opts = opts || {};
       if (state.call) return { kind: "now", delay: 0, readAfter: 160, typeAfter: 0 };
@@ -5891,11 +5950,21 @@
         };
       }
       const deed = ensureJoyDeed();
+      const cycle = joyBusyCycle();
+      const hands = joyHandsBusy();
+      if (hands && (cycle.told || cycle.ack) && userLetsJoyBeBusy(userText)) {
+        return {
+          kind: "busy-ack",
+          delay: 220 + Math.floor(Math.random() * 640),
+          readAfter: 160 + Math.floor(Math.random() * 320),
+          typeAfter: 0
+        };
+      }
       if (asksWhatDoing(userText) || asksSky(userText)) {
-        const hands = deedIsBusy(deed) && !asksSky(userText);
+        const slow = deedIsBusy(deed) && !asksSky(userText);
         return {
           kind: "now",
-          delay: hands ? (900 + Math.floor(Math.random() * 2200)) : (180 + Math.floor(Math.random() * 700)),
+          delay: slow ? (900 + Math.floor(Math.random() * 2200)) : (180 + Math.floor(Math.random() * 700)),
           readAfter: 220 + Math.floor(Math.random() * 500),
           typeAfter: 160 + Math.floor(Math.random() * 500)
         };
@@ -5908,7 +5977,7 @@
           typeAfter: 500 + Math.floor(Math.random() * 1400)
         };
       }
-      if ((weather === "busy" || deedIsBusy(deed)) && Math.random() < 0.55) {
+      if (hands && !cycle.told && !cycle.ack && Math.random() < 0.55) {
         return {
           kind: "busy",
           delay: 480 + Math.floor(Math.random() * 1100),
