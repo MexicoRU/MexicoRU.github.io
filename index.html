@@ -5960,7 +5960,7 @@
           typeAfter: 0
         };
       }
-      if (asksWhatDoing(userText) || asksSky(userText)) {
+      if (asksWhyWrote(userText) || asksWhatDoing(userText) || asksSky(userText)) {
         const slow = deedIsBusy(deed) && !asksSky(userText);
         return {
           kind: "now",
@@ -6464,9 +6464,12 @@
         care.skySaid = false;
         saveCare(care);
         if (prev && prev !== kind) {
-          care.joyDeedUntil = 0;
-          saveCare(care);
-          ensureJoyDeed();
+          const curDeed = care.joyDeed || "";
+          if (curDeed && deedClash(curDeed, joyHour(), care.sky)) {
+            care.joyDeedUntil = 0;
+            saveCare(care);
+            ensureJoyDeed();
+          }
         }
         syncCityUI();
         refreshStatus();
