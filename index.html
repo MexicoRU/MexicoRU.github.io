@@ -4106,6 +4106,7 @@
         return false;
       }
       hideAuthGates();
+      if (state.joyStarted) loadJoyFace();
       return true;
     }
 
@@ -4374,41 +4375,187 @@
       setNightPref(nightWanted() ? "off" : "on");
     }
 
-    function photoSrc(kind) {
-      const file = kind === "male" ? "icons/joy-face-male.jpg" : "icons/joy-face.jpg";
-      const src = file + "?v=12";
-      try {
-        return new URL(src, document.baseURI).href;
-      } catch (_) {
-        return "./" + src;
-      }
+    function faceLocalKey() {
+      return STORAGE.face + "_" + (currentUid() || "guest");
+    }
+
+    function photoSrc() {
+      return state.joyFace || JOY_FACE_PLACEHOLDER;
+    }
+
+    function cssFaceUrl(src) {
+      return "url(\"" + String(src || "").replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\")";
     }
 
     function bindImgFallback(img) {
       if (!img || img.dataset.fbBound === "1") return;
       img.dataset.fbBound = "1";
       img.addEventListener("error", function () {
-        const step = Number(img.dataset.fb || "0");
-        if (step >= 3) return;
-        const wantMale = /male/.test(img.getAttribute("src") || "") || state.voiceGender === "male";
-        const next = wantMale
-          ? ["./icons/joy-face-male.jpg", "./icons/joy-avatar-male.jpg", "./icons/apple-touch-icon.png"]
-          : ["./icons/joy-face.jpg", "./icons/joy-avatar.jpg", "./icons/apple-touch-icon.png"];
-        img.dataset.fb = String(step + 1);
-        img.src = next[Math.min(step, next.length - 1)];
+        if (img.dataset.faceFail === "1") return;
+        img.dataset.faceFail = "1";
+        img.classList.add("is-placeholder");
+        img.src = JOY_FACE_PLACEHOLDER;
       });
     }
 
+    function syncFaceUI() {
+      const has = !!state.joyFace;
+      const pick = document.getElementById("facePickBtn");
+      const clear = document.getElementById("faceClearBtn");
+      const hint = document.getElementById("faceHint");
+      const cam = document.getElementById("faceCamBtn");
+      if (pick) {
+        pick.textContent = has ? "Сменить фото" : "Добавить фото";
+        pick.disabled = !!state.faceBusy;
+      }
+      if (clear) {
+        clear.hidden = !has;
+        clear.disabled = !!state.faceBusy;
+      }
+      if (cam) cam.disabled = !!state.faceBusy;
+      if (hint && !state.faceBusy) {
+        hint.textContent = has
+          ? "Нажми на фото, чтобы увеличить. Камера — сменить."
+          : "Добавь любое фото — Джой останется собой.";
+      }
+    }
+
     function syncAvatar() {
-      const src = photoSrc(state.voiceGender);
-      const face = src.split("?")[0];
-      document.documentElement.style.setProperty("--joy-face", "url(\"" + face + "\")");
+      const src = photoSrc();
+      const empty = !state.joyFace;
+      document.documentElement.style.setProperty("--joy-face", cssFaceUrl(src));
+      document.body.classList.toggle("has-joy-face", !empty);
       document.querySelectorAll(".joy-photo").forEach(function (img) {
         bindImgFallback(img);
+        img.classList.toggle("is-placeholder", empty);
         if (img.getAttribute("src") === src) return;
-        img.dataset.fb = "0";
+        img.removeAttribute("data-face-fail");
         img.src = src;
       });
+      syncFaceUI();
+    }
+
+    function ensureStorage() {
+      if (!window.firebase || !firebase.storage) return null;
+      try {
+        const app = firebaseAppByName("joyApp", firebaseConfig);
+        return firebase.storage(app);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const parts = String(dataUrl || "").split(",");
+      const mime = ((parts[0] || "").match(/:(.*?);/) || [])[1] || "image/jpeg";
+      const bin = atob(parts[1] || "");
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+
+    function rememberFaceLocal(url) {
+      try {
+        localStorage.setItem(faceLocalKey(), url || "");
+      } catch (_) {
+        try { localStorage.removeItem(faceLocalKey()); } catch (e) {}
+      }
+    }
+
+    async function persistJoyFace(dataUrl) {
+      state.joyFace = dataUrl;
+      rememberFaceLocal(dataUrl);
+      syncAvatar();
+      const uid = currentUid();
+      if (!uid) return;
+      let remote = dataUrl;
+      try {
+        const storage = ensureStorage();
+        if (storage) {
+          const ref = storage.ref("faces/" + uid + "/joy.jpg");
+          await ref.put(dataUrlToBlob(dataUrl), { contentType: "image/jpeg" });
+          remote = await ref.getDownloadURL();
+          state.joyFace = remote;
+          rememberFaceLocal(remote);
+          syncAvatar();
+        }
+      } catch (_) {}
+      try {
+        const api = rtdbApi();
+        if (api) {
+          await api.set(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"), {
+            url: remote,
+            at: Date.now()
+          });
+        }
+      } catch (_) {}
+    }
+
+    async function loadJoyFace() {
+      try {
+        const local = localStorage.getItem(faceLocalKey()) || "";
+        if (local && local !== state.joyFace) {
+          state.joyFace = local;
+          syncAvatar();
+        }
+      } catch (_) {}
+      const api = rtdbApi();
+      if (!api || !currentUid()) return;
+      try {
+        const snap = await api.get(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"));
+        const data = snap && typeof snap.val === "function" ? snap.val() : null;
+        const url = data && (data.url || data.data) ? String(data.url || data.data) : "";
+        if (url && url !== state.joyFace) {
+          state.joyFace = url;
+          rememberFaceLocal(url.indexOf("http") === 0 ? url : url);
+          syncAvatar();
+        }
+      } catch (_) {}
+    }
+
+    function pickJoyFace() {
+      const input = document.getElementById("faceFile");
+      if (input) input.click();
+    }
+
+    async function onJoyFaceFile(e) {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      const hint = document.getElementById("faceHint");
+      if (!isImageFile(file)) {
+        if (hint) hint.textContent = "Нужно фото.";
+        return;
+      }
+      state.faceBusy = true;
+      if (hint) hint.textContent = "Сохраняю…";
+      syncFaceUI();
+      try {
+        const raw = await fileToJpegDataUrl(file);
+        const url = await shrinkImageDataUrl(raw, 800, 0.84);
+        await persistJoyFace(url);
+        if (hint) hint.textContent = "Готово. Джой как была — тёплая.";
+      } catch (_) {
+        if (hint) hint.textContent = "Не получилось загрузить. Попробуй ещё раз.";
+      }
+      state.faceBusy = false;
+      syncFaceUI();
+    }
+
+    async function clearJoyFace() {
+      state.joyFace = "";
+      try { localStorage.removeItem(faceLocalKey()); } catch (_) {}
+      syncAvatar();
+      const uid = currentUid();
+      if (!uid) return;
+      try {
+        const api = rtdbApi();
+        if (api) await api.set(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"), null);
+      } catch (_) {}
+      try {
+        const storage = ensureStorage();
+        if (storage) await storage.ref("faces/" + uid + "/joy.jpg").delete();
+      } catch (_) {}
     }
 
     function renderJoyPosts() {
