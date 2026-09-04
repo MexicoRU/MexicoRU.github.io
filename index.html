@@ -6021,47 +6021,6 @@
       return { kind: "now", delay: 9000 + Math.floor(Math.random() * 9000), readAfter: 900 + Math.floor(Math.random() * 1800), typeAfter: 600 + Math.floor(Math.random() * 1600) };
     }
 
-    function busySoftLine() {
-      const deed = ensureJoyDeed();
-      if (deed === "cook") {
-        return pick([
-          "Я у плиты.|||Напишу",
-          "Секунду, готовлю.|||Не пропадай",
-          fitJoyTalk("Я с кастрюлей.|||Сейчас вернусь")
-        ]);
-      }
-      if (deed === "walk") {
-        return pick(["Я на улице.|||Секунду", "Гуляю.|||Напишу чуть позже"]);
-      }
-      if (deed === "shop") {
-        return pick(["Я в магазине.|||Напишу", "Секунду, выбираю.|||Я тут"]);
-      }
-      if (deed === "cafe") {
-        return pick([
-          "Я в кафе.|||Секунду",
-          fitJoyTalk("Чуть занята столиком.|||Напишу")
-        ]);
-      }
-      if (deed === "bath" || deed === "wash") {
-        return pick([
-          fitJoyTalk("Я в воде.|||Напишу"),
-          "Секунду.|||Я тут, не исчезай"
-        ]);
-      }
-      if (joyIsMale()) {
-        return pick([
-          "Я чуть занят.|||Напишу, не пропадай.",
-          "Секунду, я тут.|||Чуть занят своим.",
-          "Я на связи.|||Только чуть занят, ладно?"
-        ]);
-      }
-      return pick([
-        "Я чуть занята.|||Напишу, не пропадай.",
-        "Секунду, я тут.|||Чуть занята своим.",
-        "Я на связи.|||Только чуть занята, ладно?"
-      ]);
-    }
-
     function joySharePhotoSrc() {
       return state.joyFace || "";
     }
