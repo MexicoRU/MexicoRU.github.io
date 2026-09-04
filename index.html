@@ -4510,16 +4510,22 @@
       } catch (_) {}
       const api = rtdbApi();
       if (!api || !currentUid()) return;
-      try {
-        const snap = await api.get(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"));
-        const data = snap && typeof snap.val === "function" ? snap.val() : null;
-        const url = data && (data.url || data.data) ? String(data.url || data.data) : "";
-        if (url && url !== state.joyFace) {
-          state.joyFace = url;
-          rememberFaceLocal(url.indexOf("http") === 0 ? url : url);
-          syncAvatar();
+      const key = rtdbChatKey();
+      async function readFace(path) {
+        try {
+          const snap = await api.get(api.ref(api.db, path));
+          const data = snap && typeof snap.val === "function" ? snap.val() : null;
+          return data && (data.url || data.data) ? String(data.url || data.data) : "";
+        } catch (_) {
+          return "";
         }
-      } catch (_) {}
+      }
+      const url = (await readFace("chats/" + key + "/face")) || (await readFace("memory/faces/" + key));
+      if (url && url !== state.joyFace) {
+        state.joyFace = url;
+        rememberFaceLocal(url);
+        syncAvatar();
+      }
     }
 
     function pickJoyFace() {
@@ -4559,7 +4565,11 @@
       if (!uid) return;
       try {
         const api = rtdbApi();
-        if (api) await api.set(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"), null);
+        if (api) {
+          const key = rtdbChatKey();
+          try { await api.set(api.ref(api.db, "chats/" + key + "/face"), null); } catch (_) {}
+          try { await api.set(api.ref(api.db, "memory/faces/" + key), null); } catch (_) {}
+        }
       } catch (_) {}
       try {
         const storage = ensureStorage();
