@@ -8561,12 +8561,14 @@
 
       if (dueDates.length && care.dateOn !== today) {
         const names = dueDates.map(d => d.title).join(" и ");
-        const line = await inventFeelLine("date", names);
+        const motive = pickFeelMotive("date", names);
+        const line = await inventFeelLine("date", names, motive);
         care = loadCare();
         care.dateOn = today;
         care.lastFeelAt = Date.now();
         care.lastVisit = Date.now();
         saveCare(care);
+        rememberJoyReach(motive, line);
         deliverFeel(line, "joy-date");
         return;
       }
@@ -8574,12 +8576,14 @@
       const eveDates = datesTomorrow();
       if (eveDates.length && care.eveOn !== today) {
         const names = eveDates.map(function (d) { return d.title; }).join(" и ");
-        const line = await inventFeelLine("eve", names);
+        const motive = pickFeelMotive("eve", names);
+        const line = await inventFeelLine("eve", names, motive);
         care = loadCare();
         care.eveOn = today;
         care.lastFeelAt = Date.now();
         care.lastVisit = Date.now();
         saveCare(care);
+        rememberJoyReach(motive, line);
         deliverFeel(line, "joy-eve");
         return;
       }
