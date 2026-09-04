@@ -10940,7 +10940,6 @@
       const quoted = state.replyTarget;
       clearReplyTarget();
       const userMsg = pushMessage("user", value, "", quoted ? { replyTo: quoted.id } : {});
-      if (quoted) state.replyBindId = userMsg.id;
       learnObserveUser(value);
       if (asksGeo(value)) requestJoyGeo();
 
