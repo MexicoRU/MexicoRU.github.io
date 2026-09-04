@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-joy-build="55">
+<html lang="ru" data-joy-build="56">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -6232,6 +6232,15 @@
       else if (h >= 10 && h < 18) band = "день";
       else if (h >= 18 && h < 23) band = "вечер";
       return "Реальное время сейчас " + hh + ":" + mm + ", " + days[d.getDay()] + ", " + band + ". Живи этим часом. Ночью не гуляй и не сиди в кафе. Около двух ночи скорее кровать, видосики или просто не спится. Не путай утро с ночью.";
+    }
+
+    function asksWhyWrote(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      if (!t) return false;
+      if (/почему\s+(ты\s+)?(так\s+)?(написал|написала|пишет|пишешь)|зачем\s+(ты\s+)?(написал|написала|пишет|пишешь)/.test(t)) return true;
+      if (/с\s+чего\s+(это|вдруг)|ты\s+чего\s+(это\s+)?(написал|написала)|что\s+случилось|куда\s+это\s+ты/.test(t)) return true;
+      if (/почему\s+(вдруг|сейчас|первая|первым)|зачем\s+(вдруг|сейчас)|ты\s+первая/.test(t)) return true;
+      return false;
     }
 
     function asksWhatDoing(text) {
