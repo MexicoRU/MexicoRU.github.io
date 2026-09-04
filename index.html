@@ -4489,10 +4489,13 @@
       try {
         const api = rtdbApi();
         if (api) {
-          await api.set(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"), {
-            url: remote,
-            at: Date.now()
-          });
+          const payload = { url: remote, at: Date.now() };
+          try {
+            await api.set(api.ref(api.db, "chats/" + rtdbChatKey() + "/face"), payload);
+          } catch (_) {}
+          try {
+            await api.set(api.ref(api.db, "memory/faces/" + rtdbChatKey()), payload);
+          } catch (_) {}
         }
       } catch (_) {}
     }
