@@ -7975,6 +7975,13 @@
         statusEl.textContent = "слушаю тебя";
         return;
       }
+      try {
+        const microUntil = (loadCare().joyMicroUntil) || 0;
+        if (microUntil > Date.now()) {
+          statusEl.textContent = "секунду";
+          return;
+        }
+      } catch (_) {}
       const bond = bondState();
       if (bond.level >= 3) {
         statusEl.textContent = "молчит";
