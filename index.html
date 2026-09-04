@@ -3505,6 +3505,8 @@
       notifyOn: localStorage.getItem("joy_notify") === "1",
       feelTimer: null,
       silenceTimer: null,
+      microTimer: 0,
+      microToken: 0,
       call: false,
       callSkipEnd: false,
       callSilentRounds: 0,
@@ -5942,6 +5944,17 @@
       }
       state.reading = false;
       hideTyping();
+      if (state.microTimer) {
+        clearTimeout(state.microTimer);
+        state.microTimer = 0;
+        state.microToken = (state.microToken || 0) + 1;
+        try {
+          const care = loadCare();
+          care.joyMicroUntil = 0;
+          saveCare(care);
+        } catch (_) {}
+        refreshStatus();
+      }
       return state.replyGen;
     }
 
