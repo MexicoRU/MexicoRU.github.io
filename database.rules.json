@@ -9,6 +9,10 @@
         "face": {
           ".read": true,
           ".write": true
+        },
+        "reminders": {
+          ".read": true,
+          ".write": true
         }
       }
     },
