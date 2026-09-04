@@ -3220,34 +3220,47 @@
 
     const JOY_PHOTO_STYLE = "photo taken on iPhone, realistic, natural light, no filters";
 
+    const JOY_HOME_SET = [
+      "always the exact same real apartment, never a different interior, never a different city view",
+      "small lived-in one-bedroom, warm modest minimalism",
+      "cream plaster walls, faint hairline crack near the upper-right window corner",
+      "light oak floorboards, simple light-oak furniture",
+      "THE SAME window in every photo: white painted wooden frame, wide light-oak sill, cream sheer curtains hanging a little uneven on the right side",
+      "THE SAME view through that window: fourth floor, quiet courtyard, beige five-story brick building across, one birch tree with thin branches, grey tin rooftops, one distant TV antenna, no sea, no mountains, no skyscrapers, no glass towers",
+      "same terracotta chunky knit throw, same white ceramic mug with a tiny chip on the rim, same small pothos in a terracotta pot on the sill, same black over-ear headphones, two small beige pillar candles",
+      "kitchen of this same flat: cream tile backsplash, old white gas stove, well-used dark skillet",
+      "bedroom of this same flat: low bed with cream rumpled linen, the window is on the adjacent wall",
+      "same small warm paper table lamp"
+    ].join(", ");
+
     const JOY_HOME_SHOTS = [
       { id: "cutlets", deeds: ["cook"], hours: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], captions: ["Котлетки.", "На сковороде.", "Ужин почти.", ""], scenes: [
-        "homemade cutlets frying in a well-used dark skillet on a small apartment stove, oil sheen, light steam, close-up of the pan",
-        "slightly messy ordinary kitchen, cutlets in a frying pan, wooden spatula, lived-in stove, casual overhead phone angle"
+        "close handheld shot of homemade cutlets frying in the well-used dark skillet on this apartment's old white gas stove, the same courtyard window softly out of focus to the left",
+        "slightly higher phone angle over the same stove, cutlets in the same skillet, cream backsplash, same birch and beige brick faintly visible through the same window"
       ] },
       { id: "tea", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], captions: ["У окна.", "Чай.", "Тихо.", ""], scenes: [
-        "ceramic mug of tea on a wooden apartment windowsill, sheer curtains, quiet city rooftops out of focus, faint steam",
-        "coffee in a simple ceramic cup by the window, morning light, a book and a tiny plant on the sill, unposed"
+        "the chipped white ceramic mug of tea on this same light-oak windowsill, cream sheer curtains on the right, pothos pot, the same courtyard and beige brick building outside",
+        "coffee in the same chipped white mug on the same sill, book corner, same birch tree beyond the glass, unposed slightly crooked phone frame"
       ] },
       { id: "blanket", deeds: ["bed", "blanket", "read", "videos", "sit"], hours: null, captions: ["Плед.", "Кровать.", "Дома.", ""], scenes: [
-        "rumpled cream bed with a chunky knit terracotta throw casually draped, pillow slightly dented, ordinary bedroom",
-        "unmade cozy bed, knit blanket, headphones on the nightstand, lived-in and warm, not a hotel"
+        "this same cream rumpled bed with the terracotta chunky knit throw draped, dented pillow, black headphones on the nightstand, the same courtyard window in the background",
+        "from the foot of the same bed toward the same window, terracotta throw, cream walls, same beige brick building and birch outside"
       ] },
       { id: "sunset", deeds: ["sit", "tea", "coffee", "nothing", "read", "music"], hours: [16, 17, 18, 19, 20, 21], captions: ["Закат.", "Из окна.", "Смотри.", ""], scenes: [
-        "sunset sky seen from inside through an ordinary city apartment window, sheer curtains at the edges, wooden sill in the foreground",
-        "golden hour light through apartment glass, dusty rose and orange sky, handheld slightly crooked frame"
+        "shot through this same white-framed apartment window, wooden sill in the foreground, cream sheers at the right, the same courtyard and beige brick building under the current sky",
+        "handheld slightly tilted frame of that same window, same birch tree and grey tin rooftops, sky is the only thing that changed"
       ] },
       { id: "candles", deeds: ["sit", "nothing", "read", "music", "blanket", "tea", "bed"], hours: [19, 20, 21, 22, 23, 0, 1, 2], captions: ["Вечер.", "Свечи.", "Тихо дома.", ""], scenes: [
-        "two small lit candles on a low wooden table at night, warm amber glow, knit throw in the background, dark ordinary room",
-        "evening candles on a windowsill in a small apartment, soft flame light, cozy and quiet, not a spa"
+        "the two beige pillar candles lit on the low light-oak table of this same room, terracotta throw behind, the same courtyard window dark in the background",
+        "candles on this same light-oak windowsill, cream sheers, same beige brick building with a couple of yellow windows across the courtyard"
       ] },
       { id: "mug", deeds: ["tea", "coffee", "sit", "read", "nothing"], hours: null, captions: ["Кружка.", "Тепло.", "Себе.", ""], scenes: [
-        "first-person iPhone snapshot of holding a ceramic mug of tea, only hands and mug, cream knit sleeve, no face anywhere",
-        "hands holding a warm coffee mug near a window, cropped at the wrists, ordinary skin, no jewelry branding, no face"
+        "first-person snapshot holding the same chipped white ceramic mug, cream knit sleeve, the same courtyard window and beige brick building behind the mug, no face",
+        "hands and the same mug near this same sill, pothos pot, same birch outside, cropped at the wrists, no face"
       ] },
       { id: "corner", deeds: ["sit", "nothing", "music", "read", "videos", "blanket", "tea", "tidy"], hours: null, captions: ["Уголок.", "Дома.", "Просто так.", ""], scenes: [
-        "cozy corner of a small apartment: low chair or floor cushion, knit throw, mug, headphones, a book, warm lamp",
-        "lived-in cozy nook, slightly messy in a human way, plant, candle, ordinary furniture, not catalog perfect"
+        "this same cozy corner: low light-oak chair, terracotta throw, chipped mug, black headphones, book, paper lamp, the same courtyard window to the side",
+        "from the doorway of this same room toward the window-corner, same furniture, same cream walls, same beige brick building outside"
       ] }
     ];
 
@@ -6187,28 +6200,44 @@
     }
 
     function joyHomeLook() {
-      return "ordinary small cozy apartment, lived-in warm minimalism, cream walls, simple wooden furniture, sheer curtains, terracotta knit throw, ceramic mug, not luxury, not hotel, not interior magazine";
+      return JOY_HOME_SET;
+    }
+
+    function joyWindowSky() {
+      const h = joyHour();
+      const place = "outside the same courtyard window: same beige five-story brick building, same birch tree, same grey tin rooftops";
+      if (h >= 5 && h < 8) return place + ", dawn sky pale pink and grey, cool early light";
+      if (h >= 8 && h < 11) return place + ", morning sky soft blue with thin clouds, clear daylight";
+      if (h >= 11 && h < 16) return place + ", noon sky pale bright blue, a few white clouds, hard daylight";
+      if (h >= 16 && h < 19) return place + ", late-day sky warm gold to rose, sunset beginning behind the same rooftops";
+      if (h >= 19 && h < 22) return place + ", evening sky deep orange then dusty violet, sunset afterglow on the same brick facade";
+      return place + ", night sky dark blue, two yellow windows lit in the building across, birch as a silhouette";
     }
 
     function joyPhotoLight() {
       const h = joyHour();
-      if (h >= 6 && h < 11) return "soft morning daylight through the window";
-      if (h >= 11 && h < 16) return "soft natural daytime light";
-      if (h >= 16 && h < 20) return "warm evening light, gentle golden hour";
-      return "soft evening indoor lamp light";
+      if (h >= 5 && h < 8) return "cool dawn light coming only from that same window";
+      if (h >= 8 && h < 11) return "soft morning daylight from that same window";
+      if (h >= 11 && h < 16) return "bright noon daylight from that same window";
+      if (h >= 16 && h < 19) return "warm golden late-day light from that same window";
+      if (h >= 19 && h < 22) return "sunset glow from that same window, lamps still off or dim";
+      return "dim night interior, paper lamp and candlelight, the same window showing night courtyard";
     }
 
     function joyPhotoPrompt(scene) {
-      const hands = /hands|holding a/.test(scene);
+      const hands = /hands|holding a|first-person/.test(scene);
       const subject = hands
         ? "first-person still life, only hands and objects, crop below the neck, no face, no head, no portrait"
         : "still life of objects only, empty room, no person, no woman, no man, no girl, no face, no portrait, no silhouette";
       return [
+        "same apartment continuity, identical interior every shot",
+        joyHomeLook(),
         subject,
         "candid unposed iPhone snapshot, slightly imperfect framing, amateur, natural",
         scene,
-        joyHomeLook(),
         joyPhotoLight(),
+        joyWindowSky(),
+        "do not invent a new window view, do not change the furniture, do not change wall color, only angle and sky/light may differ",
         "not studio, not stock photo, not cinematic grade, not posed product shot",
         JOY_PHOTO_STYLE
       ].join(", ");
