@@ -6185,7 +6185,37 @@
     function asksHomePhoto(text) {
       const t = String(text || "").toLowerCase().replace(/ё/g, "е");
       if (!t) return false;
-      return /скинь\s*(фото|снимок|картинк)|пришли\s*(фото|снимок)|покажи\s*(фото|квартир|дом|комнат)|фото из дома|как у тебя дома|хочу (твое )?фото|кинь фото/.test(t);
+      if (/(скинь|пришли|отправь|кинь|покажи|дай)\s*.{0,24}(фото|снимок|картинк|кадр)/.test(t)) return true;
+      if (/(фото|снимок|картинк|кадр)\s*.{0,16}(скинь|пришли|отправь|кинь|покажи|можно|хочу)/.test(t)) return true;
+      if (/хочу (твое |твоё )?(фото|снимок)|кинь фото|фото из дома|как у тебя дома|покажи (квартир|комнат|окно|кровать|кухн)|сфоткай/.test(t)) return true;
+      return false;
+    }
+
+    function joyClaimedPhoto(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      return /отправ(ила|ляю)|скин(ула|у)|вот (мое |моё )?(фото|снимок)|держи (фото|снимок)|прикреп(ила|ляю)|кинула (фото|снимок)|сейчас скину|щас скину|вот кадр/.test(t);
+    }
+
+    function stripJoyPhotoClaim(text) {
+      return String(text || "").split(/\s*\|\|\|\s*/).filter(function (part) {
+        const t = part.toLowerCase().replace(/ё/g, "е").trim();
+        if (!t) return false;
+        if (t.length < 90 && /отправ(ила|ляю).{0,24}(фото|снимок)|скин(ула|у).{0,24}(фото|снимок)|вот (мое |моё )?(фото|снимок)|держи (фото|снимок)|прикреп|кинула (фото|снимок)|сейчас скину|щас скину/.test(t)) return false;
+        return true;
+      }).join("|||");
+    }
+
+    function joyHomeFallbackSrc(id) {
+      const map = {
+        cutlets: "icons/home/cutlets.jpg",
+        tea: "icons/home/tea-window.jpg",
+        blanket: "icons/home/blanket.jpg",
+        sunset: "icons/home/sunset.jpg",
+        candles: "icons/home/candles.jpg",
+        mug: "icons/home/mug-hands.jpg",
+        corner: "icons/home/corner.jpg"
+      };
+      return map[id] || "icons/home/corner.jpg";
     }
 
     function joyHomeLook() {
@@ -6275,15 +6305,15 @@
 
     function maybeJoySharePhoto(userText, opts) {
       opts = opts || {};
-      const asked = asksHomePhoto(userText || "");
+      const asked = !!opts.force || asksHomePhoto(userText || "") || !!opts.claimed;
       if (state.call) return Promise.resolve();
       if (!asked && userTurnHeavy(userText || "")) return Promise.resolve();
       const care = loadCare();
       const weather = care.joyWeather || "";
       if (!asked && weather === "low") return Promise.resolve();
-      const recent = (state.messages || []).slice(-10);
+      const recent = (state.messages || []).slice(-8);
       const sheSent = recent.some(function (m) { return m.role === "joy" && m.image; });
-      if (sheSent) return Promise.resolve();
+      if (!asked && sheSent) return Promise.resolve();
       if (!asked && care.lastHomePhotoAt && Date.now() - care.lastHomePhotoAt < 38 * 60 * 1000) return Promise.resolve();
       if (!asked && (care.userMsgs || 0) < 2) return Promise.resolve();
       let chance = 0.09;
@@ -6295,14 +6325,15 @@
       const deed = ensureJoyDeed();
       if (deed === "cook" || deed === "tea" || deed === "coffee" || deed === "blanket") chance += 0.06;
       if (!asked && Math.random() > chance) return Promise.resolve();
-      const shot = pickJoyHomeShot({ asked: asked });
+      const shot = pickJoyHomeShot({ asked: asked }) || JOY_HOME_SHOTS[JOY_HOME_SHOTS.length - 1];
       if (!shot) return Promise.resolve();
       const scene = pick(shot.scenes || [""]);
       if (!scene) return Promise.resolve();
       const src = joyPollinationsUrl(joyPhotoPrompt(scene), shot.id);
-      const caption = pick(shot.captions);
-      return motion.wait(420 + Math.floor(Math.random() * 1100)).then(function () {
-        pushMessage("joy", caption, src);
+      const fallback = joyHomeFallbackSrc(shot.id);
+      const caption = pick((shot.captions || []).filter(Boolean)) || "Держи.";
+      return motion.wait(asked ? 280 : (420 + Math.floor(Math.random() * 1100))).then(function () {
+        pushMessage("joy", caption, src, { shotId: shot.id, imageFallback: fallback });
         try {
           const next = loadCare();
           next.lastHomePhotoAt = Date.now();
