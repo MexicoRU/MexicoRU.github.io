@@ -6774,11 +6774,12 @@
         videos: ["sit", "bed", "tea", "music", "nothing"],
         read: ["tea", "sit", "bed", "music"],
         music: ["sit", "walk", "bed", "tea", "nothing"],
-        sit: ["tea", "read", "videos", "walk", "cook", "nothing"],
+        sit: ["tea", "read", "videos", "walk", "cook", "nothing", "tidy"],
         nothing: ["sit", "tea", "videos", "music", "read"],
         snowplay: ["tea", "blanket", "sit"],
         blanket: ["tea", "videos", "bed", "sit", "read"],
-        cool: ["sit", "cafe", "tea", "videos"]
+        cool: ["sit", "cafe", "tea", "videos"],
+        tidy: ["sit", "tea", "videos", "nothing", "cook"]
       };
       return map[prev] || [];
     }
