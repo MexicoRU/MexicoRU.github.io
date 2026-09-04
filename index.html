@@ -6014,21 +6014,10 @@
         };
       }
       const deed = ensureJoyDeed();
-      const cycle = joyBusyCycle();
-      const hands = joyHandsBusy();
-      if (hands && (cycle.told || cycle.ack) && userLetsJoyBeBusy(userText)) {
-        return {
-          kind: "busy-ack",
-          delay: 220 + Math.floor(Math.random() * 640),
-          readAfter: 160 + Math.floor(Math.random() * 320),
-          typeAfter: 0
-        };
-      }
       if (asksWhyWrote(userText) || asksWhatDoing(userText) || asksSky(userText)) {
-        const slow = deedIsBusy(deed) && !asksSky(userText);
         return {
           kind: "now",
-          delay: slow ? (900 + Math.floor(Math.random() * 2200)) : (180 + Math.floor(Math.random() * 700)),
+          delay: 180 + Math.floor(Math.random() * 700),
           readAfter: 220 + Math.floor(Math.random() * 500),
           typeAfter: 160 + Math.floor(Math.random() * 500)
         };
@@ -6039,15 +6028,6 @@
           delay: 22000 + Math.floor(Math.random() * 90000),
           readAfter: 2800 + Math.floor(Math.random() * 7000),
           typeAfter: 500 + Math.floor(Math.random() * 1400)
-        };
-      }
-      if (hands && !cycle.told && !cycle.ack && Math.random() < 0.55) {
-        return {
-          kind: "busy",
-          delay: 480 + Math.floor(Math.random() * 1100),
-          later: 14000 + Math.floor(Math.random() * 36000),
-          readAfter: 380 + Math.floor(Math.random() * 900),
-          typeAfter: 400 + Math.floor(Math.random() * 1000)
         };
       }
       const asked = /\?/.test(String(userText || ""));
