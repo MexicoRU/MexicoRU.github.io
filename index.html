@@ -9513,6 +9513,12 @@
         .slice(-16)
         .map(m => ({ role: m.role === "joy" ? "assistant" : "user", content: m.text }));
       const history = remembered.concat(live).slice(state.call ? -10 : -28);
+      if (state.replyHint && state.replyHint.text) {
+        const qRole = state.replyHint.role === "joy" ? "assistant" : "user";
+        const qText = String(state.replyHint.text);
+        const has = history.some(function (h) { return h && h.content === qText; });
+        if (!has) history.splice(Math.max(0, history.length - 4), 0, { role: qRole, content: qText });
+      }
 
       try {
         const res = await fetch("https://api.deepseek.com/chat/completions", {
