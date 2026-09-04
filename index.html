@@ -6187,7 +6187,7 @@
     }
 
     function joyHomeLook() {
-      return "ordinary small apartment of a young woman, cozy lived-in warm minimalism, cream walls, simple wooden furniture, sheer curtains, terracotta knit throw, ceramic mug, not luxury, not hotel, not interior magazine";
+      return "ordinary small cozy apartment, lived-in warm minimalism, cream walls, simple wooden furniture, sheer curtains, terracotta knit throw, ceramic mug, not luxury, not hotel, not interior magazine";
     }
 
     function joyPhotoLight() {
@@ -6199,15 +6199,16 @@
     }
 
     function joyPhotoPrompt(scene) {
-      const noBody = /hands|holding a/.test(scene)
-        ? "no face, no head, no identity"
-        : "no people, no face, empty of persons";
+      const hands = /hands|holding a/.test(scene);
+      const subject = hands
+        ? "first-person still life, only hands and objects, crop below the neck, no face, no head, no portrait"
+        : "still life of objects only, empty room, no person, no woman, no man, no girl, no face, no portrait, no silhouette";
       return [
-        "candid unposed snapshot from a real phone, slightly imperfect framing, amateur, natural",
+        subject,
+        "candid unposed iPhone snapshot, slightly imperfect framing, amateur, natural",
         scene,
         joyHomeLook(),
         joyPhotoLight(),
-        noBody,
         "not studio, not stock photo, not cinematic grade, not posed product shot",
         JOY_PHOTO_STYLE
       ].join(", ");
