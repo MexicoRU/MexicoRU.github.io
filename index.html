@@ -9609,23 +9609,8 @@
 
     async function getJoyReply(text) {
       const hits = (state.call && !wantsPastMemory(text)) ? [] : recallLongMemory(text);
-      const remembered = loadMemory()
-        .filter(function (m) { return m.text && (m.role === "user" || m.role === "joy"); })
-        .slice(-24)
-        .map(function (m) {
-          return { role: m.role === "joy" ? "assistant" : "user", content: m.text };
-        });
-      const live = state.messages
-        .filter(m => m.text && (m.role === "user" || m.role === "joy"))
-        .slice(-16)
-        .map(m => ({ role: m.role === "joy" ? "assistant" : "user", content: m.text }));
-      const history = remembered.concat(live).slice(state.call ? -10 : -28);
-      if (state.replyHint && state.replyHint.text) {
-        const qRole = state.replyHint.role === "joy" ? "assistant" : "user";
-        const qText = String(state.replyHint.text);
-        const has = history.some(function (h) { return h && h.content === qText; });
-        if (!has) history.splice(Math.max(0, history.length - 4), 0, { role: qRole, content: qText });
-      }
+      const history = buildJoyApiHistory();
+      const many = !!(state.burstBatch && state.burstBatch.length > 1);
 
       try {
         const res = await fetch("https://api.deepseek.com/chat/completions", {
@@ -9639,7 +9624,7 @@
             temperature: state.call ? 0.72 : learnTemp(),
             frequency_penalty: 0.48,
             presence_penalty: state.call ? 0.25 : 0.42,
-            max_tokens: state.call ? 70 : 220,
+            max_tokens: state.call ? 70 : (many ? 380 : 220),
             messages: [{ role: "system", content: systemPrompt(text, hits) }, ...history]
           })
         });
