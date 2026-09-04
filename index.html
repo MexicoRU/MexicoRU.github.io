@@ -6095,6 +6095,15 @@
           typeAfter: 160 + Math.floor(Math.random() * 500)
         };
       }
+      if (canJoyMicro(userText, opts)) {
+        return {
+          kind: "micro",
+          delay: 280 + Math.floor(Math.random() * 700),
+          later: (60 + Math.floor(Math.random() * 121)) * 1000,
+          readAfter: 200 + Math.floor(Math.random() * 400),
+          typeAfter: 220 + Math.floor(Math.random() * 500)
+        };
+      }
       if (weather === "low" && Math.random() < 0.68) {
         return {
           kind: "later",
@@ -6171,13 +6180,6 @@
           pending = opts.photoUrl ? getJoyPhotoReply(opts.photoUrl) : getJoyReply(userText);
         }
         return pending;
-      }
-
-      if (state.call) {
-        const replyPack = extractCallHangup(await fetchReply());
-        hideTyping();
-        await postJoyBurst(replyPack.text);
-        return replyPack;
       }
 
       if (plan.kind === "later") {
