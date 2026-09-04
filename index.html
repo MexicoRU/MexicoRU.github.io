@@ -10760,6 +10760,28 @@
       const found = parseDateFromText(value);
       if (found) upsertDate(found);
 
+      if (parseCancelReminders(value)) {
+        const had = cancelJoyReminders();
+        await postJoyBurst(had
+          ? pick(["Хорошо. Больше не буду напоминать", "Ок. Сняла"])
+          : pick(["Сейчас ничего не жду", "Таймера нет"]));
+        afterJoySpoke();
+        return;
+      }
+
+      const timed = parseJoyTimer(value);
+      if (timed) {
+        const item = addJoyReminder(timed);
+        const ack = reminderAck(item);
+        const mostly = value.length < 150;
+        if (mostly || state.call) {
+          await postJoyBurst(ack);
+          afterJoySpoke();
+          return;
+        }
+        state.timerHint = ack;
+      }
+
       state.liveBeat = pickLiveBeat(value);
       if (state.call) {
         const replyPack = extractCallHangup(await getJoyReply(value));
@@ -11289,6 +11311,7 @@
       }
       scheduleFeel();
       armSilenceNudge();
+      restoreReminders();
     }
 
     startAuth().then(function (ok) {
