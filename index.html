@@ -8506,7 +8506,7 @@
       let s = String(text || "").trim();
       s = s.replace(/^что\s+/i, "");
       s = s.replace(/^я\s+/i, "ты ");
-      if (!s) return pick(["Как обещала", "Я тут"]);
+      if (!s) return pick([joyIsMale() ? "Как обещал" : "Как обещала", "Я тут"]);
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
