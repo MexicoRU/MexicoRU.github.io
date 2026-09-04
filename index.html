@@ -10281,7 +10281,7 @@
     loadTheme();
     applyNight();
     setInterval(applyNight, 60 * 1000);
-    document.querySelectorAll(".joy-photo").forEach(bindImgFallback);
+    syncAvatar();
     if (window.speechSynthesis) {
       window.speechSynthesis.addEventListener("voiceschanged", function () {
         window.speechSynthesis.getVoices();

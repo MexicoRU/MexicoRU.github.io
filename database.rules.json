@@ -5,6 +5,10 @@
         "messages": {
           ".read": true,
           ".write": true
+        },
+        "face": {
+          ".read": true,
+          ".write": true
         }
       }
     },
