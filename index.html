@@ -6186,6 +6186,39 @@
       return /скинь\s*(фото|снимок|картинк)|пришли\s*(фото|снимок)|покажи\s*(фото|квартир|дом|комнат)|фото из дома|как у тебя дома|хочу (твое )?фото|кинь фото/.test(t);
     }
 
+    function joyHomeLook() {
+      return "ordinary small apartment of a young woman, cozy lived-in warm minimalism, cream walls, simple wooden furniture, sheer curtains, terracotta knit throw, ceramic mug, not luxury, not hotel, not interior magazine";
+    }
+
+    function joyPhotoLight() {
+      const h = joyHour();
+      if (h >= 6 && h < 11) return "soft morning daylight through the window";
+      if (h >= 11 && h < 16) return "soft natural daytime light";
+      if (h >= 16 && h < 20) return "warm evening light, gentle golden hour";
+      return "soft evening indoor lamp light";
+    }
+
+    function joyPhotoPrompt(scene) {
+      const noBody = /hands|holding a/.test(scene)
+        ? "no face, no head, no identity"
+        : "no people, no face, empty of persons";
+      return [
+        "candid unposed snapshot from a real phone, slightly imperfect framing, amateur, natural",
+        scene,
+        joyHomeLook(),
+        joyPhotoLight(),
+        noBody,
+        "not studio, not stock photo, not cinematic grade, not posed product shot",
+        JOY_PHOTO_STYLE
+      ].join(", ");
+    }
+
+    function joyPollinationsUrl(prompt) {
+      const seed = 1 + Math.floor(Math.random() * 999999);
+      return "https://image.pollinations.ai/prompt/" + encodeURIComponent(prompt) +
+        "?width=768&height=1024&nologo=true&enhance=false&seed=" + seed + "&referrer=joy-app";
+    }
+
     function pickJoyHomeShot(opts) {
       opts = opts || {};
       const deed = ensureJoyDeed();
