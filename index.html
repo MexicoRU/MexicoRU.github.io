@@ -6169,11 +6169,12 @@
       JOY_HOME_SHOTS.forEach(function (shot) {
         const hourOk = !shot.hours || shot.hours.indexOf(h) >= 0;
         const deedOk = shot.deeds.indexOf(deed) >= 0;
-        if (!asked && !hourOk) return;
-        if (!asked && shot.id === "cutlets" && deed !== "cook") return;
-        if (!asked && shot.id === "sunset" && (h < 16 || h > 21)) return;
-        if (!asked && shot.id === "candles" && h >= 7 && h < 19) return;
-        if (!asked && !deedOk && shot.id === "cutlets") return;
+        if (shot.id === "cutlets" && deed !== "cook") return;
+        if ((shot.id === "sunset" || shot.id === "candles") && !hourOk) return;
+        if (!asked) {
+          if (!hourOk) return;
+          if (!deedOk) return;
+        }
         let w = 1;
         if (deedOk) w += 4;
         if (hourOk) w += 1;
