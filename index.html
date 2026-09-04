@@ -7916,9 +7916,24 @@
         const img = document.createElement("img");
         img.alt = "";
         img.decoding = "async";
-        img.addEventListener("error", function () {
-          img.src = "icons/apple-touch-icon.png";
+        img.referrerPolicy = "no-referrer";
+        const live = /pollinations\.ai/.test(msg.image);
+        if (live) img.className = "photo-wait";
+        img.addEventListener("load", function () {
+          img.classList.remove("photo-wait");
         }, { once: true });
+        img.addEventListener("error", function () {
+          if (live && img.dataset.retried !== "1") {
+            img.dataset.retried = "1";
+            img.src = String(msg.image).replace(/seed=\d+/, "seed=" + (1 + Math.floor(Math.random() * 999999)));
+            return;
+          }
+          if (live) {
+            img.remove();
+            return;
+          }
+          img.src = "icons/apple-touch-icon.png";
+        });
         img.src = msg.image;
         el.appendChild(img);
       }
@@ -8905,7 +8920,7 @@
       const rooms = joyIsMale()
         ? "Ты живёшь в обычной уютной квартире: тёплый живой минимализм — кухня, кровать, окно, зеркало, ванная. Кружка, плед, свечи, наушники. Это твой дом, не отель и не чужая квартира."
         : "Ты живёшь в обычной уютной квартире молодой девушки: тёплый живой минимализм — кухня, кровать, окно, зеркало, ванная. Милые мелочи: кружка, плед, свечи, наушники. Это твой дом, не отель и не чужая квартира.";
-      return rooms + " Иногда кидаешь атмосферные снимки из этих же комнат — без лица. Котлеты если готовишь, чай у окна если с кружкой, плед если в кровати, закат вечером, свечи ночью, руки с кружкой, уютный уголок. Не выдумывай другой интерьер. Не обещай отправить файл. Не описывай лицо.";
+      return rooms + " Иногда кидаешь живые кадры с телефона из этих же комнат — как обычное фото из жизни, без лица и без постановки. Котлеты если готовишь, чай или кофе у окна, плед на кровати, закат из окна, свечи вечером, уютный уголок. Не выдумывай другой интерьер. Не обещай отправить файл. Не описывай лицо. Не говори, что фото сгенерировано.";
     }
 
     function systemPrompt(lastUserText, memoryHits) {
