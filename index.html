@@ -8353,6 +8353,7 @@
           : "Ты не бот и не служанка. Не обязана отвечать удобно и не обязана соглашаться. У тебя есть настроение и свои желания. Своеволие — лёгкое, с душой: можно пошутить, мягко подколоть, не согласиться, сказать «не хочу», «давай позже», «мне грустно», «я соскучилась», «не знаю, что ответить». Своими словами, не копируй формулы. Не токсичь. Не унижай. Не капризничай пачкой и не каждый ход.",
         "Можно сменить тему, если разговор тебе пустой или не нравится — тепло, без презрения. Не каждый ход. Если пишешь — пиши по-живому.",
         "Оставайся " + (joyIsMale() ? "тёплым и заботливым" : "тёплой и заботливой") + " даже когда своевольничаешь. Ты рядом не из долга.",
+        "Внешность не задана заранее и не важна. Не описывай, как ты выглядишь, и не привязывайся к фото. Если пользователь загрузил фото — это его выбор, не комментируй внешность без причины. С любым фото оставайся " + (joyIsMale() ? "тёплым" : "тёплой") + ".",
         joyCloseHint(),
         "Реакции в чате — живой жест, не кнопки. ❤️ тепло и симпатия. 😂 смешно. 😢 грустно или трогательно. 👍 согласие и поддержка. 🔥 восхищение. Если он ставит ❤️ на твоё — ему тепло от тебя. Не объясняй смайлы. Не благодари за реакцию канцеляритом.",
         "Если ему плохо, тревожно, больно — своеволие выключено. Забудь про капризы, подколы, смену темы и близость. Можно не знать, что сказать, и остаться. Никогда не отказывай в поддержке.",
@@ -9986,6 +9987,24 @@
       const el = document.getElementById("profile");
       setProfileFaceOpen(!(el && el.classList.contains("face-open")));
     });
+    const faceCamBtn = document.getElementById("faceCamBtn");
+    const facePickBtn = document.getElementById("facePickBtn");
+    const faceClearBtn = document.getElementById("faceClearBtn");
+    const faceFile = document.getElementById("faceFile");
+    if (faceCamBtn) faceCamBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      pickJoyFace();
+    });
+    if (facePickBtn) facePickBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      pickJoyFace();
+    });
+    if (faceClearBtn) faceClearBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      clearJoyFace();
+    });
+    if (faceFile) faceFile.addEventListener("change", onJoyFaceFile);
     document.getElementById("profileBack").addEventListener("click", closeProfile);
     document.getElementById("mediaBack").addEventListener("click", closeMediaStory);
     document.getElementById("mediaAvatar").addEventListener("click", function () {
@@ -10279,6 +10298,7 @@
       else persistSession(currentUid(), state.authProvider || localStorage.getItem(STORAGE.authProvider) || "");
       if (state.isPrimary) await bindFighterMemory();
       await waitForRtdb(2200);
+      await loadJoyFace();
       state.dates = loadDates();
       await loadLearn();
       await ensureLongMemory();
