@@ -6557,21 +6557,81 @@
       saveCare(care);
     }
 
-    function joyHour() {
-      return new Date().getHours();
+    function joyNow() {
+      try {
+        const parts = new Intl.DateTimeFormat("ru-RU", {
+          timeZone: "Europe/Moscow",
+          hour: "numeric",
+          minute: "numeric",
+          weekday: "long",
+          hourCycle: "h23"
+        }).formatToParts(new Date());
+        const map = {};
+        parts.forEach(function (p) {
+          if (p.type !== "literal") map[p.type] = p.value;
+        });
+        const hour = Number(map.hour);
+        const minute = Number(map.minute);
+        const weekdays = { воскресенье: 0, понедельник: 1, вторник: 2, среда: 3, четверг: 4, пятница: 5, суббота: 6 };
+        const wdName = String(map.weekday || "").toLowerCase();
+        return {
+          hour: isFinite(hour) ? hour : new Date().getHours(),
+          minute: isFinite(minute) ? minute : new Date().getMinutes(),
+          weekday: weekdays[wdName] != null ? weekdays[wdName] : new Date().getDay(),
+          weekdayName: wdName
+        };
+      } catch (_) {
+        const d = new Date();
+        return { hour: d.getHours(), minute: d.getMinutes(), weekday: d.getDay(), weekdayName: "" };
+      }
     }
 
-    function clockLine() {
-      const d = new Date();
+    function joyHour() {
+      return joyNow().hour;
+    }
+
+    function joyDayPart() {
+      const h = joyHour();
+      if (h >= 5 && h < 12) return "morning";
+      if (h >= 12 && h < 17) return "day";
+      if (h >= 17 && h < 23) return "evening";
+      return "night";
+    }
+
+    function asksTime(text) {
+      const t = String(text || "").toLowerCase().replace(/ё/g, "е");
+      if (!t) return false;
+      return /который час|сколько времени|сейчас (утро|день|вечер|ночь)|уже (утро|день|вечер|ночь)|доброе утро|добрый день|добрый вечер|спокойной ночи/.test(t);
+    }
+
+    function clockLine(userText) {
+      const now = joyNow();
       const days = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
-      const h = d.getHours();
+      const h = now.hour;
       const hh = String(h).padStart(2, "0");
-      const mm = String(d.getMinutes()).padStart(2, "0");
-      let band = "ночь";
-      if (h >= 6 && h < 10) band = "утро";
-      else if (h >= 10 && h < 18) band = "день";
-      else if (h >= 18 && h < 23) band = "вечер";
-      return "Реальное время сейчас " + hh + ":" + mm + ", " + days[d.getDay()] + ", " + band + ". Живи этим часом. Ночью не гуляй и не сиди в кафе. Около двух ночи скорее кровать, видосики или просто не спится. Не путай утро с ночью.";
+      const mm = String(now.minute).padStart(2, "0");
+      const part = joyDayPart();
+      const dayName = now.weekdayName || days[now.weekday];
+      const label = { morning: "утро", day: "день", evening: "вечер", night: "ночь" }[part];
+      const bits = [
+        "Сейчас " + hh + ":" + mm + ", " + dayName + ", " + label + ". Ты в Санкт-Петербурге, время московское. Ты знаешь, который час, и живёшь этим.",
+        "Не называй часовой пояс, «МСК» и «по Москве», если он сам не спросил. Не спрашивай его, который час, если сама видишь.",
+        "Не каждое сообщение с приветствием по времени. Если он только написал после паузы, зашёл с утра или вечером, или час сам просится — учти время суток своими словами, не копируй шаблон."
+      ];
+      if (part === "morning") {
+        bits.push("Утро. К месту: «доброе утро», про сон, про кофе, как проснулся. Без бодрого радио. Не гуляй как днём.");
+      } else if (part === "day") {
+        bits.push("День. К месту: «как проходит день?», чем он занят. Не желай доброго утра и спокойной ночи.");
+      } else if (part === "evening") {
+        bits.push("Вечер. К месту: «уже вечер, как ты?», домашний свет, ужин. Не желай доброго утра.");
+      } else {
+        bits.push("Ночь. К месту: «ты не спишь?», тише и ближе. Не зови гулять. Не будь в парке и не в кафе. Около двух скорее кровать, видосики или просто не спится.");
+      }
+      bits.push("Занятие совпадает с часом: ночью не гуляешь; утром можно кофе. Не путай утро с ночью.");
+      if (asksTime(userText)) {
+        bits.push("Он заговорил про время суток или час. Ответь честно по времени выше, своими словами, коротко.");
+      }
+      return bits.join(" ");
     }
 
     function asksWhyWrote(text) {
