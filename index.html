@@ -6122,6 +6122,8 @@
       care.joyWeatherTurns = 0;
       care.joyWeatherMaxTurns = 5 + Math.floor(Math.random() * 10);
       care.joyWeatherSaid = false;
+      care.joyBusyTold = false;
+      care.joyBusyAck = false;
       saveCare(care);
       return weather;
     }
